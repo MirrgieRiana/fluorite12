@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>fluorite12 Runner</title>
+    <style>
+        @keyframes highlight {
+            0% {
+                background-color: #FFEEEE;
+            }
+            100% {
+                background-color: #FFFFFF;
+            }
+        }
+        .highlight {
+            animation: highlight 1s;
+        }
+
+        html {
+            height: 100%;
+        }
+        body {
+            height: 100%;
+            margin: 0;
+        }
+        #container {
+            width: 100%;
+            height: 100%;
+            border-collapse: collapse;
+        }
+        #input, #output {
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            margin: 0%;
+            background-color: #FFFFFF;
+        }
+    </style>
+    <script src="../build/distributions/fluorite12.js"></script>
+    <script>
+        async function run() {
+            const src = document.getElementById("input").value;
+            try {
+                const value = await fluorite12.evaluate(fluorite12.parse(src).value);
+                document.getElementById("output").value = await fluorite12.stringify(value);
+                highlight(document.getElementById("output"));
+                await fluorite12.log(value);
+            } catch (e) {
+                document.getElementById("output").value = "" + e;
+                highlight(document.getElementById("output"));
+                console.log(e);
+            }
+        }
+        function highlight(element) {
+            element.className = "box";
+            window.requestAnimationFrame(function (time) {
+                window.requestAnimationFrame(function (time) {
+                    element.className = "highlight";
+                });
+            });
+        }
+    </script>
+</head>
+<body>
+<table id="container">
+    <tr style="height: 50%;">
+        <td><textarea id="input" onkeydown="
+            if (arguments[0].ctrlKey && arguments[0].keyCode == 13) run();
+        "></textarea></td>
+    </tr>
+    <tr style="height: 0%;">
+        <td><input type="button" value="Run" onclick="run()" title="(Ctrl+Enter)"></td>
+    </tr>
+    <tr style="height: 50%;">
+        <td><textarea id="output"></textarea></td>
+    </tr>
+</table>
+</body>
+</html>
