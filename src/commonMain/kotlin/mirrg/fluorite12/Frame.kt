@@ -26,6 +26,8 @@ suspend fun Frame.evaluate(node: Node): Any? {
 
         is NumberNode -> node.main.text.toInt()
 
+        is StringNode -> node.string
+
         is BracketNode -> when (node.left.text) {
             "(" -> evaluate(node.main)
 
@@ -47,6 +49,30 @@ suspend fun Frame.evaluate(node: Node): Any? {
                     }
                 }
                 FluoriteArray(values)
+            }
+
+            "{" -> {
+                val nodes = if (node.main is SemicolonNode) {
+                    node.main.nodes
+                } else {
+                    listOf(node.main)
+                }
+                val values = mutableListOf<Pair<String, Any?>>()
+                nodes.forEach {
+                    val value = evaluate(it)
+                    if (value is FluoriteStream) {
+                        value.flow.collect { item ->
+                            require(item is FluoriteTuple)
+                            require(item.values.size == 2)
+                            values += Pair(item.values[0] as String, item.values[1])
+                        }
+                    } else {
+                        require(value is FluoriteTuple)
+                        require(value.values.size == 2)
+                        values += Pair(value.values[0] as String, value.values[1])
+                    }
+                }
+                FluoriteObject(values.toMap())
             }
 
             else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} A ${node.right.text}")

@@ -24,10 +24,13 @@ class Fluorite12Grammar : Grammar<Node>() {
     val lineBreak by regexToken("""\n|\r\n?""".toRegex())
     val identifier by regexToken("""[a-zA-Z_][a-zA-Z_0-9]*""".toRegex())
     val integer by regexToken("""[0-9]+""".toRegex())
+    val string by regexToken(""""[^"]*"""".toRegex())
     val leftRound by literalToken("(")
     val rightRound by literalToken(")")
     val leftSquare by literalToken("[")
     val rightSquare by literalToken("]")
+    val leftCurly by literalToken("{")
+    val rightCurly by literalToken("}")
     val asterisk by literalToken("*")
     val slash by literalToken("/")
     val plus by literalToken("+")
@@ -54,11 +57,17 @@ class Fluorite12Grammar : Grammar<Node>() {
     val identifierLiteral: Parser<Node> by identifier map { IdentifierNode(it) }
     val integerLiteral: Parser<Node> by integer map { NumberNode(it) }
     val number: Parser<Node> by integerLiteral
+    val stringLiteral by string map { StringNode(it, it.text.drop(1).dropLast(1)) }
     val round: Parser<Node> by leftRound * -b * parser { expression } * -b * rightRound map ::bracketNode
     val square: Parser<Node> by leftSquare * -b * parser { expression } * -b * rightSquare map ::bracketNode
-    val factor: Parser<Node> by identifierLiteral or number or round or square
+    val curly: Parser<Node> by leftCurly * -b * parser { expression } * -b * rightCurly map ::bracketNode
+    val factor: Parser<Node> by identifierLiteral or number or stringLiteral or round or square or curly
 
-    val call: Parser<Node> by factor * zeroOrMore(-s * leftRound * -b * parser { expression } * -b * rightRound or -s * leftSquare * -b * parser { expression } * -b * rightSquare) map ::rightBracketNode
+    val call: Parser<Node> by factor * zeroOrMore(
+        -s * leftRound * -b * parser { expression } * -b * rightRound or
+            -s * leftSquare * -b * parser { expression } * -b * rightSquare or
+            -s * leftCurly * -b * parser { expression } * -b * rightCurly
+    ) map ::rightBracketNode
 
     val mul: Parser<Node> by leftAssociative(call, -s * (asterisk or slash) * -b, ::infixNode)
     val add: Parser<Node> by leftAssociative(mul, -s * (plus or minus) * -b, ::infixNode)

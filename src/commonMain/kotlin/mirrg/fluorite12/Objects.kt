@@ -17,6 +17,11 @@ class FluoriteTuple(val values: List<Any?>) {
 }
 
 
+class FluoriteObject(val map: Map<String, Any?>) {
+    override fun toString() = "{${map.entries.joinToString(",") { "${it.key}:${it.value}" }}}"
+}
+
+
 class FluoriteFunction(val function: suspend (List<Any?>) -> Any?)
 
 
