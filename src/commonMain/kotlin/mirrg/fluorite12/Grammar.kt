@@ -2,9 +2,11 @@ package mirrg.fluorite12
 
 import com.github.h0tk3y.betterParse.combinators.leftAssociative
 import com.github.h0tk3y.betterParse.combinators.map
+import com.github.h0tk3y.betterParse.combinators.optional
 import com.github.h0tk3y.betterParse.combinators.or
 import com.github.h0tk3y.betterParse.combinators.rightAssociative
 import com.github.h0tk3y.betterParse.combinators.times
+import com.github.h0tk3y.betterParse.combinators.unaryMinus
 import com.github.h0tk3y.betterParse.combinators.zeroOrMore
 import com.github.h0tk3y.betterParse.grammar.Grammar
 import com.github.h0tk3y.betterParse.grammar.parser
@@ -18,6 +20,8 @@ import com.github.h0tk3y.betterParse.utils.Tuple5
 
 @Suppress("MemberVisibilityCanBePrivate")
 class Fluorite12Grammar : Grammar<Node>() {
+    val space by regexToken("""[ \t]+""".toRegex())
+    val lineBreak by regexToken("""\n|\r\n?""".toRegex())
     val identifier by regexToken("""[a-zA-Z_][a-zA-Z_0-9]*""".toRegex())
     val integer by regexToken("""[0-9]+""".toRegex())
     val leftRound by literalToken("(")
@@ -43,30 +47,33 @@ class Fluorite12Grammar : Grammar<Node>() {
     val pipe by literalToken("|")
     val semicolon by literalToken(";")
 
+    val s by optional(space)
+    val b by optional(space) * zeroOrMore(lineBreak * optional(space))
+
 
     val identifierLiteral: Parser<Node> by identifier map { IdentifierNode(it) }
     val integerLiteral: Parser<Node> by integer map { NumberNode(it) }
     val number: Parser<Node> by integerLiteral
-    val round: Parser<Node> by leftRound * parser { expression } * rightRound map ::bracketNode
-    val square: Parser<Node> by leftSquare * parser { expression } * rightSquare map ::bracketNode
+    val round: Parser<Node> by leftRound * -b * parser { expression } * -b * rightRound map ::bracketNode
+    val square: Parser<Node> by leftSquare * -b * parser { expression } * -b * rightSquare map ::bracketNode
     val factor: Parser<Node> by identifierLiteral or number or round or square
 
-    val call: Parser<Node> by factor * zeroOrMore(leftRound * parser { expression } * rightRound or leftSquare * parser { expression } * rightSquare) map ::rightBracketNode
+    val call: Parser<Node> by factor * zeroOrMore(-s * leftRound * -b * parser { expression } * -b * rightRound or -s * leftSquare * -b * parser { expression } * -b * rightSquare) map ::rightBracketNode
 
-    val mul: Parser<Node> by leftAssociative(call, asterisk or slash, ::infixNode)
-    val add: Parser<Node> by leftAssociative(mul, plus or minus, ::infixNode)
-    val range: Parser<Node> by leftAssociative(add, periodPeriod, ::infixNode)
-    val comparison: Parser<Node> by range * zeroOrMore((equalEqual or exclamationEqual or greater or greaterEqual or less or lessEqual) * range) map ::comparisonNode
-    val condition: Parser<Node> by (comparison * question * parser { condition } * colon * parser { condition } map ::conditionNode) or comparison
+    val mul: Parser<Node> by leftAssociative(call, -s * (asterisk or slash) * -b, ::infixNode)
+    val add: Parser<Node> by leftAssociative(mul, -s * (plus or minus) * -b, ::infixNode)
+    val range: Parser<Node> by leftAssociative(add, -s * periodPeriod * -b, ::infixNode)
+    val comparison: Parser<Node> by range * zeroOrMore(-s * (equalEqual or exclamationEqual or greater or greaterEqual or less or lessEqual) * -b * range) map ::comparisonNode
+    val condition: Parser<Node> by (comparison * -s * question * -b * parser { condition } * -s * colon * -b * parser { condition } map ::conditionNode) or comparison
 
-    val stream: Parser<Node> by condition * zeroOrMore(comma * condition) map ::listNode
-    val lambda: Parser<Node> by rightAssociative(stream, minusGreater or equalGreater, ::infixNode)
-    val query: Parser<Node> by leftAssociative(lambda, pipe, ::infixNode)
+    val stream: Parser<Node> by condition * zeroOrMore(-s * comma * -b * condition) map ::listNode
+    val lambda: Parser<Node> by rightAssociative(stream, -s * (minusGreater or equalGreater) * -b, ::infixNode)
+    val query: Parser<Node> by leftAssociative(lambda, -s * pipe * -b, ::infixNode)
 
-    val lines: Parser<Node> by query * zeroOrMore(semicolon * query) map ::listNode
+    val lines: Parser<Node> by query * zeroOrMore(-s * (semicolon or lineBreak) * -b * query) map ::listNode
     val expression: Parser<Node> by lines
 
-    override val rootParser: Parser<Node> by expression
+    override val rootParser: Parser<Node> by -b * expression * -b
 }
 
 private fun bracketNode(it: Tuple3<TokenMatch, Node, TokenMatch>) = BracketNode(it.t1, it.t2, it.t3)
