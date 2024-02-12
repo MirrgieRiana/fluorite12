@@ -41,7 +41,14 @@
         async function run() {
             const src = document.getElementById("input").value;
             try {
-                const value = await fluorite12.evaluate(fluorite12.parse(src).value);
+                const result = fluorite12.parse(src);
+                if (result.errors !== undefined) {
+                    document.getElementById("output").value = "" + result.errors;
+                    highlight(document.getElementById("output"));
+                    console.log(result.errors);
+                    return;
+                }
+                const value = await fluorite12.evaluate(result.value);
                 document.getElementById("output").value = await fluorite12.stringify(value);
                 highlight(document.getElementById("output"));
                 await fluorite12.log(value);
