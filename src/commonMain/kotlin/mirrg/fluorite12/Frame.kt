@@ -33,7 +33,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 val nodes = if (node.main is SemicolonNode) {
                     node.main.nodes
                 } else {
-                    listOf(node)
+                    listOf(node.main)
                 }
                 val values = mutableListOf<Any?>()
                 nodes.forEach {
