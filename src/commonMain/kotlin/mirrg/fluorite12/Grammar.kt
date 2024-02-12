@@ -76,7 +76,13 @@ class Fluorite12Grammar : Grammar<Node>() {
 
     val integer: Parser<Node> by oneOrMore(zero or nonZero) map { NumberNode(it, it.joinToString("") { t -> t.text }) }
 
-    val string by dQuote * zeroOrMore(lAlphabet or sAlphabet or zero or nonZero map { Pair(it, it.text) }) * dQuote map {
+    val stringCharacter by OrCombinator(
+        lAlphabet map { Pair(it, it.text) },
+        sAlphabet map { Pair(it, it.text) },
+        zero map { Pair(it, it.text) },
+        nonZero map { Pair(it, it.text) },
+    )
+    val string by dQuote * zeroOrMore(stringCharacter) * dQuote map {
         StringNode(listOf(it.t1, *it.t2.map { it.first }.toTypedArray(), it.t3), it.t2.joinToString("") { it.second })
     }
 
