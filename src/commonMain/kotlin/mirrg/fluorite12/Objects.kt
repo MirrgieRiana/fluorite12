@@ -6,9 +6,16 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.merge
 
+
 class FluoriteArray(val values: List<Any?>) {
     override fun toString() = "[${values.joinToString(",") { "$it" }}]"
 }
+
+
+class FluoriteTuple(val values: List<Any?>) {
+    override fun toString() = values.joinToString(":") { "$it" }
+}
+
 
 class FluoriteFunction(val function: suspend (List<Any?>) -> Any?)
 

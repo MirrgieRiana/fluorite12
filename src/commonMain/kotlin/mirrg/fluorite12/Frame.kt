@@ -81,7 +81,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 } else {
                     node.left
                 }
-                val identifierNodes = if (commasNode is CommaNode && commasNode.operators.first().text == ",") {
+                val identifierNodes = if (commasNode is ListNode && commasNode.operators.first().text == ",") {
                     commasNode.nodes
                 } else if (commasNode is SemicolonNode) {
                     commasNode.nodes
@@ -157,11 +157,17 @@ suspend fun Frame.evaluate(node: Node): Any? {
 
         is ConditionNode -> if (evaluate(node.condition) as Boolean) evaluate(node.ok) else evaluate(node.ng)
 
-        is CommaNode -> {
-            node.nodes.map {
-                val value = evaluate(it)
-                if (value is FluoriteStream) value else streamOf(value)
-            }.concat()
+        is ListNode -> when (node.operators.first().text) {
+            ":" -> FluoriteTuple(node.nodes.map { evaluate(it) })
+
+            "," -> {
+                node.nodes.map {
+                    val value = evaluate(it)
+                    if (value is FluoriteStream) value else streamOf(value)
+                }.concat()
+            }
+
+            else -> throw IllegalArgumentException("Unknown operator: A ${node.operators.first().text} B")
         }
 
         is SemicolonNode -> {

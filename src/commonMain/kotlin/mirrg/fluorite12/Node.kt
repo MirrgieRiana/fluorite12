@@ -10,5 +10,5 @@ class RightBracketNode(val main: Node, val left: TokenMatch, val argument: Node,
 class InfixNode(val left: Node, val operator: TokenMatch, val right: Node) : Node()
 class ComparisonNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
 class ConditionNode(val condition: Node, val question: TokenMatch, val ok: Node, val colon: TokenMatch, val ng: Node) : Node()
-class CommaNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
+class ListNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
 class SemicolonNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()

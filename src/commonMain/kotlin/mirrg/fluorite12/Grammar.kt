@@ -66,7 +66,8 @@ class Fluorite12Grammar : Grammar<Node>() {
     val comparison: Parser<Node> by range * zeroOrMore(-s * (equalEqual or exclamationEqual or greater or greaterEqual or less or lessEqual) * -b * range) map ::comparisonNode
     val condition: Parser<Node> by (comparison * -s * question * -b * parser { condition } * -s * colon * -b * parser { condition } map ::conditionNode) or comparison
 
-    val stream: Parser<Node> by condition * zeroOrMore(-s * comma * -b * condition) map ::commaNode
+    val tuple: Parser<Node> by condition * zeroOrMore(-s * colon * -b * condition) map ::listNode
+    val stream: Parser<Node> by tuple * zeroOrMore(-s * comma * -b * tuple) map ::listNode
     val lambda: Parser<Node> by rightAssociative(stream, -s * (minusGreater or equalGreater) * -b, ::infixNode)
     val query: Parser<Node> by leftAssociative(lambda, -s * pipe * -b, ::infixNode)
 
@@ -98,9 +99,9 @@ private fun comparisonNode(it: Tuple2<Node, List<Tuple2<TokenMatch, Node>>>): No
 
 private fun conditionNode(it: Tuple5<Node, TokenMatch, Node, TokenMatch, Node>) = ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5)
 
-private fun commaNode(it: Tuple2<Node, List<Tuple2<TokenMatch, Node>>>): Node {
+private fun listNode(it: Tuple2<Node, List<Tuple2<TokenMatch, Node>>>): Node {
     return if (it.t2.isNotEmpty()) {
-        CommaNode(listOf(it.t1) + it.t2.map { it.t2 }, it.t2.map { it.t1 })
+        ListNode(listOf(it.t1) + it.t2.map { it.t2 }, it.t2.map { it.t1 })
     } else {
         it.t1
     }
