@@ -11,7 +11,7 @@ class Frame(val parent: Frame? = null) {
 suspend fun Frame.evaluate(node: Node): Any? {
     return when (node) {
         is IdentifierNode -> {
-            val variable = node.main.text
+            val variable = node.string
             fun f(frame: Frame): Any? {
                 return if (variable in frame.variables) {
                     frame.variables[variable]
@@ -24,7 +24,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
             f(this)
         }
 
-        is NumberNode -> node.main.text.toInt()
+        is NumberNode -> node.string.toInt()
 
         is StringNode -> node.string
 
@@ -116,7 +116,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 }
                 val variables = identifierNodes.map {
                     require(it is IdentifierNode)
-                    it.main.text
+                    it.string
                 }
                 FluoriteFunction { arguments ->
                     val frame = Frame(this)
@@ -132,7 +132,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 val stream = evaluate(node.left)
                 val (variable, body) = if (node.right is InfixNode && node.right.operator.text == "=>") {
                     require(node.right.left is IdentifierNode)
-                    Pair(node.right.left.main.text, node.right.right)
+                    Pair(node.right.left.string, node.right.right)
                 } else {
                     Pair("_", node.right)
                 }
