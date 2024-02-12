@@ -3,7 +3,6 @@ package mirrg.fluorite12
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.toList
 
 class Frame(val parent: Frame? = null) {
     val variables = mutableMapOf<String, Any?>()
@@ -31,12 +30,23 @@ suspend fun Frame.evaluate(node: Node): Any? {
             "(" -> evaluate(node.main)
 
             "[" -> {
-                val value = evaluate(node.main)
-                if (value is FluoriteStream) {
-                    FluoriteArray(value.flow.toList())
+                val nodes = if (node.main is SemicolonNode) {
+                    node.main.nodes
                 } else {
-                    FluoriteArray(listOf(value))
+                    listOf(node)
                 }
+                val values = mutableListOf<Any?>()
+                nodes.forEach {
+                    val value = evaluate(it)
+                    if (value is FluoriteStream) {
+                        value.flow.collect {
+                            values += it
+                        }
+                    } else {
+                        values += value
+                    }
+                }
+                FluoriteArray(values)
             }
 
             else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} A ${node.right.text}")
@@ -46,7 +56,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
             "(" -> {
                 val mainValue = evaluate(node.main)
                 require(mainValue is FluoriteFunction)
-                val argumentNodes = if (node.argument is ListNode && node.argument.operators.first().text == ";") {
+                val argumentNodes = if (node.argument is SemicolonNode) {
                     node.argument.nodes
                 } else {
                     listOf(node.argument)
@@ -71,9 +81,9 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 } else {
                     node.left
                 }
-                val identifierNodes = if (commasNode is ListNode && commasNode.operators.first().text == ",") {
+                val identifierNodes = if (commasNode is CommaNode && commasNode.operators.first().text == ",") {
                     commasNode.nodes
-                } else if (commasNode is ListNode && commasNode.operators.first().text == ";") {
+                } else if (commasNode is CommaNode && commasNode.operators.first().text == ";") {
                     commasNode.nodes
                 } else {
                     listOf(commasNode)
@@ -147,11 +157,18 @@ suspend fun Frame.evaluate(node: Node): Any? {
 
         is ConditionNode -> if (evaluate(node.condition) as Boolean) evaluate(node.ok) else evaluate(node.ng)
 
-        is ListNode -> {
+        is CommaNode -> {
             node.nodes.map {
                 val value = evaluate(it)
                 if (value is FluoriteStream) value else streamOf(value)
             }.concat()
+        }
+
+        is SemicolonNode -> {
+            node.nodes.dropLast(1).forEach {
+                evaluate(it)
+            }
+            evaluate(node.nodes.last())
         }
     }
 }
