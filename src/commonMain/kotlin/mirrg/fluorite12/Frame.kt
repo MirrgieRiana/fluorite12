@@ -39,8 +39,8 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 nodes.forEach {
                     val value = evaluate(it)
                     if (value is FluoriteStream) {
-                        value.flow.collect {
-                            values += it
+                        value.flow.collect { item ->
+                            values += item
                         }
                     } else {
                         values += value
