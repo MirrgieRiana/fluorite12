@@ -83,7 +83,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 }
                 val identifierNodes = if (commasNode is CommaNode && commasNode.operators.first().text == ",") {
                     commasNode.nodes
-                } else if (commasNode is CommaNode && commasNode.operators.first().text == ";") {
+                } else if (commasNode is SemicolonNode) {
                     commasNode.nodes
                 } else {
                     listOf(commasNode)
