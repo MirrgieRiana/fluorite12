@@ -98,6 +98,17 @@ class Fluorite12Grammar : Grammar<Node>() {
             -s * lSquare * -b * parser { expression } * -b * rSquare or
             -s * lCurly * -b * parser { expression } * -b * rCurly
     ) map ::rightBracketNode
+    val leftOperators: Parser<List<TokenMatch>> by OrCombinator(
+        +plus,
+        +minus,
+        +question,
+        +exclamation,
+        +ampersand,
+        +(dollar * sharp),
+    )
+    val left: Parser<Node> by zeroOrMore(leftOperators) * right map {
+        it.t1.foldRight(it.t2) { t, node -> LeftNode(t, node) }
+    }
 
     val mul: Parser<Node> by leftAssociative(right, -s * (+asterisk or +slash) * -b, ::infixNode)
     val add: Parser<Node> by leftAssociative(mul, -s * (+plus or +minus) * -b, ::infixNode)

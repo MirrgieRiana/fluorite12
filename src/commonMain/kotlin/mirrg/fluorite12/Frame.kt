@@ -103,6 +103,41 @@ suspend fun Frame.evaluate(node: Node): Any? {
             else -> throw IllegalArgumentException("Unknown operator: A ${node.left.text} B ${node.right.text}")
         }
 
+        is LeftNode -> {
+            fun Any?.toNumber() = when (this) {
+                is Int -> this.toDouble()
+                is Double -> this
+                is String -> this.toDouble()
+                is Boolean -> if (this) 1.0 else 0.0
+                else -> throw IllegalArgumentException("Can not convert to number: $this")
+            }
+
+            fun Any?.toBoolean() = when (this) {
+                is Int -> this != 0
+                is Double -> this != 0.0
+                is String -> this != ""
+                is Boolean -> this
+                else -> throw IllegalArgumentException("Can not convert to boolean: $this")
+            }
+
+            fun Any?.toFluoriteString() = "$this"
+            fun Any?.getLength() = when (this) {
+                is String -> this.length
+                is FluoriteArray -> this.values.size
+                is FluoriteObject -> this.map.size
+                else -> throw IllegalArgumentException("Can not calculate length: $this")
+            }
+            when (node.left.text) {
+                "+" -> evaluate(node.right).toNumber()
+                "-" -> -evaluate(node.right).toNumber()
+                "?" -> evaluate(node.right).toBoolean()
+                "!" -> !evaluate(node.right).toBoolean()
+                "&" -> evaluate(node.right).toFluoriteString()
+                "$#" -> evaluate(node.right).getLength()
+                else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} B")
+            }
+        }
+
         is InfixNode -> when (node.operator.text) {
             "+" -> (evaluate(node.left) as Number).toDouble() + (evaluate(node.right) as Number).toDouble()
             "-" -> (evaluate(node.left) as Number).toDouble() - (evaluate(node.right) as Number).toDouble()
