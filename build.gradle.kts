@@ -38,13 +38,14 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
             }
         }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+            }
+        }
         val nativeMain by creating {
             dependsOn(commonMain)
-        }
-        val jvmTest by getting {
-            dependencies {
-                implementation("junit:junit:4.13.2")
-            }
         }
         kotlin.targets.withType<KotlinNativeTarget>().all {
             compilations.getByName("main") {
