@@ -26,7 +26,16 @@ suspend fun Frame.evaluate(node: Node): Any? {
 
         is NumberNode -> node.string.toInt()
 
-        is StringNode -> node.string
+        is StringNode -> {
+            val sb = StringBuilder()
+            node.nodes.forEach {
+                when (it) {
+                    is LiteralStringContent -> sb.append(it.string)
+                    is NodeStringContent -> sb.append("${evaluate(it.main)}")
+                }
+            }
+            "$sb"
+        }
 
         is BracketNode -> when (node.left.text) {
             "(" -> evaluate(node.main)

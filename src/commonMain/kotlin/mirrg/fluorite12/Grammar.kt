@@ -82,9 +82,11 @@ class Fluorite12Grammar : Grammar<Node>() {
         zero map { Pair(it, it.text) },
         nonZero map { Pair(it, it.text) },
     )
-    val string by dQuote * zeroOrMore(stringCharacter) * dQuote map {
-        StringNode(listOf(it.t1, *it.t2.map { it.first }.toTypedArray(), it.t3), it.t2.joinToString("") { it.second })
-    }
+    val stringContent by OrCombinator(
+        oneOrMore(stringCharacter) map { LiteralStringContent(it.map { t -> t.first }, it.joinToString("") { t -> t.second }) },
+        dollar * parser { factor } map { NodeStringContent(it.t1, it.t2) },
+    )
+    val string by dQuote * zeroOrMore(stringContent) * dQuote map { StringNode(it.t1, it.t3, it.t2) }
 
     val round: Parser<Node> by lRound * -b * parser { expression } * -b * rRound map ::bracketNode
     val square: Parser<Node> by lSquare * -b * parser { expression } * -b * rSquare map ::bracketNode
