@@ -62,12 +62,12 @@ suspend fun Frame.evaluate(node: Node): Any? {
                     val value = evaluate(it)
                     if (value is FluoriteStream) {
                         value.flow.collect { item ->
-                            require(item is FluoriteTuple)
+                            require(item is FluoriteArray)
                             require(item.values.size == 2)
                             values += Pair(item.values[0] as String, item.values[1])
                         }
                     } else {
-                        require(value is FluoriteTuple)
+                        require(value is FluoriteArray)
                         require(value.values.size == 2)
                         values += Pair(value.values[0] as String, value.values[1])
                     }
@@ -184,7 +184,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
         is ConditionNode -> if (evaluate(node.condition) as Boolean) evaluate(node.ok) else evaluate(node.ng)
 
         is ListNode -> when (node.operators.first().text) {
-            ":" -> FluoriteTuple(node.nodes.map { evaluate(it) })
+            ":" -> FluoriteArray(node.nodes.map { evaluate(it) })
 
             "," -> {
                 node.nodes.map {

@@ -12,11 +12,6 @@ class FluoriteArray(val values: List<Any?>) {
 }
 
 
-class FluoriteTuple(val values: List<Any?>) {
-    override fun toString() = values.joinToString(":") { "$it" }
-}
-
-
 class FluoriteObject(val map: Map<String, Any?>) {
     override fun toString() = "{${map.entries.joinToString(",") { "${it.key}:${it.value}" }}}"
 }
