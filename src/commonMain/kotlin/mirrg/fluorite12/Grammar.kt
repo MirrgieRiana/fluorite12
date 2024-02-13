@@ -93,13 +93,13 @@ class Fluorite12Grammar : Grammar<Node>() {
     val curly: Parser<Node> by lCurly * -b * parser { expression } * -b * rCurly map ::bracketNode
     val factor: Parser<Node> by identifier or integer or string or round or square or curly
 
-    val call: Parser<Node> by factor * zeroOrMore(
+    val right: Parser<Node> by factor * zeroOrMore(
         -s * lRound * -b * parser { expression } * -b * rRound or
             -s * lSquare * -b * parser { expression } * -b * rSquare or
             -s * lCurly * -b * parser { expression } * -b * rCurly
     ) map ::rightBracketNode
 
-    val mul: Parser<Node> by leftAssociative(call, -s * (+asterisk or +slash) * -b, ::infixNode)
+    val mul: Parser<Node> by leftAssociative(right, -s * (+asterisk or +slash) * -b, ::infixNode)
     val add: Parser<Node> by leftAssociative(mul, -s * (+plus or +minus) * -b, ::infixNode)
     val range: Parser<Node> by leftAssociative(add, -s * +(period * period) * -b, ::infixNode)
     val comparison: Parser<Node> by range * zeroOrMore(-s * (+(equal * equal) or +(exclamation * equal) or +greater or +(greater * equal) or +less or +(less * equal)) * -b * range) map {
