@@ -115,6 +115,8 @@ class Fluorite12Grammar : Grammar<Node>() {
     val rCurly by literalToken("}")
     val tilde by literalToken("~")
 
+    val other by regexToken(""".""".toRegex()) // \r\n\t以外の制御文字、DEL、すべての2バイト文字、サロゲートペアの片方
+
 
     val s by zeroOrMore(space or tab)
     val b by zeroOrMore(space or tab) * zeroOrMore(br * zeroOrMore(space or tab))
@@ -129,13 +131,14 @@ class Fluorite12Grammar : Grammar<Node>() {
     val integer: Parser<Node> by oneOrMore(zero or nonZero) map { NumberNode(it, it.joinToString("") { t -> t.text }) }
 
     val stringCharacter by OrCombinator(
-        uAlphabet map { Pair(it, it.text) },
-        lAlphabet map { Pair(it, it.text) },
-        zero map { Pair(it, it.text) },
-        nonZero map { Pair(it, it.text) },
+        -NotParser(dQuote or dollar or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
+        bSlash * (dQuote or dollar or bSlash) map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた記号
+        bSlash * (lT) map { Pair(listOf(it.t1, it.t2), "\t") },
+        bSlash * (lR) map { Pair(listOf(it.t1, it.t2), "\r") },
+        bSlash * (lN) map { Pair(listOf(it.t1, it.t2), "\n") },
     )
     val stringContent by OrCombinator(
-        oneOrMore(stringCharacter) map { LiteralStringContent(it.map { t -> t.first }, it.joinToString("") { t -> t.second }) },
+        oneOrMore(stringCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) },
         dollar * parser { factor } map { NodeStringContent(it.t1, it.t2) },
     )
     val string by dQuote * zeroOrMore(stringContent) * dQuote map { StringNode(it.t1, it.t3, it.t2) }
