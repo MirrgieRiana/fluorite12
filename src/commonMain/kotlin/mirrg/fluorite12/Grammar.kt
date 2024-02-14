@@ -51,7 +51,32 @@ class Fluorite12Grammar : Grammar<Node>() {
     val question by literalToken("?")
 
     val atSign by literalToken("@")
-    val lAlphabet by regexToken("""[A-Z]""".toRegex())
+    val uA by literalToken("A")
+    val uB by literalToken("B")
+    val uC by literalToken("C")
+    val uD by literalToken("D")
+    val uE by literalToken("E")
+    val uF by literalToken("F")
+    val uG by literalToken("G")
+    val uH by literalToken("H")
+    val uI by literalToken("I")
+    val uJ by literalToken("J")
+    val uK by literalToken("K")
+    val uL by literalToken("L")
+    val uM by literalToken("M")
+    val uN by literalToken("N")
+    val uO by literalToken("O")
+    val uP by literalToken("P")
+    val uQ by literalToken("Q")
+    val uR by literalToken("R")
+    val uS by literalToken("S")
+    val uT by literalToken("T")
+    val uU by literalToken("U")
+    val uV by literalToken("V")
+    val uW by literalToken("W")
+    val uX by literalToken("X")
+    val uY by literalToken("Y")
+    val uZ by literalToken("Z")
     val lSquare by literalToken("[")
     val bSlash by literalToken("\\")
     val rSquare by literalToken("]")
@@ -59,7 +84,32 @@ class Fluorite12Grammar : Grammar<Node>() {
     val underscore by regexToken("_")
 
     val bQuote by literalToken("`")
-    val sAlphabet by regexToken("""[a-z]""".toRegex())
+    val lA by literalToken("a")
+    val lB by literalToken("b")
+    val lC by literalToken("c")
+    val lD by literalToken("d")
+    val lE by literalToken("e")
+    val lF by literalToken("f")
+    val lG by literalToken("g")
+    val lH by literalToken("h")
+    val lI by literalToken("i")
+    val lJ by literalToken("j")
+    val lK by literalToken("k")
+    val lL by literalToken("l")
+    val lM by literalToken("m")
+    val lN by literalToken("n")
+    val lO by literalToken("o")
+    val lP by literalToken("p")
+    val lQ by literalToken("q")
+    val lR by literalToken("r")
+    val lS by literalToken("s")
+    val lT by literalToken("t")
+    val lU by literalToken("u")
+    val lV by literalToken("v")
+    val lW by literalToken("w")
+    val lX by literalToken("x")
+    val lY by literalToken("y")
+    val lZ by literalToken("z")
     val lCurly by literalToken("{")
     val pipe by literalToken("|")
     val rCurly by literalToken("}")
@@ -68,8 +118,10 @@ class Fluorite12Grammar : Grammar<Node>() {
 
     val s by zeroOrMore(space or tab)
     val b by zeroOrMore(space or tab) * zeroOrMore(br * zeroOrMore(space or tab))
+    val uAlphabet by uA or uB or uC or uD or uE or uF or uG or uH or uI or uJ or uK or uL or uM or uN or uO or uP or uQ or uR or uS or uT or uU or uV or uW or uX or uY or uZ
+    val lAlphabet by lA or lB or lC or lD or lE or lF or lG or lH or lI or lJ or lK or lL or lM or lN or lO or lP or lQ or lR or lS or lT or lU or lV or lW or lX or lY or lZ
 
-    val identifier: Parser<Node> by (lAlphabet or sAlphabet or underscore) * zeroOrMore(lAlphabet or sAlphabet or underscore or zero or nonZero) map {
+    val identifier: Parser<Node> by (uAlphabet or lAlphabet or underscore) * zeroOrMore(uAlphabet or lAlphabet or underscore or zero or nonZero) map {
         val tokens = listOf(it.t1, *it.t2.toTypedArray())
         IdentifierNode(tokens, tokens.joinToString("") { t -> t.text })
     }
@@ -77,8 +129,8 @@ class Fluorite12Grammar : Grammar<Node>() {
     val integer: Parser<Node> by oneOrMore(zero or nonZero) map { NumberNode(it, it.joinToString("") { t -> t.text }) }
 
     val stringCharacter by OrCombinator(
+        uAlphabet map { Pair(it, it.text) },
         lAlphabet map { Pair(it, it.text) },
-        sAlphabet map { Pair(it, it.text) },
         zero map { Pair(it, it.text) },
         nonZero map { Pair(it, it.text) },
     )
