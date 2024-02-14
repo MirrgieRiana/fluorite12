@@ -170,7 +170,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val range: Parser<Node> by leftAssociative(add, -s * +(period * period) * -b, ::infixNode)
     val comparison: Parser<Node> by range * zeroOrMore(-s * (+(equal * equal) or +(exclamation * equal) or +greater or +(greater * equal) or +less or +(less * equal)) * -b * range) map {
         if (it.t2.isNotEmpty()) {
-            ComparisonNode(listOf(it.t1, *it.t2.map { t -> t.t2 }.toTypedArray()), it.t2.map { it.t1 })
+            ComparisonNode(listOf(it.t1, *it.t2.map { t -> t.t2 }.toTypedArray()), it.t2.map { t -> t.t1 })
         } else {
             it.t1
         }
