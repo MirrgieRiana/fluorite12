@@ -7,8 +7,8 @@ class IdentifierNode(val tokens: List<TokenMatch>, val string: String) : Node()
 sealed class NumberNode(val tokens: List<TokenMatch>, val string: String) : Node()
 class IntegerNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens, string)
 class FloatNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens, string)
-class RawStringNode(val left: TokenMatch, val right: TokenMatch, val node: LiteralStringContent) : Node()
-class TemplateStringNode(val left: TokenMatch, val right: TokenMatch, val nodes: List<StringContent>) : Node()
+class RawStringNode(val left: TokenMatch, val node: LiteralStringContent, val right: TokenMatch) : Node()
+class TemplateStringNode(val left: TokenMatch, val nodes: List<StringContent>, val right: TokenMatch) : Node()
 class BracketNode(val left: TokenMatch, val main: Node, val right: TokenMatch) : Node()
 class RightBracketNode(val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()
 class LeftNode(val left: List<TokenMatch>, val right: Node) : Node()
@@ -20,4 +20,4 @@ class SemicolonNode(val nodes: List<Node>, val operators: List<TokenMatch>) : No
 
 sealed class StringContent
 class LiteralStringContent(val tokens: List<TokenMatch>, val string: String) : StringContent()
-class NodeStringContent(val token: TokenMatch, val main: Node) : StringContent()
+class NodeStringContent(val left: List<TokenMatch>, val main: Node, val right: List<TokenMatch>) : StringContent()
