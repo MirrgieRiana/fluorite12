@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.promise
 import mirrg.fluorite12.Fluorite12Grammar
 import mirrg.fluorite12.FluoriteStream
+import mirrg.fluorite12.FluoriteValue
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.evaluate
@@ -20,7 +21,7 @@ fun evaluate(node: Node) = GlobalScope.promise { Frame().evaluate(node) }
 
 @Suppress("unused")
 @JsName("log")
-fun log(value: Any?) = GlobalScope.promise {
+fun log(value: FluoriteValue) = GlobalScope.promise {
     when (value) {
         is FluoriteStream -> {
             value.flow.collect {
@@ -36,8 +37,8 @@ fun log(value: Any?) = GlobalScope.promise {
 
 @Suppress("unused")
 @JsName("stringify")
-fun stringify(value: Any?): Promise<String> = GlobalScope.promise {
-    suspend fun f(value: Any?): String = when (value) {
+fun stringify(value: FluoriteValue): Promise<String> = GlobalScope.promise {
+    suspend fun f(value: FluoriteValue): String = when (value) {
         is FluoriteStream -> value.flow.map { f(it) }.toList().joinToString("\n")
         else -> value.toString()
     }

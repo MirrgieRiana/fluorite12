@@ -12,48 +12,52 @@ import kotlin.test.assertTrue
 class Fluorite12Test {
     @Test
     fun stringTest() = runTest {
-        assertEquals("abcABC123", run(""" "abcABC123" """) as String) // " で囲うと文字列になる
+        assertEquals("abcABC123", run(""" "abcABC123" """).string) // " で囲うと文字列になる
 
         // ASCII文字のテスト
-        assertEquals(" ! # %&'()*+,-./", run(""" " ! # %&'()*+,-./" """) as String) // " $ はエスケープが必要
-        assertEquals("0123456789:;<=>?", run(""" "0123456789:;<=>?" """) as String)
-        assertEquals("@ABCDEFGHIJKLMNO", run(""" "@ABCDEFGHIJKLMNO" """) as String)
-        assertEquals("PQRSTUVWXYZ[ ]^_", run(""" "PQRSTUVWXYZ[ ]^_" """) as String) // \ はエスケープが必要
-        assertEquals("`abcdefghijklmno", run(""" "`abcdefghijklmno" """) as String)
-        assertEquals("pqrstuvwxyz{|}~ ", run(""" "pqrstuvwxyz{|}~ " """) as String)
+        assertEquals(" ! # %&'()*+,-./", run(""" " ! # %&'()*+,-./" """).string) // " $ はエスケープが必要
+        assertEquals("0123456789:;<=>?", run(""" "0123456789:;<=>?" """).string)
+        assertEquals("@ABCDEFGHIJKLMNO", run(""" "@ABCDEFGHIJKLMNO" """).string)
+        assertEquals("PQRSTUVWXYZ[ ]^_", run(""" "PQRSTUVWXYZ[ ]^_" """).string) // \ はエスケープが必要
+        assertEquals("`abcdefghijklmno", run(""" "`abcdefghijklmno" """).string)
+        assertEquals("pqrstuvwxyz{|}~ ", run(""" "pqrstuvwxyz{|}~ " """).string)
 
-        assertEquals("あ", run(""" "あ" """) as String) // マルチバイト文字
-        assertEquals("㎡", run(""" "㎡" """) as String) // MS932
-        assertEquals("🍰", run(""" "🍰" """) as String) // サロゲートペア
+        assertEquals("あ", run(""" "あ" """).string) // マルチバイト文字
+        assertEquals("㎡", run(""" "㎡" """).string) // MS932
+        assertEquals("🍰", run(""" "🍰" """).string) // サロゲートペア
 
-        assertEquals(""" " $ \ """, run(""" " \" \$ \\ " """) as String) // エスケープが必要な記号
-        assertEquals(" \r \n \t ", run(""" " \r \n \t " """) as String) // 制御文字のエスケープ
+        assertEquals(""" " $ \ """, run(""" " \" \$ \\ " """).string) // エスケープが必要な記号
+        assertEquals(" \r \n \t ", run(""" " \r \n \t " """).string) // 制御文字のエスケープ
 
-        assertEquals("10", run(""" "$10" """) as String) // 数値の埋め込み
-        assertEquals("10", run(""" (a -> "${'$'}a")(10) """) as String) // 変数の埋め込み
-        assertEquals("10", run(""" "$(1 < 2 ? 10 : 100)" """) as String) // 式の埋め込み
+        assertEquals("10", run(""" "$10" """).string) // 数値の埋め込み
+        assertEquals("10", run(""" (a -> "${'$'}a")(10) """).string) // 変数の埋め込み
+        assertEquals("10", run(""" "$(1 < 2 ? 10 : 100)" """).string) // 式の埋め込み
     }
 
     @Test
     fun objectTest() = runTest {
-        assertEquals("{a:1}", (run(""" {"a": 1} """) as FluoriteObject).toString()) // { } でオブジェクトを作れる
-        assertEquals("{a:1}", (run("{a: 1}") as FluoriteObject).toString()) // キーの " は省略できる
-        assertEquals("{1:2}", (run("{1: 2}") as FluoriteObject).toString()) // キーは数値でもよい
-        assertEquals("{1:2}", (run("1 | a => {(a): 2}") as FluoriteObject).toString()) // キーに ( ) を付けると変数を参照できる
-        assertEquals("{a:1,b:2}", (run("{a: 1; b: 2}") as FluoriteObject).toString()) // エントリーは ; で区切ることができる
-        assertEquals("{a:1,b:2}", (run("{a: 1, b: 2}") as FluoriteObject).toString()) // エントリーのストリームでもよい
-        assertEquals("{1:2,2:4,3:6}", (run("{1 .. 3 | a => (a): a * 2}") as FluoriteObject).toString()) // エントリー列を返す式でもよい
+        assertEquals("{a:1}", run(""" {"a": 1} """).obj) // { } でオブジェクトを作れる
+        assertEquals("{a:1}", run("{a: 1}").obj) // キーの " は省略できる
+        assertEquals("{1:2}", run("{1: 2}").obj) // キーは数値でもよい
+        assertEquals("{1:2}", run("1 | a => {(a): 2}").obj) // キーに ( ) を付けると変数を参照できる
+        assertEquals("{a:1,b:2}", run("{a: 1; b: 2}").obj) // エントリーは ; で区切ることができる
+        assertEquals("{a:1,b:2}", run("{a: 1, b: 2}").obj) // エントリーのストリームでもよい
+        assertEquals("{1:2,2:4,3:6}", run("{1 .. 3 | a => (a): a * 2}").obj) // エントリー列を返す式でもよい
     }
 
     @Test
     fun test() = runTest {
         assertTrue(run("a->a") is FluoriteFunction)
-        assertEquals(5, run("(a->a)(5)"))
-        assertEquals(12, run("(a,b->a*b)(3;4)") as Int)
+        assertEquals(5, run("(a->a)(5)").int)
+        assertEquals(12, run("(a,b->a*b)(3;4)").int)
     }
 }
 
-private suspend fun run(src: String): Any? {
+private suspend fun run(src: String): FluoriteValue {
     val result = Fluorite12Grammar().tryParseToEnd(src) as Parsed
     return Frame().evaluate(result.value)
 }
+
+private val FluoriteValue.int get() = (this as FluoriteInt).value
+private val FluoriteValue.string get() = (this as FluoriteString).value
+private val FluoriteValue.obj get() = (this as FluoriteObject).toString()

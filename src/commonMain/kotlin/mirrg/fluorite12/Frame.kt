@@ -3,19 +3,18 @@ package mirrg.fluorite12
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 
 class Frame(val parent: Frame? = null) {
-    val variables = mutableMapOf<String, Any?>()
+    val variables = mutableMapOf<String, FluoriteValue>()
 }
 
-suspend fun Frame.evaluate(node: Node): Any? {
+suspend fun Frame.evaluate(node: Node): FluoriteValue {
     return when (node) {
         is IdentifierNode -> {
             val variable = node.string
-            fun f(frame: Frame): Any? {
-                return if (variable in frame.variables) {
-                    frame.variables[variable]
-                } else if (frame.parent != null) {
+            fun f(frame: Frame): FluoriteValue {
+                return frame.variables[variable] ?: if (frame.parent != null) {
                     f(frame.parent)
                 } else {
                     throw IllegalArgumentException("Unknown variable: $variable")
@@ -24,7 +23,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
             f(this)
         }
 
-        is NumberNode -> node.string.toInt()
+        is NumberNode -> FluoriteInt(node.string.toInt())
 
         is StringNode -> {
             val sb = StringBuilder()
@@ -34,7 +33,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                     is NodeStringContent -> sb.append("${evaluate(it.main)}")
                 }
             }
-            "$sb"
+            FluoriteString("$sb")
         }
 
         is BracketNode -> when (node.left.text) {
@@ -46,7 +45,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 } else {
                     listOf(node.main)
                 }
-                val values = mutableListOf<Any?>()
+                val values = mutableListOf<FluoriteValue>()
                 nodes.forEach {
                     val value = evaluate(it)
                     if (value is FluoriteStream) {
@@ -66,7 +65,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 } else {
                     listOf(node.main)
                 }
-                val values = mutableListOf<Pair<String, Any?>>()
+                val values = mutableListOf<Pair<String, FluoriteValue>>()
                 nodes.forEach {
                     val value = evaluate(it)
                     if (value is FluoriteStream) {
@@ -104,34 +103,34 @@ suspend fun Frame.evaluate(node: Node): Any? {
         }
 
         is LeftNode -> {
-            fun Any?.toNumber() = when (this) {
-                is Int -> this.toDouble()
-                is Double -> this
-                is String -> this.toDouble()
-                is Boolean -> if (this) 1.0 else 0.0
+            fun FluoriteValue.toNumber() = when (this) {
+                is FluoriteInt -> this
+                is FluoriteDouble -> this
+                is FluoriteString -> if ("." in this.value) FluoriteDouble(this.value.toDouble()) else FluoriteInt(this.value.toInt())
+                is FluoriteBoolean -> FluoriteInt(if (this.value) 1 else 0)
                 else -> throw IllegalArgumentException("Can not convert to number: $this")
             }
 
-            fun Any?.toBoolean() = when (this) {
-                is Int -> this != 0
-                is Double -> this != 0.0
-                is String -> this != ""
-                is Boolean -> this
+            fun FluoriteValue.toBoolean() = when (this) {
+                is FluoriteInt -> FluoriteBoolean.of(this.value != 0)
+                is FluoriteDouble -> FluoriteBoolean.of(this.value != 0.0)
+                is FluoriteString -> FluoriteBoolean.of(this.value != "")
+                is FluoriteBoolean -> this
                 else -> throw IllegalArgumentException("Can not convert to boolean: $this")
             }
 
-            fun Any?.toFluoriteString() = "$this"
-            fun Any?.getLength() = when (this) {
-                is String -> this.length
-                is FluoriteArray -> this.values.size
-                is FluoriteObject -> this.map.size
+            fun FluoriteValue.toFluoriteString() = FluoriteString("$this")
+            fun FluoriteValue.getLength() = when (this) {
+                is FluoriteString -> FluoriteInt(this.value.length)
+                is FluoriteArray -> FluoriteInt(this.values.size)
+                is FluoriteObject -> FluoriteInt(this.map.size)
                 else -> throw IllegalArgumentException("Can not calculate length: $this")
             }
             when (node.left.text) {
                 "+" -> evaluate(node.right).toNumber()
-                "-" -> -evaluate(node.right).toNumber()
+                "-" -> evaluate(node.right).toNumber().negate()
                 "?" -> evaluate(node.right).toBoolean()
-                "!" -> !evaluate(node.right).toBoolean()
+                "!" -> evaluate(node.right).toBoolean().not()
                 "&" -> evaluate(node.right).toFluoriteString()
                 "$#" -> evaluate(node.right).getLength()
                 else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} B")
@@ -139,35 +138,75 @@ suspend fun Frame.evaluate(node: Node): Any? {
         }
 
         is InfixNode -> when (node.operator.text) {
-            "+" -> {
-                val left = evaluate(node.left)
-                val right = evaluate(node.right)
-                if (left is Int && right is Int) left + right else (left as Number).toDouble() + (right as Number).toDouble()
+            "+" -> when (val left = evaluate(node.left)) {
+                is FluoriteInt -> when (val right = evaluate(node.right)) {
+                    is FluoriteInt -> FluoriteInt(left.value + right.value)
+                    is FluoriteDouble -> FluoriteDouble(left.value + right.value)
+                    else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                }
+
+                is FluoriteDouble -> when (val right = evaluate(node.right)) {
+                    is FluoriteInt -> FluoriteDouble(left.value + right.value)
+                    is FluoriteDouble -> FluoriteDouble(left.value + right.value)
+                    else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                }
+
+                else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
             }
 
-            "-" -> {
-                val left = evaluate(node.left)
-                val right = evaluate(node.right)
-                if (left is Int && right is Int) left - right else (left as Number).toDouble() - (right as Number).toDouble()
+            "-" -> when (val left = evaluate(node.left)) {
+                is FluoriteInt -> when (val right = evaluate(node.right)) {
+                    is FluoriteInt -> FluoriteInt(left.value - right.value)
+                    is FluoriteDouble -> FluoriteDouble(left.value - right.value)
+                    else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                }
+
+                is FluoriteDouble -> when (val right = evaluate(node.right)) {
+                    is FluoriteInt -> FluoriteDouble(left.value - right.value)
+                    is FluoriteDouble -> FluoriteDouble(left.value - right.value)
+                    else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                }
+
+                else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
             }
 
-            "*" -> {
-                val left = evaluate(node.left)
-                val right = evaluate(node.right)
-                if (left is Int && right is Int) left * right else (left as Number).toDouble() * (right as Number).toDouble()
+            "*" -> when (val left = evaluate(node.left)) {
+                is FluoriteInt -> when (val right = evaluate(node.right)) {
+                    is FluoriteInt -> FluoriteInt(left.value * right.value)
+                    is FluoriteDouble -> FluoriteDouble(left.value * right.value)
+                    else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                }
+
+                is FluoriteDouble -> when (val right = evaluate(node.right)) {
+                    is FluoriteInt -> FluoriteDouble(left.value * right.value)
+                    is FluoriteDouble -> FluoriteDouble(left.value * right.value)
+                    else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                }
+
+                else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
             }
 
-            "/" -> {
-                val left = evaluate(node.left)
-                val right = evaluate(node.right)
-                if (left is Int && right is Int) left / right else (left as Number).toDouble() / (right as Number).toDouble()
+            "/" -> when (val left = evaluate(node.left)) {
+                is FluoriteInt -> when (val right = evaluate(node.right)) {
+                    is FluoriteInt -> FluoriteInt(left.value / right.value)
+                    is FluoriteDouble -> FluoriteDouble(left.value / right.value)
+                    else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                }
+
+                is FluoriteDouble -> when (val right = evaluate(node.right)) {
+                    is FluoriteInt -> FluoriteDouble(left.value / right.value)
+                    is FluoriteDouble -> FluoriteDouble(left.value / right.value)
+                    else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                }
+
+                else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
             }
 
-            ".." -> FluoriteStream(((evaluate(node.left) as Number).toInt()..(evaluate(node.right) as Number).toInt()).asFlow())
+            ".." -> FluoriteStream(((evaluate(node.left) as FluoriteInt).value..(evaluate(node.right) as FluoriteInt).value).asFlow().map { FluoriteInt(it) })
 
             ":" -> {
                 val key = when (node.left) {
-                    is IdentifierNode -> node.left.string
+                    is IdentifierNode -> FluoriteString(node.left.string)
                     else -> evaluate(node.left)
                 }
                 FluoriteArray(listOf(key, evaluate(node.right)))
@@ -194,7 +233,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                     val frame = Frame(this)
                     frame.variables["__"] = FluoriteArray(arguments)
                     variables.forEachIndexed { i, it ->
-                        frame.variables[it] = arguments.getOrNull(i)
+                        frame.variables[it] = arguments.getOrNull(i) ?: FluoriteNull
                     }
                     frame.evaluate(node.right)
                 }
@@ -208,7 +247,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 } else {
                     Pair("_", node.right)
                 }
-                suspend fun f(value: Any?): Any? {
+                suspend fun f(value: FluoriteValue): FluoriteValue {
                     val frame = Frame(this)
                     frame.variables[variable] = value
                     return frame.evaluate(body)
@@ -233,7 +272,7 @@ suspend fun Frame.evaluate(node: Node): Any? {
         }
 
         is ComparisonNode -> run {
-            val values = arrayOfNulls<Any?>(node.nodes.size)
+            val values = arrayOfNulls<FluoriteValue>(node.nodes.size)
             values[0] = evaluate(node.nodes[0])
             node.operators.forEachIndexed { i, operator ->
                 val leftValue = values[i]
@@ -242,18 +281,18 @@ suspend fun Frame.evaluate(node: Node): Any? {
                 val result = when (operator.text) {
                     "==" -> leftValue == rightValue
                     "!=" -> leftValue != rightValue
-                    ">" -> (leftValue as Number).toDouble() > (rightValue as Number).toDouble()
-                    "<" -> (leftValue as Number).toDouble() < (rightValue as Number).toDouble()
-                    ">=" -> (leftValue as Number).toDouble() >= (rightValue as Number).toDouble()
-                    "<=" -> (leftValue as Number).toDouble() <= (rightValue as Number).toDouble()
+                    ">" -> (leftValue as FluoriteNumber).value.toDouble() > (rightValue as FluoriteNumber).value.toDouble()
+                    "<" -> (leftValue as FluoriteNumber).value.toDouble() < (rightValue as FluoriteNumber).value.toDouble()
+                    ">=" -> (leftValue as FluoriteNumber).value.toDouble() >= (rightValue as FluoriteNumber).value.toDouble()
+                    "<=" -> (leftValue as FluoriteNumber).value.toDouble() <= (rightValue as FluoriteNumber).value.toDouble()
                     else -> throw IllegalArgumentException("Unknown operator: A ${operator.text} B")
                 }
-                if (!result) return@run false
+                if (!result) return@run FluoriteBoolean.FALSE
             }
-            true
+            FluoriteBoolean.TRUE
         }
 
-        is ConditionNode -> if (evaluate(node.condition) as Boolean) evaluate(node.ok) else evaluate(node.ng)
+        is ConditionNode -> if ((evaluate(node.condition) as FluoriteBoolean).value) evaluate(node.ok) else evaluate(node.ng)
 
         is ListNode -> when (node.operators.first().text) {
             "," -> {
