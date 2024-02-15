@@ -176,6 +176,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         -s * lRound * -b * parser { expression } * -b * rRound map { { main -> RightBracketNode(main, it.t1, it.t2, it.t3) } },
         -s * lSquare * -b * parser { expression } * -b * rSquare map { { main -> RightBracketNode(main, it.t1, it.t2, it.t3) } },
         -s * lCurly * -b * parser { expression } * -b * rCurly map { { main -> RightBracketNode(main, it.t1, it.t2, it.t3) } },
+        -b * period * -b * factor map { { main -> InfixNode(main, listOf(it.t1), it.t2) } },
     )
     val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
     val leftOperator: Parser<(Node) -> Node> by OrCombinator(

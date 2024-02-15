@@ -161,6 +161,18 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
         }
 
         is InfixNode -> when (node.operator.text) {
+            "." -> when (val left = evaluate(node.left)) {
+                is FluoriteString -> left.value.getOrNull((evaluate(node.right) as FluoriteInt).value)?.toString()?.let { FluoriteString(it) } ?: FluoriteNull
+                is FluoriteArray -> left.values.getOrNull((evaluate(node.right) as FluoriteInt).value) ?: FluoriteNull
+
+                is FluoriteObject -> {
+                    val key = if (node.right is IdentifierNode) node.right.string else evaluate(node.right).toString()
+                    left.map[key] ?: FluoriteNull
+                }
+
+                else -> throw IllegalArgumentException("Unknown operator: ${left::class} . ${node.right::class}")
+            }
+
             "+" -> when (val left = evaluate(node.left)) {
                 is FluoriteInt -> when (val right = evaluate(node.right)) {
                     is FluoriteInt -> FluoriteInt(left.value + right.value)
