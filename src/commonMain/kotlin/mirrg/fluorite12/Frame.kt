@@ -165,6 +165,14 @@ suspend fun Frame.evaluate(node: Node): Any? {
 
             ".." -> FluoriteStream(((evaluate(node.left) as Number).toInt()..(evaluate(node.right) as Number).toInt()).asFlow())
 
+            ":" -> {
+                val key = when (node.left) {
+                    is IdentifierNode -> node.left.string
+                    else -> evaluate(node.left)
+                }
+                FluoriteArray(listOf(key, evaluate(node.right)))
+            }
+
             "->" -> {
                 val commasNode = if (node.left is BracketNode && node.left.left.text == "(") {
                     node.left.main
@@ -248,8 +256,6 @@ suspend fun Frame.evaluate(node: Node): Any? {
         is ConditionNode -> if (evaluate(node.condition) as Boolean) evaluate(node.ok) else evaluate(node.ng)
 
         is ListNode -> when (node.operators.first().text) {
-            ":" -> FluoriteArray(node.nodes.map { evaluate(it) })
-
             "," -> {
                 node.nodes.map {
                     val value = evaluate(it)
