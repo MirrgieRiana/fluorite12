@@ -26,6 +26,25 @@ class Fluorite12Test {
     }
 
     @Test
+    fun rawStringTest() = runTest {
+        assertEquals("abcABC123", run(" 'abcABC123' ").string) // ' で囲うと文字列になる
+
+        // ASCII文字のテスト
+        assertEquals(""" !"#$%& ()*+,-./""", run(""" ' !"#$%& ()*+,-./' """).string) // ' はエスケープが必要
+        assertEquals("""0123456789:;<=>?""", run(""" '0123456789:;<=>?' """).string)
+        assertEquals("""@ABCDEFGHIJKLMNO""", run(""" '@ABCDEFGHIJKLMNO' """).string)
+        assertEquals("""PQRSTUVWXYZ[\]^_""", run(""" 'PQRSTUVWXYZ[\]^_' """).string) // \ すらもエスケープ不要
+        assertEquals("""`abcdefghijklmno""", run(""" '`abcdefghijklmno' """).string)
+        assertEquals("""pqrstuvwxyz{|}~ """, run(""" 'pqrstuvwxyz{|}~ ' """).string)
+
+        assertEquals("あ", run(" 'あ' ").string) // マルチバイト文字
+        assertEquals("㎡", run(" '㎡' ").string) // MS932
+        assertEquals("🍰", run(" '🍰' ").string) // サロゲートペア
+
+        assertEquals(" ' ", run(" ' '' ' ").string) // '' が ' になる
+    }
+
+    @Test
     fun stringTest() = runTest {
         assertEquals("abcABC123", run(""" "abcABC123" """).string) // " で囲うと文字列になる
 
