@@ -172,12 +172,19 @@ class Fluorite12Grammar : Grammar<Node>() {
     val curly: Parser<Node> by lCurly * -b * parser { expression } * -b * rCurly map ::bracketNode
     val factor: Parser<Node> by identifier or float or integer or rawString or templateString or embeddedString or round or square or curly
 
-    val right: Parser<Node> by factor * zeroOrMore(
-        -s * lRound * -b * parser { expression } * -b * rRound or
-            -s * lSquare * -b * parser { expression } * -b * rSquare or
-            -s * lCurly * -b * parser { expression } * -b * rCurly
-    ) map ::rightBracketNode
-    val leftOperators: Parser<List<TokenMatch>> by OrCombinator(
+    val rightOperator by OrCombinator(
+        -s * lRound * -b * parser { expression } * -b * rRound,
+        -s * lSquare * -b * parser { expression } * -b * rSquare,
+        -s * lCurly * -b * parser { expression } * -b * rCurly,
+    )
+    val right: Parser<Node> by factor * zeroOrMore(rightOperator) map {
+        var main = it.t1
+        it.t2.forEach { (left, argument, right) ->
+            main = RightBracketNode(main, left, argument, right)
+        }
+        main
+    }
+    val leftOperator: Parser<List<TokenMatch>> by OrCombinator(
         +plus,
         +minus,
         +question,
@@ -185,7 +192,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +ampersand,
         +(dollar * sharp),
     )
-    val left: Parser<Node> by zeroOrMore(leftOperators) * right map {
+    val left: Parser<Node> by zeroOrMore(leftOperator) * right map {
         it.t1.foldRight(it.t2) { t, node -> LeftNode(t, node) }
     }
 
@@ -219,14 +226,6 @@ private operator fun <T> Parser<T>.unaryPlus() = this map { listOf(it) }
 private operator fun <T> Parser<Tuple2<T, T>>.unaryPlus() = this map { listOf(it.t1, it.t2) }
 
 private fun bracketNode(it: Tuple3<TokenMatch, Node, TokenMatch>) = BracketNode(it.t1, it.t2, it.t3)
-
-private fun rightBracketNode(it: Tuple2<Node, List<Tuple3<TokenMatch, Node, TokenMatch>>>): Node {
-    var main = it.t1
-    it.t2.forEach { (left, argument, right) ->
-        main = RightBracketNode(main, left, argument, right)
-    }
-    return main
-}
 
 private fun infixNode(left: Node, operator: List<TokenMatch>, right: Node) = InfixNode(left, operator, right)
 
