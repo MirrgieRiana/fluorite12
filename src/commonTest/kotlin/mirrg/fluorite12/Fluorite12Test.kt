@@ -11,6 +11,13 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class Fluorite12Test {
     @Test
+    fun builtInConstantTest() = runTest {
+        assertEquals(FluoriteNull, run("NULL"))
+        assertEquals(true, run("TRUE").boolean)
+        assertEquals(false, run("FALSE").boolean)
+    }
+
+    @Test
     fun numberTest() = runTest {
         assertEquals(1, run("1").int) // 整数を記述できる
         assertEquals(0, run("0").int) // 0も普通に書ける
@@ -117,5 +124,6 @@ private suspend fun run(src: String): FluoriteValue {
 
 private val FluoriteValue.int get() = (this as FluoriteInt).value
 private val FluoriteValue.double get() = (this as FluoriteDouble).value
+private val FluoriteValue.boolean get() = (this as FluoriteBoolean).value
 private val FluoriteValue.string get() = (this as FluoriteString).value
 private val FluoriteValue.obj get() = (this as FluoriteObject).toString()

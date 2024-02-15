@@ -7,6 +7,14 @@ import kotlinx.coroutines.flow.map
 
 class Frame(val parent: Frame? = null) {
     val variables = mutableMapOf<String, FluoriteValue>()
+
+    init {
+        if (parent == null) {
+            variables["NULL"] = FluoriteNull
+            variables["TRUE"] = FluoriteBoolean.TRUE
+            variables["FALSE"] = FluoriteBoolean.FALSE
+        }
+    }
 }
 
 suspend fun Frame.evaluate(node: Node): FluoriteValue {
