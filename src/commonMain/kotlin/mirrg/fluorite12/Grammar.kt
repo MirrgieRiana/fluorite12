@@ -157,10 +157,20 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val templateString by dQuote * zeroOrMore(templateStringContent) * dQuote map { TemplateStringNode(it.t1, it.t2, it.t3) }
 
+    val embeddedStringCharacter by OrCombinator(
+        -NotParser(less * percent) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
+        less * percent * percent map { Pair(listOf(it.t1, it.t2, it.t3), "<%") }, // <%% で <% になる
+    )
+    val embeddedStringContent by OrCombinator(
+        oneOrMore(embeddedStringCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) },
+        less * percent * equal * -b * parser { expression } * -b * percent * greater map { NodeStringContent(listOf(it.t1, it.t2, it.t3), it.t4, listOf(it.t5, it.t6)) }, // <%= expression %>
+    )
+    val embeddedString by percent * greater * zeroOrMore(embeddedStringContent) * less * percent map { EmbeddedStringNode(listOf(it.t1, it.t2), it.t3, listOf(it.t4, it.t5)) } // %>string<%
+
     val round: Parser<Node> by lRound * -b * parser { expression } * -b * rRound map ::bracketNode
     val square: Parser<Node> by lSquare * -b * parser { expression } * -b * rSquare map ::bracketNode
     val curly: Parser<Node> by lCurly * -b * parser { expression } * -b * rCurly map ::bracketNode
-    val factor: Parser<Node> by identifier or float or integer or rawString or templateString or round or square or curly
+    val factor: Parser<Node> by identifier or float or integer or rawString or templateString or embeddedString or round or square or curly
 
     val right: Parser<Node> by factor * zeroOrMore(
         -s * lRound * -b * parser { expression } * -b * rRound or

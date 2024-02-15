@@ -40,6 +40,17 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             FluoriteString("$sb")
         }
 
+        is EmbeddedStringNode -> {
+            val sb = StringBuilder()
+            node.nodes.forEach {
+                when (it) {
+                    is LiteralStringContent -> sb.append(it.string)
+                    is NodeStringContent -> sb.append("${evaluate(it.main)}")
+                }
+            }
+            FluoriteString("$sb")
+        }
+
         is BracketNode -> when (node.left.text) {
             "(" -> evaluate(node.main)
 

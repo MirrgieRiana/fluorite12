@@ -9,6 +9,7 @@ class IntegerNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens,
 class FloatNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens, string)
 class RawStringNode(val left: TokenMatch, val node: LiteralStringContent, val right: TokenMatch) : Node()
 class TemplateStringNode(val left: TokenMatch, val nodes: List<StringContent>, val right: TokenMatch) : Node()
+class EmbeddedStringNode(val left: List<TokenMatch>, val nodes: List<StringContent>, val right: List<TokenMatch>) : Node()
 class BracketNode(val left: TokenMatch, val main: Node, val right: TokenMatch) : Node()
 class RightBracketNode(val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()
 class LeftNode(val left: List<TokenMatch>, val right: Node) : Node()
