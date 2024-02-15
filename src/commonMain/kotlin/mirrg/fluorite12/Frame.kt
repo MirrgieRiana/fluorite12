@@ -27,7 +27,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
 
         is FloatNode -> FluoriteDouble(node.string.toDouble())
 
-        is StringNode -> {
+        is TemplateStringNode -> {
             val sb = StringBuilder()
             node.nodes.forEach {
                 when (it) {

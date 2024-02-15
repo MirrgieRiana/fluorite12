@@ -137,23 +137,23 @@ class Fluorite12Grammar : Grammar<Node>() {
 
     val integer: Parser<Node> by oneOrMore(zero or nonZero) map { IntegerNode(it, it.joinToString("") { t -> t.text }) }
 
-    val stringCharacter by OrCombinator(
+    val templateStringCharacter by OrCombinator(
         -NotParser(dQuote or dollar or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
         bSlash * (dQuote or dollar or bSlash) map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた記号
         bSlash * (lT) map { Pair(listOf(it.t1, it.t2), "\t") },
         bSlash * (lR) map { Pair(listOf(it.t1, it.t2), "\r") },
         bSlash * (lN) map { Pair(listOf(it.t1, it.t2), "\n") },
     )
-    val stringContent by OrCombinator(
-        oneOrMore(stringCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) },
+    val templateStringContent by OrCombinator(
+        oneOrMore(templateStringCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) },
         dollar * parser { factor } map { NodeStringContent(it.t1, it.t2) },
     )
-    val string by dQuote * zeroOrMore(stringContent) * dQuote map { StringNode(it.t1, it.t3, it.t2) }
+    val templateString by dQuote * zeroOrMore(templateStringContent) * dQuote map { TemplateStringNode(it.t1, it.t3, it.t2) }
 
     val round: Parser<Node> by lRound * -b * parser { expression } * -b * rRound map ::bracketNode
     val square: Parser<Node> by lSquare * -b * parser { expression } * -b * rSquare map ::bracketNode
     val curly: Parser<Node> by lCurly * -b * parser { expression } * -b * rCurly map ::bracketNode
-    val factor: Parser<Node> by identifier or float or integer or string or round or square or curly
+    val factor: Parser<Node> by identifier or float or integer or templateString or round or square or curly
 
     val right: Parser<Node> by factor * zeroOrMore(
         -s * lRound * -b * parser { expression } * -b * rRound or
