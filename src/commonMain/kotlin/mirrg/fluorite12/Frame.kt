@@ -139,10 +139,30 @@ suspend fun Frame.evaluate(node: Node): Any? {
         }
 
         is InfixNode -> when (node.operator.text) {
-            "+" -> (evaluate(node.left) as Number).toDouble() + (evaluate(node.right) as Number).toDouble()
-            "-" -> (evaluate(node.left) as Number).toDouble() - (evaluate(node.right) as Number).toDouble()
-            "*" -> (evaluate(node.left) as Number).toDouble() * (evaluate(node.right) as Number).toDouble()
-            "/" -> (evaluate(node.left) as Number).toDouble() / (evaluate(node.right) as Number).toDouble()
+            "+" -> {
+                val left = evaluate(node.left)
+                val right = evaluate(node.right)
+                if (left is Int && right is Int) left + right else (left as Number).toDouble() + (right as Number).toDouble()
+            }
+
+            "-" -> {
+                val left = evaluate(node.left)
+                val right = evaluate(node.right)
+                if (left is Int && right is Int) left - right else (left as Number).toDouble() - (right as Number).toDouble()
+            }
+
+            "*" -> {
+                val left = evaluate(node.left)
+                val right = evaluate(node.right)
+                if (left is Int && right is Int) left * right else (left as Number).toDouble() * (right as Number).toDouble()
+            }
+
+            "/" -> {
+                val left = evaluate(node.left)
+                val right = evaluate(node.right)
+                if (left is Int && right is Int) left / right else (left as Number).toDouble() / (right as Number).toDouble()
+            }
+
             ".." -> FluoriteStream(((evaluate(node.left) as Number).toInt()..(evaluate(node.right) as Number).toInt()).asFlow())
 
             "->" -> {

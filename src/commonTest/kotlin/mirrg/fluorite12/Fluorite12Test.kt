@@ -38,7 +38,7 @@ class Fluorite12Test {
     fun test() = runTest {
         assertTrue(run("a->a") is FluoriteFunction)
         assertEquals(5, run("(a->a)(5)"))
-        assertEquals(12.0, run("(a,b->a*b)(3;4)") as Double, 0.01)
+        assertEquals(12, run("(a,b->a*b)(3;4)") as Int)
     }
 }
 
