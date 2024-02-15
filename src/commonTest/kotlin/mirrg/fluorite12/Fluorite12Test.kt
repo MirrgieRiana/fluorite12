@@ -35,6 +35,17 @@ class Fluorite12Test {
     }
 
     @Test
+    fun objectTest() = runTest {
+        assertEquals("{a:1}", (run(""" {"a": 1} """) as FluoriteObject).toString()) // { } でオブジェクトを作れる
+        assertEquals("{a:1}", (run("{a: 1}") as FluoriteObject).toString()) // キーの " は省略できる
+        assertEquals("{1:2}", (run("{1: 2}") as FluoriteObject).toString()) // キーは数値でもよい
+        assertEquals("{1:2}", (run("1 | a => {(a): 2}") as FluoriteObject).toString()) // キーに ( ) を付けると変数を参照できる
+        assertEquals("{a:1,b:2}", (run("{a: 1; b: 2}") as FluoriteObject).toString()) // エントリーは ; で区切ることができる
+        assertEquals("{a:1,b:2}", (run("{a: 1, b: 2}") as FluoriteObject).toString()) // エントリーのストリームでもよい
+        assertEquals("{1:2,2:4,3:6}", (run("{1 .. 3 | a => (a): a * 2}") as FluoriteObject).toString()) // エントリー列を返す式でもよい
+    }
+
+    @Test
     fun test() = runTest {
         assertTrue(run("a->a") is FluoriteFunction)
         assertEquals(5, run("(a->a)(5)"))
