@@ -172,29 +172,21 @@ class Fluorite12Grammar : Grammar<Node>() {
     val curly: Parser<Node> by lCurly * -b * parser { expression } * -b * rCurly map ::bracketNode
     val factor: Parser<Node> by identifier or float or integer or rawString or templateString or embeddedString or round or square or curly
 
-    val rightOperator by OrCombinator(
-        -s * lRound * -b * parser { expression } * -b * rRound,
-        -s * lSquare * -b * parser { expression } * -b * rSquare,
-        -s * lCurly * -b * parser { expression } * -b * rCurly,
+    val rightOperator: Parser<(Node) -> Node> by OrCombinator(
+        -s * lRound * -b * parser { expression } * -b * rRound map { { main -> RightBracketNode(main, it.t1, it.t2, it.t3) } },
+        -s * lSquare * -b * parser { expression } * -b * rSquare map { { main -> RightBracketNode(main, it.t1, it.t2, it.t3) } },
+        -s * lCurly * -b * parser { expression } * -b * rCurly map { { main -> RightBracketNode(main, it.t1, it.t2, it.t3) } },
     )
-    val right: Parser<Node> by factor * zeroOrMore(rightOperator) map {
-        var main = it.t1
-        it.t2.forEach { (left, argument, right) ->
-            main = RightBracketNode(main, left, argument, right)
-        }
-        main
-    }
-    val leftOperator: Parser<List<TokenMatch>> by OrCombinator(
-        +plus,
-        +minus,
-        +question,
-        +exclamation,
-        +ampersand,
-        +(dollar * sharp),
+    val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
+    val leftOperator: Parser<(Node) -> Node> by OrCombinator(
+        +plus map { { main -> LeftNode(it, main) } },
+        +minus map { { main -> LeftNode(it, main) } },
+        +question map { { main -> LeftNode(it, main) } },
+        +exclamation map { { main -> LeftNode(it, main) } },
+        +ampersand map { { main -> LeftNode(it, main) } },
+        +(dollar * sharp) map { { main -> LeftNode(it, main) } },
     )
-    val left: Parser<Node> by zeroOrMore(leftOperator) * right map {
-        it.t1.foldRight(it.t2) { t, node -> LeftNode(t, node) }
-    }
+    val left: Parser<Node> by zeroOrMore(leftOperator) * right map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
     val mul: Parser<Node> by leftAssociative(left, -s * (+asterisk or +slash) * -b, ::infixNode)
     val add: Parser<Node> by leftAssociative(mul, -s * (+plus or +minus) * -b, ::infixNode)
