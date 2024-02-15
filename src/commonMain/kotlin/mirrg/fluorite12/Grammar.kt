@@ -66,6 +66,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val uM by literalToken("M")
     val uN by literalToken("N")
     val uO by literalToken("O")
+
     val uP by literalToken("P")
     val uQ by literalToken("Q")
     val uR by literalToken("R")
@@ -99,6 +100,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val lM by literalToken("m")
     val lN by literalToken("n")
     val lO by literalToken("o")
+
     val lP by literalToken("p")
     val lQ by literalToken("q")
     val lR by literalToken("r")
