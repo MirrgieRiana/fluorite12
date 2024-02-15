@@ -66,6 +66,7 @@ class Fluorite12Test {
         assertEquals("10", run(""" "$10" """).string) // 数値の埋め込み
         assertEquals("10", run(""" (a -> "${'$'}a")(10) """).string) // 変数の埋め込み
         assertEquals("10", run(""" "$(2 * 5)" """).string) // 式の埋め込み
+        assertEquals(" abc ", run(""" " $( "abc" ) " """).string) // 入れ子状の埋め込み
     }
 
     @Test
@@ -87,6 +88,7 @@ class Fluorite12Test {
         assertEquals(" <% ", run(" %> <%% <%").string) // <%% で <% になる
 
         assertEquals(" 10 ", run(" %> <%= 1 < 2 ? 10 : 100 %> <% ").string) // 式の埋め込み
+        assertEquals(" abc ", run(" %> <%= %>abc<% %> <% ").string) // 入れ子状の埋め込み
     }
 
     @Test
