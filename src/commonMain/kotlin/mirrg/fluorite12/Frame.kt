@@ -73,12 +73,12 @@ suspend fun Frame.evaluate(node: Node): Any? {
                         value.flow.collect { item ->
                             require(item is FluoriteArray)
                             require(item.values.size == 2)
-                            values += Pair(item.values[0] as String, item.values[1])
+                            values += Pair(item.values[0].toString(), item.values[1])
                         }
                     } else {
                         require(value is FluoriteArray)
                         require(value.values.size == 2)
-                        values += Pair(value.values[0] as String, value.values[1])
+                        values += Pair(value.values[0].toString(), value.values[1])
                     }
                 }
                 FluoriteObject(values.toMap())
