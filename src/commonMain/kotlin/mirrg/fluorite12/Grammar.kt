@@ -130,7 +130,12 @@ class Fluorite12Grammar : Grammar<Node>() {
         IdentifierNode(tokens, tokens.joinToString("") { t -> t.text })
     }
 
-    val integer: Parser<Node> by oneOrMore(zero or nonZero) map { NumberNode(it, it.joinToString("") { t -> t.text }) }
+    val float: Parser<Node> by oneOrMore(zero or nonZero) * period * oneOrMore(zero or nonZero) map {
+        val tokens = it.t1 + it.t2 + it.t3
+        FloatNode(tokens, tokens.text)
+    }
+
+    val integer: Parser<Node> by oneOrMore(zero or nonZero) map { IntegerNode(it, it.joinToString("") { t -> t.text }) }
 
     val stringCharacter by OrCombinator(
         -NotParser(dQuote or dollar or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
@@ -148,7 +153,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val round: Parser<Node> by lRound * -b * parser { expression } * -b * rRound map ::bracketNode
     val square: Parser<Node> by lSquare * -b * parser { expression } * -b * rSquare map ::bracketNode
     val curly: Parser<Node> by lCurly * -b * parser { expression } * -b * rCurly map ::bracketNode
-    val factor: Parser<Node> by identifier or integer or string or round or square or curly
+    val factor: Parser<Node> by identifier or float or integer or string or round or square or curly
 
     val right: Parser<Node> by factor * zeroOrMore(
         -s * lRound * -b * parser { expression } * -b * rRound or

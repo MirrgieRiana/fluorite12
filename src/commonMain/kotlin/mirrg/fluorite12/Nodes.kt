@@ -4,7 +4,9 @@ import com.github.h0tk3y.betterParse.lexer.TokenMatch
 
 sealed class Node
 class IdentifierNode(val tokens: List<TokenMatch>, val string: String) : Node()
-class NumberNode(val tokens: List<TokenMatch>, val string: String) : Node()
+sealed class NumberNode(val tokens: List<TokenMatch>, val string: String) : Node()
+class IntegerNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens, string)
+class FloatNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens, string)
 class StringNode(val left: TokenMatch, val right: TokenMatch, val nodes: List<StringContent>) : Node()
 class BracketNode(val left: TokenMatch, val main: Node, val right: TokenMatch) : Node()
 class RightBracketNode(val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()

@@ -11,6 +11,21 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class Fluorite12Test {
     @Test
+    fun numberTest() = runTest {
+        assertEquals(1, run("1").int) // 整数を記述できる
+        assertEquals(0, run("0").int) // 0も普通に書ける
+        assertEquals(100, run("00100").int) // 整数は先頭に余計な 0 があっても10進数として扱われる
+
+        assertEquals(1.1, run("1.1").double, 0.001) // 小数を記述できる
+        assertEquals(0.0, run("0.0").double) // 0.0も普通に書ける
+        assertEquals(1.0, run("1.0").double) // .0 を付けると浮動小数点数で整数値を得る
+        assertEquals(100.0, run("00100.00").double) // 小数も先頭と末尾に余計な 0 があっても10進数として扱われる
+
+        assertEquals(-10, run("-10").int) // 負の整数が書ける
+        assertEquals(-1.1, run("-1.1").double, 0.001) // 負の小数が書ける
+    }
+
+    @Test
     fun stringTest() = runTest {
         assertEquals("abcABC123", run(""" "abcABC123" """).string) // " で囲うと文字列になる
 
@@ -59,5 +74,6 @@ private suspend fun run(src: String): FluoriteValue {
 }
 
 private val FluoriteValue.int get() = (this as FluoriteInt).value
+private val FluoriteValue.double get() = (this as FluoriteDouble).value
 private val FluoriteValue.string get() = (this as FluoriteString).value
 private val FluoriteValue.obj get() = (this as FluoriteObject).toString()
