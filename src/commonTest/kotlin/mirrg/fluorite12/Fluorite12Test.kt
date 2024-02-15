@@ -45,7 +45,7 @@ class Fluorite12Test {
     }
 
     @Test
-    fun stringTest() = runTest {
+    fun templateStringTest() = runTest {
         assertEquals("abcABC123", run(""" "abcABC123" """).string) // " で囲うと文字列になる
 
         // ASCII文字のテスト
