@@ -27,6 +27,7 @@ interface FluoriteNumber : FluoriteValue {
     fun negate(): FluoriteNumber
 }
 
+
 class FluoriteInt(override val value: Int) : FluoriteNumber {
     companion object {
         val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
