@@ -25,6 +25,15 @@ class Variable(val writable: Boolean, defaultValue: FluoriteValue) {
         }
 }
 
+fun Frame.getVariable(name: String): Variable? {
+    var currentFrame = this
+    while (true) {
+        val variable = currentFrame.variables[name]
+        if (variable != null) return variable
+        currentFrame = currentFrame.parent ?: return null
+    }
+}
+
 private suspend fun Frame.evaluateExecution(node: Node): FluoriteValue {
     return when {
         node is InfixNode && node.operator.text == "=" -> when { // 代入文
@@ -62,15 +71,6 @@ private suspend fun Frame.evaluateRootNode(node: Node): FluoriteValue {
         if (index == executionNodeList.size - 1) result = lastResult
     }
     return result
-}
-
-fun Frame.getVariable(name: String): Variable? {
-    var currentFrame = this
-    while (true) {
-        val variable = currentFrame.variables[name]
-        if (variable != null) return variable
-        currentFrame = currentFrame.parent ?: return null
-    }
 }
 
 suspend fun Frame.evaluate(node: Node): FluoriteValue {
