@@ -7,7 +7,11 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.merge
 
 
-val fluoriteValueClass = FluoriteObject(null, mutableMapOf())
+val fluoriteValueClass = FluoriteObject(
+    null, mutableMapOf(
+        "TO_STRING" to FluoriteFunction { "${it[0]}".toFluoriteString() },
+    )
+)
 
 interface FluoriteValue {
     val parent: FluoriteObject?
@@ -62,7 +66,7 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
         fun of(value: Boolean) = if (value) TRUE else FALSE
     }
 
-    override fun toString() = value.toString()
+    override fun toString() = if (value) "TRUE" else "FALSE"
     override val parent get() = fluoriteBooleanClass
     fun not() = if (value) FALSE else TRUE
 }

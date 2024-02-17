@@ -126,6 +126,18 @@ class Fluorite12Test {
     }
 
     @Test
+    fun toStringTest() = runTest {
+        // & で文字列になる
+        assertEquals("NULL", run("&NULL").string)
+        assertEquals("10", run("&10").string)
+        assertEquals("TRUE", run("&TRUE").string)
+        assertEquals("FALSE", run("&FALSE").string)
+        assertEquals("abc", run("&'abc'").string)
+        assertEquals("[1,2,3]", run("&[1, 2, 3]").string)
+        assertEquals("{a:1,b:2}", run("&{a: 1, b: 2}").string)
+    }
+
+    @Test
     fun variableTest() = runTest {
         assertEquals(10, run("a := 10; a").int) // := で変数を定義できる
         assertEquals(20, run("a := 10; a = 20; a").int) // = で既存の変数に代入できる

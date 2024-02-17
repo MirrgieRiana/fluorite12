@@ -226,7 +226,14 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 else -> throw IllegalArgumentException("Can not convert to boolean: $this")
             }
 
-            fun FluoriteValue.toFluoriteString() = FluoriteString("$this")
+            suspend fun FluoriteValue.toFluoriteString(): FluoriteValue {
+                return when (val method = getMethod(this, "TO_STRING")) {
+                    null -> throw IllegalArgumentException("No such method: $this.TO_STRING")
+                    is FluoriteFunction -> method.function(listOf(this))
+                    else -> throw IllegalArgumentException("$method is not a function")
+                }
+            }
+
             fun FluoriteValue.getLength() = when (this) {
                 is FluoriteString -> FluoriteInt(this.value.length)
                 is FluoriteArray -> FluoriteInt(this.values.size)
