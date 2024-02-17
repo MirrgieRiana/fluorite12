@@ -126,6 +126,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun variableTest() = runTest {
+        assertEquals(10, run("a := 10; a").int) // := で変数を定義できる
+        assertEquals(20, run("a := 10; a = 20; a").int) // = で既存の変数に代入できる
+        assertEquals(10, run("a := 10; (a := 20; a = 30); a").int) // 変数は ( ) の外部に伝搬しない
+    }
+
+    @Test
     fun test() = runTest {
         assertTrue(run("a->a") is FluoriteFunction)
         assertEquals(5, run("(a->a)(5)").int)

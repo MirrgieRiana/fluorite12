@@ -25,6 +25,45 @@ class Variable(val writable: Boolean, defaultValue: FluoriteValue) {
         }
 }
 
+private suspend fun Frame.evaluateExecution(node: Node): FluoriteValue {
+    return when {
+        node is InfixNode && node.operator.text == "=" -> when { // 代入文
+            node.left is IdentifierNode -> {
+                val name = node.left.string
+                val variable = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
+                variable.value = evaluate(node.right)
+                variable.value
+            }
+
+            else -> throw IllegalArgumentException("Illegal assignation: ${node.left::class} = ${node.right::class}")
+        }
+
+        node is InfixNode && node.operator.text == ":=" -> when { // 宣言文
+            node.left is IdentifierNode -> {
+                val name = node.left.string
+                val variable = Variable(true, FluoriteNull)
+                variables[name] = variable
+                variable.value = evaluate(node.right)
+                variable.value
+            }
+
+            else -> throw IllegalArgumentException("Illegal definition: ${node.left::class} := ${node.right::class}")
+        }
+
+        else -> evaluate(node) // 式文
+    }
+}
+
+private suspend fun Frame.evaluateRootNode(node: Node): FluoriteValue {
+    val executionNodeList = if (node is SemicolonNode) node.nodes else listOf(node)
+    var result: FluoriteValue = FluoriteNull
+    executionNodeList.forEachIndexed { index, executionNode ->
+        val lastResult = evaluateExecution(executionNode)
+        if (index == executionNodeList.size - 1) result = lastResult
+    }
+    return result
+}
+
 fun Frame.getVariable(name: String): Variable? {
     var currentFrame = this
     while (true) {
@@ -71,7 +110,10 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
         }
 
         is BracketNode -> when (node.left.text) {
-            "(" -> evaluate(node.main)
+            "(" -> {
+                val frame = Frame(this)
+                frame.evaluateRootNode(node.main)
+            }
 
             "[" -> {
                 val nodes = if (node.main is SemicolonNode) {
@@ -358,6 +400,6 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             evaluate(node.nodes.last())
         }
 
-        is RootNode -> evaluate(node.main)
+        is RootNode -> evaluateRootNode(node.main)
     }
 }

@@ -201,9 +201,9 @@ class Fluorite12Grammar : Grammar<Node>() {
     }
     val condition: Parser<Node> by (comparison * -s * question * -b * parser { condition } * -s * colon * -b * parser { condition } map ::conditionNode) or comparison
 
-    val tuple: Parser<Node> by rightAssociative(condition, -s * +colon * -b, ::infixNode)
+    val tuple: Parser<Node> by rightAssociative(condition, -s * +(colon * -NotParser(equal)) * -b, ::infixNode)
     val stream: Parser<Node> by tuple * zeroOrMore(-s * comma * -b * tuple) map ::listNode
-    val lambda: Parser<Node> by rightAssociative(stream, -s * (+(minus * greater) or +(equal * greater)) * -b, ::infixNode)
+    val lambda: Parser<Node> by rightAssociative(stream, -s * (+(equal * -NotParser(greater)) or +(colon * equal) or +(minus * greater) or +(equal * greater)) * -b, ::infixNode)
     val query: Parser<Node> by leftAssociative(lambda, -s * +pipe * -b, ::infixNode)
 
     val lines: Parser<Node> by query * zeroOrMore(-s * (semicolon or br) * -b * query) map ::semicolonNode
