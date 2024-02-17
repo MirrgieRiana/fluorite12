@@ -18,6 +18,7 @@ class ComparisonNode(val nodes: List<Node>, val operators: List<List<TokenMatch>
 class ConditionNode(val condition: Node, val question: TokenMatch, val ok: Node, val colon: TokenMatch, val ng: Node) : Node()
 class ListNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
 class SemicolonNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
+class RootNode(val main: Node) : Node()
 
 sealed class StringContent
 class LiteralStringContent(val tokens: List<TokenMatch>, val string: String) : StringContent()

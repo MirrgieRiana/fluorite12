@@ -346,5 +346,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             }
             evaluate(node.nodes.last())
         }
+
+        is RootNode -> evaluate(node.main)
     }
 }

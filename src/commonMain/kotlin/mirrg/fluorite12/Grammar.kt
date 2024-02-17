@@ -209,7 +209,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val lines: Parser<Node> by query * zeroOrMore(-s * (semicolon or br) * -b * query) map ::semicolonNode
     val expression: Parser<Node> by lines
 
-    override val rootParser: Parser<Node> by -b * expression * -b
+    override val rootParser: Parser<Node> by -b * expression * -b map { RootNode(it) }
 }
 
 @JvmName("unaryPlus1")
