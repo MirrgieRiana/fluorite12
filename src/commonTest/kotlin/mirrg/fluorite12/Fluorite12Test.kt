@@ -1,7 +1,7 @@
 package mirrg.fluorite12
 
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
-import com.github.h0tk3y.betterParse.parser.Parsed
+import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -134,7 +134,7 @@ class Fluorite12Test {
 }
 
 private suspend fun run(src: String): FluoriteValue {
-    val result = Fluorite12Grammar().tryParseToEnd(src) as Parsed
+    val result = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     return Frame().evaluate(result.value)
 }
 
