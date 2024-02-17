@@ -187,7 +187,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                         values[value.values[0].toString()] = value.values[1]
                     }
                 }
-                FluoriteObject(FluoriteObject.FLUORITE_CLASS, values)
+                FluoriteObject(FluoriteObject.fluoriteObjectClass, values)
             }
 
             else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} A ${node.right.text}")
