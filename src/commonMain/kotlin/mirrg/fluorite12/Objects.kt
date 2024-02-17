@@ -79,6 +79,8 @@ class FluoriteString(val value: String) : FluoriteValue {
     override val parent get() = fluoriteStringClass
 }
 
+fun String.toFluoriteString() = FluoriteString(this)
+
 
 class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
     companion object {
