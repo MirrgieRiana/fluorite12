@@ -17,7 +17,7 @@ interface FluoriteValue {
 
 
 object FluoriteNull : FluoriteValue {
-    override val parent get() = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+    override val parent = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
     override fun toString() = "NULL"
 }
 
