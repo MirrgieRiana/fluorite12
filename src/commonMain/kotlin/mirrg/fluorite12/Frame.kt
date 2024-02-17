@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.map
 
 class Frame(val parent: Frame? = null) {
     val variables = mutableMapOf<String, Variable>()
+    val overrides = mutableMapOf<Signature, FluoriteValue>()
 
     init {
         if (parent == null) {
@@ -25,12 +26,42 @@ class Variable(val writable: Boolean, defaultValue: FluoriteValue) {
         }
 }
 
+class Signature(val fluoriteClass: FluoriteObject, val name: String) {
+    override fun toString() = "Signature[$fluoriteClass.$name]"
+    override fun equals(other: Any?) = other is Signature && other.fluoriteClass === this.fluoriteClass && other.name == this.name
+    override fun hashCode() = 31 * fluoriteClass.hashCode() + name.hashCode()
+}
+
 fun Frame.getVariable(name: String): Variable? {
     var currentFrame = this
     while (true) {
         val variable = currentFrame.variables[name]
         if (variable != null) return variable
         currentFrame = currentFrame.parent ?: return null
+    }
+}
+
+fun Frame.getOverride(signature: Signature): FluoriteValue? {
+    var currentFrame = this
+    while (true) {
+        val override = currentFrame.overrides[signature]
+        if (override != null) return override
+        currentFrame = currentFrame.parent ?: return null
+    }
+}
+
+fun Frame.getMethod(receiver: FluoriteValue, name: String): FluoriteValue? {
+    var currentObject = if (receiver is FluoriteObject) receiver else receiver.parent
+    while (true) {
+        if (currentObject == null) return null
+
+        val override = this.getOverride(Signature(currentObject, name))
+        if (override != null) return override
+
+        val value = currentObject.map[name]
+        if (value != null) return value
+
+        currentObject = currentObject.parent
     }
 }
 
