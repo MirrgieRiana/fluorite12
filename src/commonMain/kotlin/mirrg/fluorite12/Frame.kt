@@ -6,29 +6,40 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 class Frame(val parent: Frame? = null) {
-    val variables = mutableMapOf<String, FluoriteValue>()
+    val variables = mutableMapOf<String, Variable>()
 
     init {
         if (parent == null) {
-            variables["NULL"] = FluoriteNull
-            variables["TRUE"] = FluoriteBoolean.TRUE
-            variables["FALSE"] = FluoriteBoolean.FALSE
+            variables["NULL"] = Variable(false, FluoriteNull)
+            variables["TRUE"] = Variable(false, FluoriteBoolean.TRUE)
+            variables["FALSE"] = Variable(false, FluoriteBoolean.FALSE)
         }
+    }
+}
+
+class Variable(val writable: Boolean, defaultValue: FluoriteValue) {
+    var value: FluoriteValue = defaultValue
+        set(value) {
+            if (!writable) throw RuntimeException("Illegal assignment to constant")
+            field = value
+        }
+}
+
+fun Frame.getVariable(name: String): Variable? {
+    var currentFrame = this
+    while (true) {
+        val variable = currentFrame.variables[name]
+        if (variable != null) return variable
+        currentFrame = currentFrame.parent ?: return null
     }
 }
 
 suspend fun Frame.evaluate(node: Node): FluoriteValue {
     return when (node) {
         is IdentifierNode -> {
-            val variable = node.string
-            fun f(frame: Frame): FluoriteValue {
-                return frame.variables[variable] ?: if (frame.parent != null) {
-                    f(frame.parent)
-                } else {
-                    throw IllegalArgumentException("Unknown variable: $variable")
-                }
-            }
-            f(this)
+            val name = node.string
+            val variable = getVariable(name) ?: throw IllegalArgumentException("Unknown variable: $name")
+            variable.value
         }
 
         is IntegerNode -> FluoriteInt(node.string.toInt())
@@ -266,9 +277,9 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 }
                 FluoriteFunction { arguments ->
                     val frame = Frame(this)
-                    frame.variables["__"] = FluoriteArray(arguments)
+                    frame.variables["__"] = Variable(false, FluoriteArray(arguments))
                     variables.forEachIndexed { i, it ->
-                        frame.variables[it] = arguments.getOrNull(i) ?: FluoriteNull
+                        frame.variables[it] = Variable(true, arguments.getOrNull(i) ?: FluoriteNull)
                     }
                     frame.evaluate(node.right)
                 }
@@ -284,7 +295,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 }
                 suspend fun f(value: FluoriteValue): FluoriteValue {
                     val frame = Frame(this)
-                    frame.variables[variable] = value
+                    frame.variables[variable] = Variable(false, value)
                     return frame.evaluate(body)
                 }
                 return if (stream is FluoriteStream) {
