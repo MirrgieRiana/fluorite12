@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.merge
 
 interface FluoriteValue {
     companion object {
-        val FLUORITE_CLASS = FluoriteObject(null, mapOf())
+        val FLUORITE_CLASS = FluoriteObject(null, mutableMapOf())
     }
 
     val parent: FluoriteObject?
@@ -17,7 +17,7 @@ interface FluoriteValue {
 
 
 object FluoriteNull : FluoriteValue {
-    override val parent = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+    override val parent = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mutableMapOf())
     override fun toString() = "NULL"
 }
 
@@ -30,7 +30,7 @@ interface FluoriteNumber : FluoriteValue {
 
 class FluoriteInt(override val value: Int) : FluoriteNumber {
     companion object {
-        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mutableMapOf())
     }
 
     override fun toString() = value.toString()
@@ -43,7 +43,7 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
 
 class FluoriteDouble(override val value: Double) : FluoriteNumber {
     companion object {
-        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mutableMapOf())
     }
 
     override fun toString() = value.toString()
@@ -60,7 +60,7 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
     ;
 
     companion object {
-        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mutableMapOf())
         fun of(value: Boolean) = if (value) TRUE else FALSE
     }
 
@@ -72,7 +72,7 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
 
 class FluoriteString(val value: String) : FluoriteValue {
     companion object {
-        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mutableMapOf())
     }
 
     override fun toString() = value
@@ -84,7 +84,7 @@ class FluoriteString(val value: String) : FluoriteValue {
 
 class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
     companion object {
-        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mutableMapOf())
     }
 
     override fun toString() = "[${values.joinToString(",") { "$it" }}]"
@@ -92,9 +92,9 @@ class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
 }
 
 
-class FluoriteObject(override val parent: FluoriteObject?, val map: Map<String, FluoriteValue>) : FluoriteValue {
+class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<String, FluoriteValue>) : FluoriteValue {
     companion object {
-        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mutableMapOf())
     }
 
     override fun toString() = "{${map.entries.joinToString(",") { "${it.key}:${it.value}" }}}"
@@ -103,7 +103,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: Map<String, 
 
 class FluoriteFunction(val function: suspend (List<FluoriteValue>) -> FluoriteValue) : FluoriteValue {
     companion object {
-        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mutableMapOf())
     }
 
     override val parent get() = FLUORITE_CLASS
@@ -112,7 +112,7 @@ class FluoriteFunction(val function: suspend (List<FluoriteValue>) -> FluoriteVa
 
 class FluoriteStream(val flow: Flow<FluoriteValue>) : FluoriteValue {
     companion object {
-        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mapOf())
+        val FLUORITE_CLASS = FluoriteObject(FluoriteValue.FLUORITE_CLASS, mutableMapOf())
     }
 
     override val parent get() = FLUORITE_CLASS

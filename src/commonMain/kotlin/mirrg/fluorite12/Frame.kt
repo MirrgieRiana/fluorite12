@@ -172,22 +172,22 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 } else {
                     listOf(node.main)
                 }
-                val values = mutableListOf<Pair<String, FluoriteValue>>()
+                val values = mutableMapOf<String, FluoriteValue>()
                 nodes.forEach {
                     val value = evaluate(it)
                     if (value is FluoriteStream) {
                         value.flow.collect { item ->
                             require(item is FluoriteArray)
                             require(item.values.size == 2)
-                            values += Pair(item.values[0].toString(), item.values[1])
+                            values[item.values[0].toString()] = item.values[1]
                         }
                     } else {
                         require(value is FluoriteArray)
                         require(value.values.size == 2)
-                        values += Pair(value.values[0].toString(), value.values[1])
+                        values[value.values[0].toString()] = value.values[1]
                     }
                 }
-                FluoriteObject(FluoriteObject.FLUORITE_CLASS, values.toMap())
+                FluoriteObject(FluoriteObject.FLUORITE_CLASS, values)
             }
 
             else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} A ${node.right.text}")
