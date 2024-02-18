@@ -135,6 +135,8 @@ class Fluorite12Test {
         assertEquals("abc", run("&'abc'").string)
         assertEquals("[1,2,3]", run("&[1, 2, 3]").string)
         assertEquals("{a:1,b:2}", run("&{a: 1; b: 2}").string)
+
+        assertEquals("10", run("&{a: 10; TO_STRING: this -> &this.a}").string) // 文字列化のオーバーライド
     }
 
     @Test
