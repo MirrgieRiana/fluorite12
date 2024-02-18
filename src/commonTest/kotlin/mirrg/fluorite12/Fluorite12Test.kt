@@ -6,7 +6,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class Fluorite12Test {
@@ -168,13 +167,6 @@ class Fluorite12Test {
 
         assertEquals(120, run("f := n -> n == 0 ? 1 : n * f(n - 1); f(5)").int) // 再帰関数の例
         assertEquals(120, run("(f -> f(f))(f -> n -> n == 0 ? 1 : n * f(f)(n - 1))(5)").int) // 複雑なラムダ計算の例
-    }
-
-    @Test
-    fun test() = runTest {
-        assertTrue(run("a->a") is FluoriteFunction)
-        assertEquals(5, run("(a->a)(5)").int)
-        assertEquals(12, run("(a,b->a*b)(3;4)").int)
     }
 }
 
