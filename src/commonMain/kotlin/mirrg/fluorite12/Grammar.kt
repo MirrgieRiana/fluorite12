@@ -3,6 +3,7 @@ package mirrg.fluorite12
 import com.github.h0tk3y.betterParse.combinators.leftAssociative
 import com.github.h0tk3y.betterParse.combinators.map
 import com.github.h0tk3y.betterParse.combinators.oneOrMore
+import com.github.h0tk3y.betterParse.combinators.optional
 import com.github.h0tk3y.betterParse.combinators.or
 import com.github.h0tk3y.betterParse.combinators.rightAssociative
 import com.github.h0tk3y.betterParse.combinators.times
@@ -167,15 +168,15 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val embeddedString by percent * greater * zeroOrMore(embeddedStringContent) * less * percent map { EmbeddedStringNode(listOf(it.t1, it.t2), it.t3, listOf(it.t4, it.t5)) } // %>string<%
 
-    val round: Parser<Node> by lRound * -b * parser { expression } * -b * rRound map ::bracketNode
-    val square: Parser<Node> by lSquare * -b * parser { expression } * -b * rSquare map ::bracketNode
-    val curly: Parser<Node> by lCurly * -b * parser { expression } * -b * rCurly map ::bracketNode
+    val round: Parser<Node> by lRound * -b * optional(parser { expression } * -b) * rRound map ::bracketNode
+    val square: Parser<Node> by lSquare * -b * optional(parser { expression } * -b) * rSquare map ::bracketNode
+    val curly: Parser<Node> by lCurly * -b * optional(parser { expression } * -b) * rCurly map ::bracketNode
     val factor: Parser<Node> by identifier or float or integer or rawString or templateString or embeddedString or round or square or curly
 
     val rightOperator: Parser<(Node) -> Node> by OrCombinator(
-        -s * lRound * -b * parser { expression } * -b * rRound map { { main -> RightBracketNode(main, it.t1, it.t2, it.t3) } },
-        -s * lSquare * -b * parser { expression } * -b * rSquare map { { main -> RightBracketNode(main, it.t1, it.t2, it.t3) } },
-        -s * lCurly * -b * parser { expression } * -b * rCurly map { { main -> RightBracketNode(main, it.t1, it.t2, it.t3) } },
+        -s * lRound * -b * optional(parser { expression } * -b) * rRound map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lSquare * -b * optional(parser { expression } * -b) * rSquare map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lCurly * -b * optional(parser { expression } * -b) * rCurly map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -b * +period * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
     )
     val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
@@ -217,7 +218,7 @@ private operator fun <T> Parser<T>.unaryPlus() = this map { listOf(it) }
 @JvmName("unaryPlus2")
 private operator fun <T> Parser<Tuple2<T, T>>.unaryPlus() = this map { listOf(it.t1, it.t2) }
 
-private fun bracketNode(it: Tuple3<TokenMatch, Node, TokenMatch>) = BracketNode(it.t1, it.t2, it.t3)
+private fun bracketNode(it: Tuple3<TokenMatch, Node?, TokenMatch>) = BracketNode(it.t1, it.t2 ?: EmptyNode, it.t3)
 
 private fun infixNode(left: Node, operator: List<TokenMatch>, right: Node) = InfixNode(left, operator, right)
 

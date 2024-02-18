@@ -147,6 +147,18 @@ class Fluorite12Test {
     }
 
     @Test
+    fun lambdaTest() = runTest {
+        assertEquals(10, run("((a) -> a)(10)").int) // (a) -> b で関数を作り、 f(a) で実行する
+        assertEquals(12, run("((a; b) -> a * b)(3; 4)").int) // ; で引数を複数取れる
+        assertEquals(12, run("((a, b) -> a * b)(3; 4)").int) // ラムダ引数は , で区切ってもよい
+        assertEquals(10, run("(() -> 10)()").int) // () で引数を無しにできる
+        assertEquals(10, run("(a -> a)(10)").int) // 引数がある場合、 ( ) は省略してもよい
+        assertEquals(12, run("(a, b -> a * b)(3; 4)").int) // 引数が複数の場合も ( ) を省略できる
+
+        assertEquals("[1,2,3,4]", run("(s -> &[s])(1, 2, 3, 4)").string) // 引数で , を使うとストリームを渡せる
+    }
+
+    @Test
     fun test() = runTest {
         assertTrue(run("a->a") is FluoriteFunction)
         assertEquals(5, run("(a->a)(5)").int)

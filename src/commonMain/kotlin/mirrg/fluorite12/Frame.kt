@@ -106,6 +106,8 @@ private suspend fun Frame.evaluateRootNode(node: Node): FluoriteValue {
 
 suspend fun Frame.evaluate(node: Node): FluoriteValue {
     return when (node) {
+        is EmptyNode -> throw IllegalArgumentException("Unexpected empty")
+
         is IdentifierNode -> {
             val name = node.string
             val variable = getVariable(name) ?: throw IllegalArgumentException("Unknown variable: $name")
@@ -197,10 +199,10 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             "(" -> {
                 val mainValue = evaluate(node.main)
                 require(mainValue is FluoriteFunction)
-                val argumentNodes = if (node.argument is SemicolonNode) {
-                    node.argument.nodes
-                } else {
-                    listOf(node.argument)
+                val argumentNodes = when (node.argument) {
+                    is EmptyNode -> listOf()
+                    is SemicolonNode -> node.argument.nodes
+                    else -> listOf(node.argument)
                 }
                 val argumentValues = argumentNodes.map { evaluate(it) }
                 mainValue.function(argumentValues)
@@ -344,12 +346,11 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 } else {
                     node.left
                 }
-                val identifierNodes = if (commasNode is ListNode && commasNode.operators.first().text == ",") {
-                    commasNode.nodes
-                } else if (commasNode is SemicolonNode) {
-                    commasNode.nodes
-                } else {
-                    listOf(commasNode)
+                val identifierNodes = when {
+                    commasNode is EmptyNode -> listOf()
+                    commasNode is ListNode && commasNode.operators.first().text == "," -> commasNode.nodes
+                    commasNode is SemicolonNode -> commasNode.nodes
+                    else -> listOf(commasNode)
                 }
                 val variables = identifierNodes.map {
                     require(it is IdentifierNode)
