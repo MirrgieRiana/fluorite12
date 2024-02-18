@@ -6,12 +6,12 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.merge
 
-// fluoriteクラスはlazyにしなければJSで初期か順序によるエラーが出る
-// https://youtrack.jetbrains.com/issue/KT-25796
-
 
 interface FluoriteValue {
     companion object {
+        // fluoriteクラスはlazyにしなければJSで初期か順序によるエラーが出る
+        // https://youtrack.jetbrains.com/issue/KT-25796
+        // 他の同様のプロパティも同じ
         val fluoriteClass by lazy {
             FluoriteObject(
                 null, mutableMapOf(
