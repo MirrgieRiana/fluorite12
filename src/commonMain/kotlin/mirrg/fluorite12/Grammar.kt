@@ -201,12 +201,11 @@ class Fluorite12Grammar : Grammar<Node>() {
     }
     val condition: Parser<Node> by (comparison * -s * question * -b * parser { condition } * -s * colon * -b * parser { condition } map ::conditionNode) or comparison
 
-    val tuple: Parser<Node> by rightAssociative(condition, -s * +(colon * -NotParser(equal)) * -b, ::infixNode)
-    val stream: Parser<Node> by tuple * zeroOrMore(-s * comma * -b * tuple) map ::listNode
-    val lambda: Parser<Node> by rightAssociative(stream, -s * (+(equal * -NotParser(greater)) or +(colon * equal) or +(minus * greater) or +(equal * greater)) * -b, ::infixNode)
-    val query: Parser<Node> by leftAssociative(lambda, -s * +pipe * -b, ::infixNode)
+    val enumeration: Parser<Node> by condition * zeroOrMore(-s * comma * -b * condition) map ::listNode
+    val assignation: Parser<Node> by rightAssociative(enumeration, -s * (+(equal * -NotParser(greater)) or +(colon * -NotParser(equal)) or +(colon * equal) or +(minus * greater) or +(equal * greater)) * -b, ::infixNode)
+    val stream: Parser<Node> by leftAssociative(assignation, -s * +pipe * -b, ::infixNode)
 
-    val lines: Parser<Node> by query * zeroOrMore(-s * (semicolon or br) * -b * query) map ::semicolonNode
+    val lines: Parser<Node> by stream * zeroOrMore(-s * (semicolon or br) * -b * stream) map ::semicolonNode
     val expression: Parser<Node> by lines
 
     override val rootParser: Parser<Node> by -b * expression * -b map { RootNode(it) }
