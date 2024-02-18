@@ -178,6 +178,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         -s * lSquare * -b * optional(parser { expression } * -b) * rSquare map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -s * lCurly * -b * optional(parser { expression } * -b) * rCurly map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -b * +period * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
+        -b * +(colon * colon) * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
     )
     val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
     val leftOperator: Parser<(Node) -> Node> by OrCombinator(
@@ -200,10 +201,10 @@ class Fluorite12Grammar : Grammar<Node>() {
             it.t1
         }
     }
-    val condition: Parser<Node> by (comparison * -s * question * -b * parser { condition } * -s * colon * -b * parser { condition } map ::conditionNode) or comparison
+    val condition: Parser<Node> by (comparison * -s * question * -b * parser { condition } * -s * (colon * -NotParser(colon)) * -b * parser { condition } map ::conditionNode) or comparison
 
     val enumeration: Parser<Node> by condition * zeroOrMore(-s * comma * -b * condition) map ::listNode
-    val assignation: Parser<Node> by rightAssociative(enumeration, -s * (+(equal * -NotParser(greater)) or +(colon * -NotParser(equal)) or +(colon * equal) or +(minus * greater) or +(equal * greater)) * -b, ::infixNode)
+    val assignation: Parser<Node> by rightAssociative(enumeration, -s * (+(equal * -NotParser(greater)) or +(colon * -NotParser(equal or colon)) or +(colon * equal) or +(minus * greater) or +(equal * greater)) * -b, ::infixNode)
     val stream: Parser<Node> by leftAssociative(assignation, -s * +pipe * -b, ::infixNode)
 
     val lines: Parser<Node> by stream * zeroOrMore(-s * (semicolon or br) * -b * stream) map ::semicolonNode

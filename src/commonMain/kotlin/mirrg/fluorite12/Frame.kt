@@ -197,15 +197,30 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
 
         is RightBracketNode -> when (node.left.text) {
             "(" -> {
-                val mainValue = evaluate(node.main)
-                require(mainValue is FluoriteFunction)
-                val argumentNodes = when (node.argument) {
-                    is EmptyNode -> listOf()
-                    is SemicolonNode -> node.argument.nodes
-                    else -> listOf(node.argument)
+                if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
+                    if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
+                    val receiver = evaluate(node.main.left)
+                    val name = node.main.right.string
+                    val method = getMethod(receiver, name) ?: throw IllegalArgumentException("No such method: ${node.main.left}::$name")
+                    if (method !is FluoriteFunction) throw IllegalArgumentException("Can not call: ${node.main.left}::$name")
+                    val argumentNodes = when (node.argument) {
+                        is EmptyNode -> listOf()
+                        is SemicolonNode -> node.argument.nodes
+                        else -> listOf(node.argument)
+                    }
+                    val argumentValues = argumentNodes.map { evaluate(it) }
+                    method.function(listOf(receiver) + argumentValues)
+                } else { // 関数呼び出し
+                    val mainValue = evaluate(node.main)
+                    require(mainValue is FluoriteFunction)
+                    val argumentNodes = when (node.argument) {
+                        is EmptyNode -> listOf()
+                        is SemicolonNode -> node.argument.nodes
+                        else -> listOf(node.argument)
+                    }
+                    val argumentValues = argumentNodes.map { evaluate(it) }
+                    mainValue.function(argumentValues)
                 }
-                val argumentValues = argumentNodes.map { evaluate(it) }
-                mainValue.function(argumentValues)
             }
 
             else -> throw IllegalArgumentException("Unknown operator: A ${node.left.text} B ${node.right.text}")
