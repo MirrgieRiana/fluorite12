@@ -8,6 +8,7 @@ import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.FluoriteValue
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.Node
+import mirrg.fluorite12.defineCommonBuiltinVariables
 import mirrg.fluorite12.evaluate
 import kotlin.js.Promise
 
@@ -17,7 +18,11 @@ fun parse(src: String) = Fluorite12Grammar().tryParseToEnd(src)
 
 @Suppress("unused")
 @JsName("evaluate")
-fun evaluate(node: Node) = GlobalScope.promise { Frame().evaluate(node) }
+fun evaluate(node: Node) = GlobalScope.promise {
+    val frame = Frame()
+    frame.defineCommonBuiltinVariables()
+    frame.evaluate(node)
+}
 
 @Suppress("unused")
 @JsName("log")

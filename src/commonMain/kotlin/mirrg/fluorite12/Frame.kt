@@ -8,14 +8,12 @@ import kotlinx.coroutines.flow.map
 class Frame(val parent: Frame? = null) {
     val variables = mutableMapOf<String, Variable>()
     val overrides = mutableMapOf<Signature, FluoriteValue>()
+}
 
-    init {
-        if (parent == null) {
-            variables["NULL"] = Variable(false, FluoriteNull)
-            variables["TRUE"] = Variable(false, FluoriteBoolean.TRUE)
-            variables["FALSE"] = Variable(false, FluoriteBoolean.FALSE)
-        }
-    }
+fun Frame.defineCommonBuiltinVariables() {
+    variables["NULL"] = Variable(false, FluoriteNull)
+    variables["TRUE"] = Variable(false, FluoriteBoolean.TRUE)
+    variables["FALSE"] = Variable(false, FluoriteBoolean.FALSE)
 }
 
 class Variable(val writable: Boolean, defaultValue: FluoriteValue) {
