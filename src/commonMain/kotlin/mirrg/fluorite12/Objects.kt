@@ -148,7 +148,7 @@ class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
         }
     }
 
-    override fun toString() = "[${values.joinToString(",") { "$it" }}]"
+    override fun toString() = "[${values.joinToString(";") { "$it" }}]"
     override val parent get() = fluoriteClass
 }
 
@@ -177,7 +177,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
         }
     }
 
-    override fun toString() = "{${map.entries.joinToString(",") { "${it.key}:${it.value}" }}}"
+    override fun toString() = "{${map.entries.joinToString(";") { "${it.key}:${it.value}" }}}"
 }
 
 

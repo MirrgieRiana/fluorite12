@@ -103,9 +103,9 @@ class Fluorite12Test {
         assertEquals("{a:1}", run("{a: 1}").obj) // キーの " は省略できる
         assertEquals("{1:2}", run("{1: 2}").obj) // キーは数値でもよい
         assertEquals("{1:2}", run("1 | a => {(a): 2}").obj) // キーに ( ) を付けると変数を参照できる
-        assertEquals("{a:1,b:2}", run("{a: 1; b: 2}").obj) // エントリーは ; で区切ることができる
-        assertEquals("{a:1,b:2}", run("{(a: 1), (b: 2)}").obj) // エントリーのストリームでもよい
-        assertEquals("{1:2,2:4,3:6}", run("{1 .. 3 | a => (a): a * 2}").obj) // エントリー列を返す式でもよい
+        assertEquals("{a:1;b:2}", run("{a: 1; b: 2}").obj) // エントリーは ; で区切ることができる
+        assertEquals("{a:1;b:2}", run("{(a: 1), (b: 2)}").obj) // エントリーのストリームでもよい
+        assertEquals("{1:2;2:4;3:6}", run("{1 .. 3 | a => (a): a * 2}").obj) // エントリー列を返す式でもよい
     }
 
     @Test
@@ -132,8 +132,8 @@ class Fluorite12Test {
         assertEquals("TRUE", run("&TRUE").string)
         assertEquals("FALSE", run("&FALSE").string)
         assertEquals("abc", run("&'abc'").string)
-        assertEquals("[1,2,3]", run("&[1, 2, 3]").string)
-        assertEquals("{a:1,b:2}", run("&{a: 1; b: 2}").string)
+        assertEquals("[1;2;3]", run("&[1, 2, 3]").string)
+        assertEquals("{a:1;b:2}", run("&{a: 1; b: 2}").string)
 
         assertEquals("10", run("&{a: 10; TO_STRING: this -> &this.a}").string) // 文字列化のオーバーライド
     }
@@ -157,8 +157,8 @@ class Fluorite12Test {
         assertEquals(true, run("$*'true'").boolean)
         assertEquals(false, run("$*'false'").boolean)
         assertEquals(FluoriteNull, run("$*'null'"))
-        assertEquals("[1,2,3]", run("&$*'[1,2,3]'").string)
-        assertEquals("{a:1,b:2}", run("&$*'{\"a\":1,\"b\":2}'").string)
+        assertEquals("[1;2;3]", run("&$*'[1,2,3]'").string)
+        assertEquals("{a:1;b:2}", run("&$*'{\"a\":1,\"b\":2}'").string)
     }
 
     @Test
@@ -186,7 +186,7 @@ class Fluorite12Test {
         assertEquals(10, run("(a -> a)(10)").int) // 引数がある場合、 ( ) は省略してもよい
         assertEquals(12, run("(a, b -> a * b)(3; 4)").int) // 引数が複数の場合も ( ) を省略できる
 
-        assertEquals("[1,2,3,4]", run("(s -> &[s])(1, 2, 3, 4)").string) // 引数で , を使うとストリームを渡せる
+        assertEquals("[1;2;3;4]", run("(s -> &[s])(1, 2, 3, 4)").string) // 引数で , を使うとストリームを渡せる
 
         assertEquals(120, run("f := n -> n == 0 ? 1 : n * f(n - 1); f(5)").int) // 再帰関数の例
         assertEquals(120, run("(f -> f(f))(f -> n -> n == 0 ? 1 : n * f(f)(n - 1))(5)").int) // 複雑なラムダ計算の例
