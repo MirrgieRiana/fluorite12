@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     kotlin("multiplatform") version "1.6.20"
+    kotlin("plugin.serialization") version "1.6.20"
     id("com.dorongold.task-tree") version "2.1.1"
 }
 
@@ -36,6 +37,7 @@ kotlin {
             dependencies {
                 implementation("com.github.h0tk3y.betterParse:better-parse:0.4.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
             }
         }
         val commonTest by getting {
