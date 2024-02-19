@@ -139,6 +139,29 @@ class Fluorite12Test {
     }
 
     @Test
+    fun jsonTest() = runTest {
+        // $& でFluoriteValueがjson文字列になる
+        assertEquals("10", run("$&10").string) // トップレベルがJsonArrayやJsonObjectでなくてもよい
+        assertEquals("10.5", run("$&10.5").string)
+        assertEquals("\"abc\"", run("$&'abc'").string)
+        assertEquals("true", run("$&TRUE").string)
+        assertEquals("false", run("$&FALSE").string)
+        assertEquals("null", run("$&NULL").string)
+        assertEquals("[1,2,3]", run("$&[1; 2; 3]").string)
+        assertEquals("{\"a\":1,\"b\":2}", run("$&{a: 1; b: 2}").string)
+
+        // $* でjson文字列がFluoriteValueになる
+        assertEquals(10, run("$*'10'").int)
+        assertEquals(10.5, run("$*'10.5'").double, 0.001)
+        assertEquals("abc", run("$*'\"abc\"'").string)
+        assertEquals(true, run("$*'true'").boolean)
+        assertEquals(false, run("$*'false'").boolean)
+        assertEquals(FluoriteNull, run("$*'null'"))
+        assertEquals("[1,2,3]", run("&$*'[1,2,3]'").string)
+        assertEquals("{a:1,b:2}", run("&$*'{\"a\":1,\"b\":2}'").string)
+    }
+
+    @Test
     fun variableTest() = runTest {
         assertEquals(10, run("a := 10; a").int) // := で変数を定義できる
         assertEquals(20, run("a := 10; a = 20; a").int) // = で既存の変数に代入できる

@@ -26,7 +26,13 @@ interface FluoriteValue {
 
 
 object FluoriteNull : FluoriteValue {
-    val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+    val fluoriteClass by lazy {
+        FluoriteObject(
+            FluoriteValue.fluoriteClass, mutableMapOf(
+                "TO_JSON" to FluoriteFunction { "null".toFluoriteString() },
+            )
+        )
+    }
     override val parent = fluoriteClass
     override fun toString() = "NULL"
 }
@@ -40,7 +46,13 @@ interface FluoriteNumber : FluoriteValue {
 
 class FluoriteInt(override val value: Int) : FluoriteNumber {
     companion object {
-        val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+        val fluoriteClass by lazy {
+            FluoriteObject(
+                FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_JSON" to FluoriteFunction { "${(it[0] as FluoriteInt).value}".toFluoriteString() },
+                )
+            )
+        }
     }
 
     override fun toString() = value.toString()
@@ -53,7 +65,13 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
 
 class FluoriteDouble(override val value: Double) : FluoriteNumber {
     companion object {
-        val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+        val fluoriteClass by lazy {
+            FluoriteObject(
+                FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_JSON" to FluoriteFunction { "${(it[0] as FluoriteDouble).value}".toFluoriteString() },
+                )
+            )
+        }
     }
 
     override fun toString() = value.toString()
@@ -70,7 +88,14 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
     ;
 
     companion object {
-        val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+        val fluoriteClass by lazy {
+            FluoriteObject(
+                FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_JSON" to FluoriteFunction { (if ((it[0] as FluoriteBoolean).value) "true" else "false").toFluoriteString() },
+                )
+            )
+        }
+
         fun of(value: Boolean) = if (value) TRUE else FALSE
     }
 
@@ -82,7 +107,16 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
 
 class FluoriteString(val value: String) : FluoriteValue {
     companion object {
-        val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+        val fluoriteClass by lazy {
+            FluoriteObject(
+                FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_JSON" to FluoriteFunction {
+                        val escaped = (it[0] as FluoriteString).value.escapeJsonString()
+                        "\"$escaped\"".toFluoriteString()
+                    },
+                )
+            )
+        }
     }
 
     override fun toString() = value
@@ -96,7 +130,22 @@ fun String.toFluoriteString() = FluoriteString(this)
 
 class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
     companion object {
-        val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+        val fluoriteClass by lazy {
+            FluoriteObject(
+                FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_JSON" to FluoriteFunction {
+                        val sb = StringBuilder()
+                        sb.append('[')
+                        (it[0] as FluoriteArray).values.forEachIndexed { i, value ->
+                            if (i != 0) sb.append(',')
+                            sb.append((value.toJson() as FluoriteString).value)
+                        }
+                        sb.append(']')
+                        sb.toString().toFluoriteString()
+                    },
+                )
+            )
+        }
     }
 
     override fun toString() = "[${values.joinToString(",") { "$it" }}]"
@@ -106,7 +155,26 @@ class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
 
 class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<String, FluoriteValue>) : FluoriteValue {
     companion object {
-        val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+        val fluoriteClass by lazy {
+            FluoriteObject(
+                FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_JSON" to FluoriteFunction {
+                        val sb = StringBuilder()
+                        sb.append('{')
+                        (it[0] as FluoriteObject).map.entries.forEachIndexed { i, (key, value) ->
+                            if (i != 0) sb.append(',')
+                            sb.append('"')
+                            sb.append(key.escapeJsonString())
+                            sb.append('"')
+                            sb.append(':')
+                            sb.append((value.toJson() as FluoriteString).value)
+                        }
+                        sb.append('}')
+                        sb.toString().toFluoriteString()
+                    },
+                )
+            )
+        }
     }
 
     override fun toString() = "{${map.entries.joinToString(",") { "${it.key}:${it.value}" }}}"

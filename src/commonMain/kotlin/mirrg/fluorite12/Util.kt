@@ -32,3 +32,7 @@ class NotParser<T>(private val parser: Parser<T>) : Parser<Unit> {
         }
     }
 }
+
+fun String.escapeJsonString() = this
+    .replace("\n", "\n\n")
+    .replace("\"", "\n\"")

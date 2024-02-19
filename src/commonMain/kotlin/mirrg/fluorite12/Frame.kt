@@ -4,6 +4,13 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 class Frame(val parent: Frame? = null) {
     val variables = mutableMapOf<String, Variable>()
@@ -55,6 +62,18 @@ fun Frame.getMethod(receiver: FluoriteValue, name: String): FluoriteValue? {
 
         val override = this.getOverride(Signature(currentObject, name))
         if (override != null) return override
+
+        val value = currentObject.map[name]
+        if (value != null) return value
+
+        currentObject = currentObject.parent
+    }
+}
+
+fun FluoriteValue.getMethod(name: String): FluoriteValue? {
+    var currentObject = if (this is FluoriteObject) this else parent
+    while (true) {
+        if (currentObject == null) return null
 
         val value = currentObject.map[name]
         if (value != null) return value
@@ -255,6 +274,26 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 is FluoriteObject -> FluoriteInt(this.map.size)
                 else -> throw IllegalArgumentException("Can not calculate length: $this")
             }
+
+            fun FluoriteValue.fromJson(): FluoriteValue {
+                val data = Json.decodeFromString<JsonElement>((this as FluoriteString).value)
+                fun f(data: JsonElement): FluoriteValue = when (data) {
+                    is JsonObject -> FluoriteObject(FluoriteObject.fluoriteClass, data.mapValues { (_, it) -> f(it) }.toMutableMap())
+                    is JsonArray -> FluoriteArray(data.map { f(it) })
+                    is JsonNull -> FluoriteNull
+                    is JsonPrimitive -> when {
+                        data.isString -> data.content.toFluoriteString()
+                        data.content == "true" -> FluoriteBoolean.TRUE
+                        data.content == "false" -> FluoriteBoolean.FALSE
+                        "." !in data.content -> FluoriteInt(data.content.toInt())
+                        else -> FluoriteDouble(data.content.toDouble())
+                    }
+
+                    else -> throw IllegalArgumentException()
+                }
+                return f(data)
+            }
+
             when (node.left.text) {
                 "+" -> evaluate(node.right).toNumber()
                 "-" -> evaluate(node.right).toNumber().negate()
@@ -262,6 +301,8 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 "!" -> evaluate(node.right).toBoolean().not()
                 "&" -> evaluate(node.right).toFluoriteString()
                 "$#" -> evaluate(node.right).getLength()
+                "$&" -> this.toJson(evaluate(node.right))
+                "$*" -> evaluate(node.right).fromJson()
                 else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} B")
             }
         }
@@ -455,3 +496,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
         is RootNode -> evaluateRootNode(node.main)
     }
 }
+
+suspend fun Frame.toJson(value: FluoriteValue) = (this.getMethod(value, "TO_JSON") as FluoriteFunction).function(listOf(value))
+
+suspend fun FluoriteValue.toJson() = (this.getMethod("TO_JSON") as FluoriteFunction).function(listOf(this))

@@ -188,6 +188,8 @@ class Fluorite12Grammar : Grammar<Node>() {
         +exclamation map { { main -> LeftNode(it, main) } },
         +ampersand map { { main -> LeftNode(it, main) } },
         +(dollar * sharp) map { { main -> LeftNode(it, main) } },
+        +(dollar * ampersand) map { { main -> LeftNode(it, main) } },
+        +(dollar * asterisk) map { { main -> LeftNode(it, main) } },
     )
     val left: Parser<Node> by zeroOrMore(leftOperator) * right map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
