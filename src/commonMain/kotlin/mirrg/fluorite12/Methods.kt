@@ -27,6 +27,8 @@ fun FluoriteValue.getMethod(name: String): FluoriteValue? {
     }
 }
 
-suspend fun FluoriteValue.toJson(frame: Frame) = (this.getMethod(frame, "TO_JSON") as FluoriteFunction).function(listOf(this))
+suspend fun FluoriteValue.callMethod(frame: Frame, name: String, vararg arguments: FluoriteValue) = (this.getMethod(frame, name) as FluoriteFunction).function(listOf(this, *arguments))
+suspend fun FluoriteValue.callMethod(name: String, vararg arguments: FluoriteValue) = (this.getMethod(name) as FluoriteFunction).function(listOf(this, *arguments))
 
-suspend fun FluoriteValue.toJson() = (this.getMethod("TO_JSON") as FluoriteFunction).function(listOf(this))
+suspend fun FluoriteValue.toJson(frame: Frame) = this.callMethod(frame, "TO_JSON")
+suspend fun FluoriteValue.toJson() = this.callMethod("TO_JSON")
