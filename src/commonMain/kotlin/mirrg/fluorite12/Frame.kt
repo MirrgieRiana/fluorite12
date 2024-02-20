@@ -191,7 +191,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
                     val receiver = evaluate(node.main.left)
                     val name = node.main.right.string
-                    val method = getMethod(receiver, name) ?: throw IllegalArgumentException("No such method: ${node.main.left}::$name")
+                    val method = receiver.getMethod(this, name) ?: throw IllegalArgumentException("No such method: ${node.main.left}::$name")
                     if (method !is FluoriteFunction) throw IllegalArgumentException("Can not call: ${node.main.left}::$name")
                     val argumentNodes = when (node.argument) {
                         is EmptyNode -> listOf()
@@ -234,7 +234,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             }
 
             suspend fun FluoriteValue.toFluoriteString(): FluoriteValue {
-                return when (val method = getMethod(this, "TO_STRING")) {
+                return when (val method = this.getMethod(this@evaluate, "TO_STRING")) {
                     null -> throw IllegalArgumentException("No such method: $this.TO_STRING")
                     is FluoriteFunction -> method.function(listOf(this))
                     else -> throw IllegalArgumentException("$method is not a function")
@@ -274,7 +274,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 "!" -> evaluate(node.right).toBoolean().not()
                 "&" -> evaluate(node.right).toFluoriteString()
                 "$#" -> evaluate(node.right).getLength()
-                "$&" -> this.toJson(evaluate(node.right))
+                "$&" -> evaluate(node.right).toJson(this)
                 "$*" -> evaluate(node.right).fromJson()
                 else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} B")
             }
