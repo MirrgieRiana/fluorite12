@@ -169,15 +169,6 @@ class Fluorite12Test {
     }
 
     @Test
-    fun methodTest() = runTest {
-        assertEquals(10, run("{method: () -> 10}::method()").int) // a::b() でaのbを呼び出せる
-        assertEquals(10, run("{a: 10; method: this -> this.a}::method()").int) // メソッド関数は最初の引数にthisを受け取る
-        assertEquals(20, run("{a: 10; method: this, b -> this.a * b}::method(2)").int) //  2個目以降の引数にメソッド呼び出し時の引数を受け取る
-
-        assertEquals("10", run("10::TO_STRING()").string) // 組み込みメソッドの呼び出し
-    }
-
-    @Test
     fun lambdaTest() = runTest {
         assertEquals(10, run("((a) -> a)(10)").int) // (a) -> b で関数を作り、 f(a) で実行する
         assertEquals(12, run("((a; b) -> a * b)(3; 4)").int) // ; で引数を複数取れる
@@ -190,6 +181,15 @@ class Fluorite12Test {
 
         assertEquals(120, run("f := n -> n == 0 ? 1 : n * f(n - 1); f(5)").int) // 再帰関数の例
         assertEquals(120, run("(f -> f(f))(f -> n -> n == 0 ? 1 : n * f(f)(n - 1))(5)").int) // 複雑なラムダ計算の例
+    }
+
+    @Test
+    fun methodTest() = runTest {
+        assertEquals(10, run("{method: () -> 10}::method()").int) // a::b() でaのbを呼び出せる
+        assertEquals(10, run("{a: 10; method: this -> this.a}::method()").int) // メソッド関数は最初の引数にthisを受け取る
+        assertEquals(20, run("{a: 10; method: this, b -> this.a * b}::method(2)").int) //  2個目以降の引数にメソッド呼び出し時の引数を受け取る
+
+        assertEquals("10", run("10::TO_STRING()").string) // 組み込みメソッドの呼び出し
     }
 }
 
