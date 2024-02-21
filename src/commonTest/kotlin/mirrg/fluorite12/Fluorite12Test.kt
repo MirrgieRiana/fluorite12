@@ -98,6 +98,15 @@ class Fluorite12Test {
     }
 
     @Test
+    fun arrayTest() = runTest {
+        assertEquals("[1]", run("[1]").array) // [ ] で配列を作れる
+        assertEquals("[1;2]", run("[1; 2]").array) // 要素は ; で区切ることができる
+        assertEquals("[1;2]", run("[1, 2]").array) // 要素のストリームでもよい
+        assertEquals("[1;2;3]", run("[1, 2; 3]").array) // 要素のストリームと要素が混在してもよい
+        assertEquals("[1;2;3;4;5;6;7;8]", run("[1; 2..4; 0..2 | _ + 5; 8]").array) // 埋め込まれたストリームは自動的に展開される
+    }
+
+    @Test
     fun objectTest() = runTest {
         assertEquals("{a:1}", run(""" {"a": 1} """).obj) // { } でオブジェクトを作れる
         assertEquals("{a:1}", run("{a: 1}").obj) // キーの " は省略できる
@@ -241,3 +250,4 @@ private val FluoriteValue.double get() = (this as FluoriteDouble).value
 private val FluoriteValue.boolean get() = (this as FluoriteBoolean).value
 private val FluoriteValue.string get() = (this as FluoriteString).value
 private val FluoriteValue.obj get() = (this as FluoriteObject).toString()
+private val FluoriteValue.array get() = (this as FluoriteArray).toString()
