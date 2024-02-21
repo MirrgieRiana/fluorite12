@@ -104,6 +104,7 @@ class Fluorite12Test {
         assertEquals("[1;2]", run("[1, 2]").array) // 要素のストリームでもよい
         assertEquals("[1;2;3]", run("[1, 2; 3]").array) // 要素のストリームと要素が混在してもよい
         assertEquals("[1;2;3;4;5;6;7;8]", run("[1; 2..4; 0..2 | _ + 5; 8]").array) // 埋め込まれたストリームは自動的に展開される
+        assertEquals("[]", run("[]").array) // 空でもよい
     }
 
     @Test
