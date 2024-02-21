@@ -223,6 +223,8 @@ class Fluorite12Test {
         assertEquals(20, run("{a: 10; method: this, b -> this.a * b}::method(2)").int) // 2個目以降の引数にメソッド呼び出し時の引数を受け取る
 
         assertEquals("10", run("10::TO_STRING()").string) // 組み込みメソッドの呼び出し
+
+        assertEquals(10, run("A := {m: _ -> _.v}; a := A {v: 10}; a::m()").int) // メソッドの継承
     }
 }
 
