@@ -166,10 +166,10 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             }
 
             "{" -> {
-                val nodes = if (node.main is SemicolonNode) {
-                    node.main.nodes
-                } else {
-                    listOf(node.main)
+                val nodes = when (node.main) {
+                    is EmptyNode -> listOf()
+                    is SemicolonNode -> node.main.nodes
+                    else -> listOf(node.main)
                 }
                 val values = mutableMapOf<String, FluoriteValue>()
                 nodes.forEach {

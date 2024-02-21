@@ -106,6 +106,7 @@ class Fluorite12Test {
         assertEquals("{a:1;b:2}", run("{a: 1; b: 2}").obj) // エントリーは ; で区切ることができる
         assertEquals("{a:1;b:2}", run("{(a: 1), (b: 2)}").obj) // エントリーのストリームでもよい
         assertEquals("{1:2;2:4;3:6}", run("{1 .. 3 | a => (a): a * 2}").obj) // エントリー列を返す式でもよい
+        assertEquals("{}", run(""" {} """).obj) // 空でもよい
     }
 
     @Test
