@@ -170,6 +170,28 @@ class Fluorite12Test {
     }
 
     @Test
+    fun builtInClassTest() = runTest {
+        // 各クラスのtrue判定
+        assertEquals(true, run("1 ?= VALUE_CLASS").boolean)
+        assertEquals(true, run("NULL ?= NULL_CLASS").boolean)
+        assertEquals(true, run("1 ?= INT_CLASS").boolean)
+        assertEquals(true, run("1.2 ?= DOUBLE_CLASS").boolean)
+        assertEquals(true, run("TRUE ?= BOOLEAN_CLASS").boolean)
+        assertEquals(true, run("'a' ?= STRING_CLASS").boolean)
+        assertEquals(true, run("[1] ?= ARRAY_CLASS").boolean)
+        assertEquals(true, run("{a: 1} ?= OBJECT_CLASS").boolean)
+        assertEquals(true, run("(a -> 1) ?= FUNCTION_CLASS").boolean)
+        assertEquals(true, run("(1, 2) ?= STREAM_CLASS").boolean)
+
+        // falseテスト
+        assertEquals(false, run("'10' ?= INT_CLASS").boolean)
+        assertEquals(false, run("10 ?= STRING_CLASS").boolean)
+        assertEquals(false, run("(1, 2) ?= ARRAY_CLASS").boolean)
+        assertEquals(false, run("1.2 ?= INT_CLASS").boolean)
+        assertEquals(false, run("1 ?= DOUBLE_CLASS").boolean)
+    }
+
+    @Test
     fun variableTest() = runTest {
         assertEquals(10, run("a := 10; a").int) // := で変数を定義できる
         assertEquals(20, run("a := 10; a = 20; a").int) // = で既存の変数に代入できる

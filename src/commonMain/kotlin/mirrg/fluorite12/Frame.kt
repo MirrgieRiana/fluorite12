@@ -14,6 +14,17 @@ class Frame(val parent: Frame? = null) {
 }
 
 fun Frame.defineCommonBuiltinVariables() {
+    variables["VALUE_CLASS"] = Variable(false, FluoriteValue.fluoriteClass)
+    variables["NULL_CLASS"] = Variable(false, FluoriteNull.fluoriteClass)
+    variables["INT_CLASS"] = Variable(false, FluoriteInt.fluoriteClass)
+    variables["DOUBLE_CLASS"] = Variable(false, FluoriteDouble.fluoriteClass)
+    variables["BOOLEAN_CLASS"] = Variable(false, FluoriteBoolean.fluoriteClass)
+    variables["STRING_CLASS"] = Variable(false, FluoriteString.fluoriteClass)
+    variables["ARRAY_CLASS"] = Variable(false, FluoriteArray.fluoriteClass)
+    variables["OBJECT_CLASS"] = Variable(false, FluoriteObject.fluoriteClass)
+    variables["FUNCTION_CLASS"] = Variable(false, FluoriteFunction.fluoriteClass)
+    variables["STREAM_CLASS"] = Variable(false, FluoriteStream.fluoriteClass)
+
     variables["NULL"] = Variable(false, FluoriteNull)
     variables["TRUE"] = Variable(false, FluoriteBoolean.TRUE)
     variables["FALSE"] = Variable(false, FluoriteBoolean.FALSE)
@@ -432,7 +443,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             val values = arrayOfNulls<FluoriteValue>(node.nodes.size)
             values[0] = evaluate(node.nodes[0])
             node.operators.forEachIndexed { i, operator ->
-                val leftValue = values[i]
+                val leftValue = values[i]!!
                 val rightValue = evaluate(node.nodes[i + 1])
                 values[i + 1] = rightValue
                 val result = when (operator.text) {
@@ -442,6 +453,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                     "<" -> (leftValue as FluoriteNumber).value.toDouble() < (rightValue as FluoriteNumber).value.toDouble()
                     ">=" -> (leftValue as FluoriteNumber).value.toDouble() >= (rightValue as FluoriteNumber).value.toDouble()
                     "<=" -> (leftValue as FluoriteNumber).value.toDouble() <= (rightValue as FluoriteNumber).value.toDouble()
+                    "?=" -> leftValue.instanceOf(rightValue)
                     else -> throw IllegalArgumentException("Unknown operator: A ${operator.text} B")
                 }
                 if (!result) return@run FluoriteBoolean.FALSE

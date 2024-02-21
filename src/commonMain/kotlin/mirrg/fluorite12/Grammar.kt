@@ -196,7 +196,16 @@ class Fluorite12Grammar : Grammar<Node>() {
     val mul: Parser<Node> by leftAssociative(left, -s * (+asterisk or +slash) * -b, ::infixNode)
     val add: Parser<Node> by leftAssociative(mul, -s * (+plus or +(minus * -NotParser(greater))) * -b, ::infixNode)
     val range: Parser<Node> by leftAssociative(add, -s * +(period * period) * -b, ::infixNode)
-    val comparison: Parser<Node> by range * zeroOrMore(-s * (+(equal * equal) or +(exclamation * equal) or +greater or +(greater * equal) or +less or +(less * equal)) * -b * range) map {
+    val comparisonOperator: Parser<List<TokenMatch>> by OrCombinator(
+        +(equal * equal), // ==
+        +(exclamation * equal), // !=
+        +greater, // >
+        +(greater * equal), // >=
+        +less, // <
+        +(less * equal), // <=
+        +(question * equal), // ?=
+    )
+    val comparison: Parser<Node> by range * zeroOrMore(-s * comparisonOperator * -b * range) map {
         if (it.t2.isNotEmpty()) {
             ComparisonNode(listOf(it.t1, *it.t2.map { t -> t.t2 }.toTypedArray()), it.t2.map { t -> t.t1 })
         } else {

@@ -1,5 +1,14 @@
 package mirrg.fluorite12
 
+fun FluoriteValue.instanceOf(clazz: FluoriteValue): Boolean {
+    var currentObject: FluoriteValue? = this
+    while (true) {
+        if (currentObject == null) return false
+        if (currentObject === clazz) return true
+        currentObject = currentObject.parent
+    }
+}
+
 fun FluoriteValue.getMethod(frame: Frame, name: String): FluoriteValue? {
     var currentObject = if (this is FluoriteObject) this else parent
     while (true) {
