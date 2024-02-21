@@ -107,6 +107,8 @@ class Fluorite12Test {
         assertEquals("{a:1;b:2}", run("{(a: 1), (b: 2)}").obj) // エントリーのストリームでもよい
         assertEquals("{1:2;2:4;3:6}", run("{1 .. 3 | a => (a): a * 2}").obj) // エントリー列を返す式でもよい
         assertEquals("{}", run(""" {} """).obj) // 空でもよい
+
+        assertEquals(true, run(""" A := {}; a := A {}; a ?= A """).boolean) // 親クラスを取るオブジェクト
     }
 
     @Test

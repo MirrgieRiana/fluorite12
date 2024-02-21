@@ -165,30 +165,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 FluoriteArray(values)
             }
 
-            "{" -> {
-                val nodes = when (node.main) {
-                    is EmptyNode -> listOf()
-                    is SemicolonNode -> node.main.nodes
-                    else -> listOf(node.main)
-                }
-                val values = mutableMapOf<String, FluoriteValue>()
-                nodes.forEach {
-                    val value = evaluate(it)
-                    if (value is FluoriteStream) {
-                        value.collect { item ->
-                            require(item is FluoriteArray)
-                            require(item.values.size == 2)
-                            values[item.values[0].toString()] = item.values[1]
-                        }
-                    } else {
-                        require(value is FluoriteArray)
-                        require(value.values.size == 2)
-                        values[value.values[0].toString()] = value.values[1]
-                    }
-                }
-                FluoriteObject(FluoriteObject.fluoriteClass, values)
-            }
-
+            "{" -> createObject(null, node.main)
             else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} A ${node.right.text}")
         }
 
@@ -220,6 +197,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 }
             }
 
+            "{" -> createObject(node.main, node.argument)
             else -> throw IllegalArgumentException("Unknown operator: A ${node.left.text} B ${node.right.text}")
         }
 
@@ -483,4 +461,29 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
 
         is RootNode -> evaluateRootNode(node.main)
     }
+}
+
+suspend fun Frame.createObject(parentNode: Node?, contentNode: Node): FluoriteObject {
+    val parent = parentNode?.let { this.evaluate(it) as FluoriteObject } ?: FluoriteObject.fluoriteClass
+    val nodes = when (contentNode) {
+        is EmptyNode -> listOf()
+        is SemicolonNode -> contentNode.nodes
+        else -> listOf(contentNode)
+    }
+    val map = mutableMapOf<String, FluoriteValue>()
+    nodes.forEach {
+        val value = this.evaluate(it)
+        if (value is FluoriteStream) {
+            value.collect { item ->
+                require(item is FluoriteArray)
+                require(item.values.size == 2)
+                map[item.values[0].toString()] = item.values[1]
+            }
+        } else {
+            require(value is FluoriteArray)
+            require(value.values.size == 2)
+            map[value.values[0].toString()] = value.values[1]
+        }
+    }
+    return FluoriteObject(parent, map)
 }
