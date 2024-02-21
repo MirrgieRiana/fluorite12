@@ -1,10 +1,6 @@
 package mirrg.fluorite12
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.FlowCollector
 
 
 interface FluoriteValue {
@@ -190,7 +186,7 @@ class FluoriteFunction(val function: suspend (List<FluoriteValue>) -> FluoriteVa
 }
 
 
-class FluoriteStream(val flow: Flow<FluoriteValue>) : FluoriteValue {
+class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -> Unit) : FluoriteValue {
     companion object {
         val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
     }
@@ -198,12 +194,30 @@ class FluoriteStream(val flow: Flow<FluoriteValue>) : FluoriteValue {
     override val parent get() = fluoriteClass
 }
 
-fun streamOf(value: FluoriteValue) = FluoriteStream(flowOf(value))
-
-operator fun FluoriteStream.plus(other: FluoriteStream) = FluoriteStream(merge(this.flow, other.flow))
-
-fun Iterable<FluoriteStream>.concat() = FluoriteStream(flow {
-    this@concat.forEach {
-        emitAll(it.flow)
+fun FluoriteStream(vararg values: FluoriteValue) = FluoriteStream {
+    values.forEach {
+        emit(it)
     }
+}
+
+fun FluoriteStream(values: Iterable<FluoriteValue>) = FluoriteStream {
+    values.forEach {
+        emit(it)
+    }
+}
+
+operator fun FluoriteStream.plus(other: FluoriteStream) = FluoriteStream {
+    this@plus.flowProvider(this)
+    other.flowProvider(this)
+}
+
+fun Iterable<FluoriteStream>.concat() = FluoriteStream {
+    this@concat.forEach {
+        it.flowProvider(this)
+    }
+}
+
+// ↓ flowProvider { のように書くとJSでemitが呼び出せないエラーになる
+suspend fun FluoriteStream.collect(block: suspend (FluoriteValue) -> Unit) = this.flowProvider(FlowCollector {
+    block(it)
 })

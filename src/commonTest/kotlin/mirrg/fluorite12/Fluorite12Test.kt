@@ -162,6 +162,14 @@ class Fluorite12Test {
     }
 
     @Test
+    fun rangeTest() = runTest {
+        assertEquals("[1;2;3;4]", run("&[1 .. 4]").string) // .. でその範囲をイテレートするストリームを得る
+        assertEquals("[0;1;2;3]", run("&[0 .. 4 - 1]").string) // 項は0や四則演算等でもよい
+        assertEquals("[-1;0;1]", run("&[-1 .. 1]").string) // 項は0や四則演算等でもよい
+        assertEquals("[[1;2;3;4];[1;2;3;4]]", run("a := 1 .. 4; &[[a]; [a]]").string) // 範囲ストリームは再利用できる
+    }
+
+    @Test
     fun variableTest() = runTest {
         assertEquals(10, run("a := 10; a").int) // := で変数を定義できる
         assertEquals(20, run("a := 10; a = 20; a").int) // = で既存の変数に代入できる

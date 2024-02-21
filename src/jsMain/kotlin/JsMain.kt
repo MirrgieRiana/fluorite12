@@ -1,13 +1,12 @@
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.promise
 import mirrg.fluorite12.Fluorite12Grammar
 import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.FluoriteValue
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.Node
+import mirrg.fluorite12.collect
 import mirrg.fluorite12.defineCommonBuiltinVariables
 import mirrg.fluorite12.evaluate
 import kotlin.js.Promise
@@ -29,7 +28,7 @@ fun evaluate(node: Node) = GlobalScope.promise {
 fun log(value: FluoriteValue) = GlobalScope.promise {
     when (value) {
         is FluoriteStream -> {
-            value.flow.collect {
+            value.collect {
                 console.log(it)
             }
         }
@@ -44,7 +43,20 @@ fun log(value: FluoriteValue) = GlobalScope.promise {
 @JsName("stringify")
 fun stringify(value: FluoriteValue): Promise<String> = GlobalScope.promise {
     suspend fun f(value: FluoriteValue): String = when (value) {
-        is FluoriteStream -> value.flow.map { f(it) }.toList().joinToString("\n")
+        is FluoriteStream -> {
+            val sb = StringBuilder()
+            var isFirst = true
+            value.collect {
+                if (isFirst) {
+                    isFirst = false
+                } else {
+                    sb.append('\n')
+                }
+                sb.append(f(it))
+            }
+            sb.toString()
+        }
+
         else -> value.toString()
     }
     f(value)

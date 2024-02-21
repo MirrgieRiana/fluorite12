@@ -1,9 +1,5 @@
 package mirrg.fluorite12
 
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -148,7 +144,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 nodes.forEach {
                     val value = evaluate(it)
                     if (value is FluoriteStream) {
-                        value.flow.collect { item ->
+                        value.collect { item ->
                             values += item
                         }
                     } else {
@@ -168,7 +164,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 nodes.forEach {
                     val value = evaluate(it)
                     if (value is FluoriteStream) {
-                        value.flow.collect { item ->
+                        value.collect { item ->
                             require(item is FluoriteArray)
                             require(item.values.size == 2)
                             values[item.values[0].toString()] = item.values[1]
@@ -357,7 +353,14 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
             }
 
-            ".." -> FluoriteStream(((evaluate(node.left) as FluoriteInt).value..(evaluate(node.right) as FluoriteInt).value).asFlow().map { FluoriteInt(it) })
+            ".." -> {
+                val range = (evaluate(node.left) as FluoriteInt).value..(evaluate(node.right) as FluoriteInt).value
+                FluoriteStream {
+                    range.forEach {
+                        emit(FluoriteInt(it))
+                    }
+                }
+            }
 
             ":" -> {
                 val key = when (node.left) {
@@ -407,16 +410,16 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                     return frame.evaluate(body)
                 }
                 return if (stream is FluoriteStream) {
-                    FluoriteStream(flow {
-                        stream.flow.collect {
+                    FluoriteStream {
+                        stream.collect {
                             val value = f(it)
                             if (value is FluoriteStream) {
-                                emitAll(value.flow)
+                                value.flowProvider(this)
                             } else {
                                 emit(value)
                             }
                         }
-                    })
+                    }
                 } else {
                     f(stream)
                 }
@@ -452,7 +455,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             "," -> {
                 node.nodes.map {
                     val value = evaluate(it)
-                    if (value is FluoriteStream) value else streamOf(value)
+                    if (value is FluoriteStream) value else FluoriteStream(value)
                 }.concat()
             }
 
