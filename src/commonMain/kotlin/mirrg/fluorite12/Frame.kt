@@ -62,13 +62,13 @@ fun Frame.getOverride(signature: Signature): FluoriteValue? {
     }
 }
 
-private suspend fun Frame.evaluateExecution(node: Node): FluoriteValue {
+private suspend fun Frame.compileToRunner(node: Node): FluoriteValue {
     return when {
         node is InfixNode && node.operator.text == "=" -> when { // 代入文
             node.left is IdentifierNode -> {
                 val name = node.left.string
                 val variable = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
-                variable.value = evaluate(node.right)
+                variable.value = compileToGetter(node.right)
                 variable.value
             }
 
@@ -80,28 +80,28 @@ private suspend fun Frame.evaluateExecution(node: Node): FluoriteValue {
                 val name = node.left.string
                 val variable = Variable(true, FluoriteNull)
                 variables[name] = variable
-                variable.value = evaluate(node.right)
+                variable.value = compileToGetter(node.right)
                 variable.value
             }
 
             else -> throw IllegalArgumentException("Illegal definition: ${node.left::class} := ${node.right::class}")
         }
 
-        else -> evaluate(node) // 式文
+        else -> compileToGetter(node) // 式文
     }
 }
 
-private suspend fun Frame.evaluateRootNode(node: Node): FluoriteValue {
+private suspend fun Frame.compileRootNodeToGetter(node: Node): FluoriteValue {
     val executionNodeList = if (node is SemicolonNode) node.nodes else listOf(node)
     var result: FluoriteValue = FluoriteNull
     executionNodeList.forEachIndexed { index, executionNode ->
-        val lastResult = evaluateExecution(executionNode)
+        val lastResult = compileToRunner(executionNode)
         if (index == executionNodeList.size - 1) result = lastResult
     }
     return result
 }
 
-suspend fun Frame.evaluate(node: Node): FluoriteValue {
+suspend fun Frame.compileToGetter(node: Node): FluoriteValue {
     return when (node) {
         is EmptyNode -> throw IllegalArgumentException("Unexpected empty")
 
@@ -122,7 +122,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             node.nodes.forEach {
                 when (it) {
                     is LiteralStringContent -> sb.append(it.string)
-                    is NodeStringContent -> sb.append("${evaluate(it.main)}")
+                    is NodeStringContent -> sb.append("${compileToGetter(it.main)}")
                 }
             }
             FluoriteString("$sb")
@@ -133,7 +133,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             node.nodes.forEach {
                 when (it) {
                     is LiteralStringContent -> sb.append(it.string)
-                    is NodeStringContent -> sb.append("${evaluate(it.main)}")
+                    is NodeStringContent -> sb.append("${compileToGetter(it.main)}")
                 }
             }
             FluoriteString("$sb")
@@ -142,7 +142,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
         is BracketNode -> when (node.left.text) {
             "(" -> {
                 val frame = Frame(this)
-                frame.evaluateRootNode(node.main)
+                frame.compileRootNodeToGetter(node.main)
             }
 
             "[" -> {
@@ -153,7 +153,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 }
                 val values = mutableListOf<FluoriteValue>()
                 nodes.forEach {
-                    val value = evaluate(it)
+                    val value = compileToGetter(it)
                     if (value is FluoriteStream) {
                         value.collect { item ->
                             values += item
@@ -173,7 +173,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             "(" -> {
                 if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
-                    val receiver = evaluate(node.main.left)
+                    val receiver = compileToGetter(node.main.left)
                     val name = node.main.right.string
                     val method = receiver.getMethod(this, name) ?: throw IllegalArgumentException("No such method: ${node.main.left}::$name")
                     if (method !is FluoriteFunction) throw IllegalArgumentException("Can not call: ${node.main.left}::$name")
@@ -182,17 +182,17 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                         is SemicolonNode -> node.argument.nodes
                         else -> listOf(node.argument)
                     }
-                    val argumentValues = argumentNodes.map { evaluate(it) }
+                    val argumentValues = argumentNodes.map { compileToGetter(it) }
                     method.function(listOf(receiver) + argumentValues)
                 } else { // 関数呼び出し
-                    val mainValue = evaluate(node.main)
+                    val mainValue = compileToGetter(node.main)
                     require(mainValue is FluoriteFunction)
                     val argumentNodes = when (node.argument) {
                         is EmptyNode -> listOf()
                         is SemicolonNode -> node.argument.nodes
                         else -> listOf(node.argument)
                     }
-                    val argumentValues = argumentNodes.map { evaluate(it) }
+                    val argumentValues = argumentNodes.map { compileToGetter(it) }
                     mainValue.function(argumentValues)
                 }
             }
@@ -219,7 +219,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             }
 
             suspend fun FluoriteValue.toFluoriteString(): FluoriteValue {
-                return when (val method = this.getMethod(this@evaluate, "TO_STRING")) {
+                return when (val method = this.getMethod(this@compileToGetter, "TO_STRING")) {
                     null -> throw IllegalArgumentException("No such method: $this.TO_STRING")
                     is FluoriteFunction -> method.function(listOf(this))
                     else -> throw IllegalArgumentException("$method is not a function")
@@ -253,39 +253,39 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             }
 
             when (node.left.text) {
-                "+" -> evaluate(node.right).toNumber()
-                "-" -> evaluate(node.right).toNumber().negate()
-                "?" -> evaluate(node.right).toBoolean()
-                "!" -> evaluate(node.right).toBoolean().not()
-                "&" -> evaluate(node.right).toFluoriteString()
-                "$#" -> evaluate(node.right).getLength()
-                "$&" -> evaluate(node.right).toJson(this)
-                "$*" -> evaluate(node.right).fromJson()
+                "+" -> compileToGetter(node.right).toNumber()
+                "-" -> compileToGetter(node.right).toNumber().negate()
+                "?" -> compileToGetter(node.right).toBoolean()
+                "!" -> compileToGetter(node.right).toBoolean().not()
+                "&" -> compileToGetter(node.right).toFluoriteString()
+                "$#" -> compileToGetter(node.right).getLength()
+                "$&" -> compileToGetter(node.right).toJson(this)
+                "$*" -> compileToGetter(node.right).fromJson()
                 else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} B")
             }
         }
 
         is InfixNode -> when (node.operator.text) {
-            "." -> when (val left = evaluate(node.left)) {
-                is FluoriteString -> left.value.getOrNull((evaluate(node.right) as FluoriteInt).value)?.toString()?.let { FluoriteString(it) } ?: FluoriteNull
-                is FluoriteArray -> left.values.getOrNull((evaluate(node.right) as FluoriteInt).value) ?: FluoriteNull
+            "." -> when (val left = compileToGetter(node.left)) {
+                is FluoriteString -> left.value.getOrNull((compileToGetter(node.right) as FluoriteInt).value)?.toString()?.let { FluoriteString(it) } ?: FluoriteNull
+                is FluoriteArray -> left.values.getOrNull((compileToGetter(node.right) as FluoriteInt).value) ?: FluoriteNull
 
                 is FluoriteObject -> {
-                    val key = if (node.right is IdentifierNode) node.right.string else evaluate(node.right).toString()
+                    val key = if (node.right is IdentifierNode) node.right.string else compileToGetter(node.right).toString()
                     left.map[key] ?: FluoriteNull
                 }
 
                 else -> throw IllegalArgumentException("Unknown operator: ${left::class} . ${node.right::class}")
             }
 
-            "+" -> when (val left = evaluate(node.left)) {
-                is FluoriteInt -> when (val right = evaluate(node.right)) {
+            "+" -> when (val left = compileToGetter(node.left)) {
+                is FluoriteInt -> when (val right = compileToGetter(node.right)) {
                     is FluoriteInt -> FluoriteInt(left.value + right.value)
                     is FluoriteDouble -> FluoriteDouble(left.value + right.value)
                     else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
                 }
 
-                is FluoriteDouble -> when (val right = evaluate(node.right)) {
+                is FluoriteDouble -> when (val right = compileToGetter(node.right)) {
                     is FluoriteInt -> FluoriteDouble(left.value + right.value)
                     is FluoriteDouble -> FluoriteDouble(left.value + right.value)
                     else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
@@ -294,14 +294,14 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
             }
 
-            "-" -> when (val left = evaluate(node.left)) {
-                is FluoriteInt -> when (val right = evaluate(node.right)) {
+            "-" -> when (val left = compileToGetter(node.left)) {
+                is FluoriteInt -> when (val right = compileToGetter(node.right)) {
                     is FluoriteInt -> FluoriteInt(left.value - right.value)
                     is FluoriteDouble -> FluoriteDouble(left.value - right.value)
                     else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
                 }
 
-                is FluoriteDouble -> when (val right = evaluate(node.right)) {
+                is FluoriteDouble -> when (val right = compileToGetter(node.right)) {
                     is FluoriteInt -> FluoriteDouble(left.value - right.value)
                     is FluoriteDouble -> FluoriteDouble(left.value - right.value)
                     else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
@@ -310,14 +310,14 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
             }
 
-            "*" -> when (val left = evaluate(node.left)) {
-                is FluoriteInt -> when (val right = evaluate(node.right)) {
+            "*" -> when (val left = compileToGetter(node.left)) {
+                is FluoriteInt -> when (val right = compileToGetter(node.right)) {
                     is FluoriteInt -> FluoriteInt(left.value * right.value)
                     is FluoriteDouble -> FluoriteDouble(left.value * right.value)
                     else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
                 }
 
-                is FluoriteDouble -> when (val right = evaluate(node.right)) {
+                is FluoriteDouble -> when (val right = compileToGetter(node.right)) {
                     is FluoriteInt -> FluoriteDouble(left.value * right.value)
                     is FluoriteDouble -> FluoriteDouble(left.value * right.value)
                     else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
@@ -326,14 +326,14 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
             }
 
-            "/" -> when (val left = evaluate(node.left)) {
-                is FluoriteInt -> when (val right = evaluate(node.right)) {
+            "/" -> when (val left = compileToGetter(node.left)) {
+                is FluoriteInt -> when (val right = compileToGetter(node.right)) {
                     is FluoriteInt -> FluoriteInt(left.value / right.value)
                     is FluoriteDouble -> FluoriteDouble(left.value / right.value)
                     else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
                 }
 
-                is FluoriteDouble -> when (val right = evaluate(node.right)) {
+                is FluoriteDouble -> when (val right = compileToGetter(node.right)) {
                     is FluoriteInt -> FluoriteDouble(left.value / right.value)
                     is FluoriteDouble -> FluoriteDouble(left.value / right.value)
                     else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
@@ -343,7 +343,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             }
 
             ".." -> {
-                val range = (evaluate(node.left) as FluoriteInt).value..(evaluate(node.right) as FluoriteInt).value
+                val range = (compileToGetter(node.left) as FluoriteInt).value..(compileToGetter(node.right) as FluoriteInt).value
                 FluoriteStream {
                     range.forEach {
                         emit(FluoriteInt(it))
@@ -354,9 +354,9 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             ":" -> {
                 val key = when (node.left) {
                     is IdentifierNode -> FluoriteString(node.left.string)
-                    else -> evaluate(node.left)
+                    else -> compileToGetter(node.left)
                 }
-                FluoriteArray(listOf(key, evaluate(node.right)))
+                FluoriteArray(listOf(key, compileToGetter(node.right)))
             }
 
             "->" -> {
@@ -381,12 +381,12 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                     variables.forEachIndexed { i, it ->
                         frame.variables[it] = Variable(true, arguments.getOrNull(i) ?: FluoriteNull)
                     }
-                    frame.evaluate(node.right)
+                    frame.compileToGetter(node.right)
                 }
             }
 
             "|" -> {
-                val stream = evaluate(node.left)
+                val stream = compileToGetter(node.left)
                 val (variable, body) = if (node.right is InfixNode && node.right.operator.text == "=>") {
                     require(node.right.left is IdentifierNode)
                     Pair(node.right.left.string, node.right.right)
@@ -396,7 +396,7 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
                 suspend fun f(value: FluoriteValue): FluoriteValue {
                     val frame = Frame(this)
                     frame.variables[variable] = Variable(false, value)
-                    return frame.evaluate(body)
+                    return frame.compileToGetter(body)
                 }
                 return if (stream is FluoriteStream) {
                     FluoriteStream {
@@ -419,10 +419,10 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
 
         is ComparisonNode -> run {
             val values = arrayOfNulls<FluoriteValue>(node.nodes.size)
-            values[0] = evaluate(node.nodes[0])
+            values[0] = compileToGetter(node.nodes[0])
             node.operators.forEachIndexed { i, operator ->
                 val leftValue = values[i]!!
-                val rightValue = evaluate(node.nodes[i + 1])
+                val rightValue = compileToGetter(node.nodes[i + 1])
                 values[i + 1] = rightValue
                 val result = when (operator.text) {
                     "==" -> leftValue == rightValue
@@ -439,12 +439,12 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
             FluoriteBoolean.TRUE
         }
 
-        is ConditionNode -> if ((evaluate(node.condition) as FluoriteBoolean).value) evaluate(node.ok) else evaluate(node.ng)
+        is ConditionNode -> if ((compileToGetter(node.condition) as FluoriteBoolean).value) compileToGetter(node.ok) else compileToGetter(node.ng)
 
         is ListNode -> when (node.operators.first().text) {
             "," -> {
                 node.nodes.map {
-                    val value = evaluate(it)
+                    val value = compileToGetter(it)
                     if (value is FluoriteStream) value else FluoriteStream(value)
                 }.concat()
             }
@@ -454,17 +454,17 @@ suspend fun Frame.evaluate(node: Node): FluoriteValue {
 
         is SemicolonNode -> {
             node.nodes.dropLast(1).forEach {
-                evaluate(it)
+                compileToGetter(it)
             }
-            evaluate(node.nodes.last())
+            compileToGetter(node.nodes.last())
         }
 
-        is RootNode -> evaluateRootNode(node.main)
+        is RootNode -> compileRootNodeToGetter(node.main)
     }
 }
 
 suspend fun Frame.createObject(parentNode: Node?, contentNode: Node): FluoriteObject {
-    val parent = parentNode?.let { this.evaluate(it) as FluoriteObject } ?: FluoriteObject.fluoriteClass
+    val parent = parentNode?.let { this.compileToGetter(it) as FluoriteObject } ?: FluoriteObject.fluoriteClass
     val nodes = when (contentNode) {
         is EmptyNode -> listOf()
         is SemicolonNode -> contentNode.nodes
@@ -472,7 +472,7 @@ suspend fun Frame.createObject(parentNode: Node?, contentNode: Node): FluoriteOb
     }
     val map = mutableMapOf<String, FluoriteValue>()
     nodes.forEach {
-        val value = this.evaluate(it)
+        val value = this.compileToGetter(it)
         if (value is FluoriteStream) {
             value.collect { item ->
                 require(item is FluoriteArray)

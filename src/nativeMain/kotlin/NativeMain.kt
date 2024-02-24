@@ -9,8 +9,8 @@ import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.Variable
 import mirrg.fluorite12.collect
+import mirrg.fluorite12.compileToGetter
 import mirrg.fluorite12.defineCommonBuiltinVariables
-import mirrg.fluorite12.evaluate
 import mirrg.fluorite12.toFluoriteString
 
 fun main(args: Array<String>) = runBlocking {
@@ -32,7 +32,7 @@ fun main(args: Array<String>) = runBlocking {
         }
         FluoriteNull
     })
-    when (val result = frame.evaluate(node)) {
+    when (val result = frame.compileToGetter(node)) {
         is FluoriteStream -> {
             result.collect {
                 println(it.toString())

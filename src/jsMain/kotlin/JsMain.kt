@@ -7,8 +7,8 @@ import mirrg.fluorite12.FluoriteValue
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.collect
+import mirrg.fluorite12.compileToGetter
 import mirrg.fluorite12.defineCommonBuiltinVariables
-import mirrg.fluorite12.evaluate
 import kotlin.js.Promise
 
 @Suppress("unused")
@@ -20,7 +20,7 @@ fun parse(src: String) = Fluorite12Grammar().tryParseToEnd(src)
 fun evaluate(node: Node) = GlobalScope.promise {
     val frame = Frame()
     frame.defineCommonBuiltinVariables()
-    frame.evaluate(node)
+    frame.compileToGetter(node)
 }
 
 @Suppress("unused")
