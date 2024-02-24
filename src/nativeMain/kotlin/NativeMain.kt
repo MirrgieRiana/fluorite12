@@ -46,8 +46,6 @@ fun main(args: Array<String>) = runBlocking {
             }
         }
 
-        else -> {
-            println(result.toString())
-        }
+        else -> println(result.toString())
     }
 }

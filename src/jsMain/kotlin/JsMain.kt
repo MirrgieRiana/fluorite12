@@ -39,9 +39,7 @@ fun log(value: FluoriteValue) = GlobalScope.promise {
             }
         }
 
-        else -> {
-            console.log(value)
-        }
+        else -> console.log(value)
     }
 }
 
