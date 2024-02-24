@@ -302,8 +302,16 @@ private suspend fun Frame.compileRootNodeToGetter(node: Node): Getter {
         is SemicolonNode -> node.nodes
         else -> listOf(node)
     }
-    val runners = nodes.dropLast(1).map { compileToRunner(it) }
-    val getter = compileToGetter(nodes.last())
+    val runners = nodes.dropLast(1).mapNotNull {
+        when (it) {
+            is EmptyNode -> null
+            else -> compileToRunner(it)
+        }
+    }
+    val getter = when (val getterNode = nodes.last()) {
+        is EmptyNode -> VoidGetter
+        else -> compileToGetter(getterNode)
+    }
     return LinesGetter(runners, getter)
 }
 

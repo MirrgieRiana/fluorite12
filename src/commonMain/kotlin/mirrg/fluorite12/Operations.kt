@@ -13,6 +13,10 @@ interface Getter {
     suspend fun evaluate(env: Environment): FluoriteValue
 }
 
+object VoidGetter : Getter {
+    override suspend fun evaluate(env: Environment) = FluoriteVoid
+}
+
 class LiteralGetter(private val value: FluoriteValue) : Getter {
     override suspend fun evaluate(env: Environment) = value
 }

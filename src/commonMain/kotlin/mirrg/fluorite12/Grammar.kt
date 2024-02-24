@@ -14,6 +14,7 @@ import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.TokenMatch
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
+import com.github.h0tk3y.betterParse.parser.EmptyParser
 import com.github.h0tk3y.betterParse.parser.Parser
 import com.github.h0tk3y.betterParse.utils.Tuple2
 import com.github.h0tk3y.betterParse.utils.Tuple3
@@ -218,7 +219,12 @@ class Fluorite12Grammar : Grammar<Node>() {
     val assignation: Parser<Node> by rightAssociative(enumeration, -s * (+(equal * -NotParser(greater)) or +(colon * -NotParser(equal or colon)) or +(colon * equal) or +(minus * greater) or +(equal * greater)) * -b, ::infixNode)
     val stream: Parser<Node> by leftAssociative(assignation, -s * +pipe * -b, ::infixNode)
 
-    val lines: Parser<Node> by stream * zeroOrMore(-s * (semicolon or br) * -b * stream) map ::semicolonNode
+    val linesPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
+        stream * -s * br * -b * parser { linesPart } map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+        (stream * -s or (EmptyParser map { EmptyNode })) * semicolon * (-b * parser { linesPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+        stream map { Pair(listOf(it), listOf()) },
+    )
+    val lines: Parser<Node> by linesPart map { if (it.first.size == 1) it.first.first() else SemicolonNode(it.first, it.second) }
     val expression: Parser<Node> by lines
 
     override val rootParser: Parser<Node> by -b * expression * -b map { RootNode(it) }
@@ -239,14 +245,6 @@ private fun conditionNode(it: Tuple5<Node, TokenMatch, Node, TokenMatch, Node>) 
 private fun listNode(it: Tuple2<Node, List<Tuple2<TokenMatch, Node>>>): Node {
     return if (it.t2.isNotEmpty()) {
         ListNode(listOf(it.t1) + it.t2.map { it.t2 }, it.t2.map { it.t1 })
-    } else {
-        it.t1
-    }
-}
-
-private fun semicolonNode(it: Tuple2<Node, List<Tuple2<TokenMatch, Node>>>): Node {
-    return if (it.t2.isNotEmpty()) {
-        SemicolonNode(listOf(it.t1) + it.t2.map { it.t2 }, it.t2.map { it.t1 })
     } else {
         it.t1
     }
