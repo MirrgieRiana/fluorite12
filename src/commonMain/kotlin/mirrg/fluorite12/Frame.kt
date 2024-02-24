@@ -89,7 +89,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
         is RawStringNode -> LiteralGetter(FluoriteString(node.node.string))
 
         is TemplateStringNode -> {
-            val getters = node.nodes.map {
+            val getters = node.stringContents.map {
                 when (it) {
                     is LiteralStringContent -> LiteralStringGetter(it.string)
                     is NodeStringContent -> ConversionStringGetter(compileToGetter(it.main))
@@ -99,7 +99,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
         }
 
         is EmbeddedStringNode -> {
-            val getters = node.nodes.map {
+            val getters = node.stringContents.map {
                 when (it) {
                     is LiteralStringContent -> LiteralStringGetter(it.string)
                     is NodeStringContent -> ConversionStringGetter(compileToGetter(it.main))
