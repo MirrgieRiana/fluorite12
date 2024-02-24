@@ -328,8 +328,7 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
 
 class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        val stream = streamGetter.evaluate(env)
-        return when (stream) {
+        return when (val stream = streamGetter.evaluate(env)) {
             is FluoriteStream -> {
                 FluoriteStream {
                     val newEnv = Environment(env, 1)
