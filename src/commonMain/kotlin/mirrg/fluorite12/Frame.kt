@@ -8,26 +8,10 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
+
 class Frame(val parent: Frame? = null) {
     val variables = mutableMapOf<String, Variable>()
     val overrides = mutableMapOf<Signature, FluoriteValue>()
-}
-
-fun Frame.defineCommonBuiltinVariables() {
-    variables["VALUE_CLASS"] = Variable(false, FluoriteValue.fluoriteClass)
-    variables["NULL_CLASS"] = Variable(false, FluoriteNull.fluoriteClass)
-    variables["INT_CLASS"] = Variable(false, FluoriteInt.fluoriteClass)
-    variables["DOUBLE_CLASS"] = Variable(false, FluoriteDouble.fluoriteClass)
-    variables["BOOLEAN_CLASS"] = Variable(false, FluoriteBoolean.fluoriteClass)
-    variables["STRING_CLASS"] = Variable(false, FluoriteString.fluoriteClass)
-    variables["ARRAY_CLASS"] = Variable(false, FluoriteArray.fluoriteClass)
-    variables["OBJECT_CLASS"] = Variable(false, FluoriteObject.fluoriteClass)
-    variables["FUNCTION_CLASS"] = Variable(false, FluoriteFunction.fluoriteClass)
-    variables["STREAM_CLASS"] = Variable(false, FluoriteStream.fluoriteClass)
-
-    variables["NULL"] = Variable(false, FluoriteNull)
-    variables["TRUE"] = Variable(false, FluoriteBoolean.TRUE)
-    variables["FALSE"] = Variable(false, FluoriteBoolean.FALSE)
 }
 
 class Variable(val writable: Boolean, defaultValue: FluoriteValue) {
@@ -62,43 +46,22 @@ fun Frame.getOverride(signature: Signature): FluoriteValue? {
     }
 }
 
-private suspend fun Frame.compileToRunner(node: Node): FluoriteValue {
-    return when {
-        node is InfixNode && node.operator.text == "=" -> when { // 代入文
-            node.left is IdentifierNode -> {
-                val name = node.left.string
-                val variable = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
-                variable.value = compileToGetter(node.right)
-                variable.value
-            }
 
-            else -> throw IllegalArgumentException("Illegal assignation: ${node.left::class} = ${node.right::class}")
-        }
+fun Frame.defineCommonBuiltinVariables() {
+    variables["VALUE_CLASS"] = Variable(false, FluoriteValue.fluoriteClass)
+    variables["NULL_CLASS"] = Variable(false, FluoriteNull.fluoriteClass)
+    variables["INT_CLASS"] = Variable(false, FluoriteInt.fluoriteClass)
+    variables["DOUBLE_CLASS"] = Variable(false, FluoriteDouble.fluoriteClass)
+    variables["BOOLEAN_CLASS"] = Variable(false, FluoriteBoolean.fluoriteClass)
+    variables["STRING_CLASS"] = Variable(false, FluoriteString.fluoriteClass)
+    variables["ARRAY_CLASS"] = Variable(false, FluoriteArray.fluoriteClass)
+    variables["OBJECT_CLASS"] = Variable(false, FluoriteObject.fluoriteClass)
+    variables["FUNCTION_CLASS"] = Variable(false, FluoriteFunction.fluoriteClass)
+    variables["STREAM_CLASS"] = Variable(false, FluoriteStream.fluoriteClass)
 
-        node is InfixNode && node.operator.text == ":=" -> when { // 宣言文
-            node.left is IdentifierNode -> {
-                val name = node.left.string
-                val variable = Variable(true, FluoriteNull)
-                variables[name] = variable
-                variable.value = compileToGetter(node.right)
-                variable.value
-            }
-
-            else -> throw IllegalArgumentException("Illegal definition: ${node.left::class} := ${node.right::class}")
-        }
-
-        else -> compileToGetter(node) // 式文
-    }
-}
-
-private suspend fun Frame.compileRootNodeToGetter(node: Node): FluoriteValue {
-    val executionNodeList = if (node is SemicolonNode) node.nodes else listOf(node)
-    var result: FluoriteValue = FluoriteNull
-    executionNodeList.forEachIndexed { index, executionNode ->
-        val lastResult = compileToRunner(executionNode)
-        if (index == executionNodeList.size - 1) result = lastResult
-    }
-    return result
+    variables["NULL"] = Variable(false, FluoriteNull)
+    variables["TRUE"] = Variable(false, FluoriteBoolean.TRUE)
+    variables["FALSE"] = Variable(false, FluoriteBoolean.FALSE)
 }
 
 suspend fun Frame.compileToGetter(node: Node): FluoriteValue {
@@ -486,4 +449,43 @@ suspend fun Frame.createObject(parentNode: Node?, contentNode: Node): FluoriteOb
         }
     }
     return FluoriteObject(parent, map)
+}
+
+private suspend fun Frame.compileRootNodeToGetter(node: Node): FluoriteValue {
+    val executionNodeList = if (node is SemicolonNode) node.nodes else listOf(node)
+    var result: FluoriteValue = FluoriteNull
+    executionNodeList.forEachIndexed { index, executionNode ->
+        val lastResult = compileToRunner(executionNode)
+        if (index == executionNodeList.size - 1) result = lastResult
+    }
+    return result
+}
+
+private suspend fun Frame.compileToRunner(node: Node): FluoriteValue {
+    return when {
+        node is InfixNode && node.operator.text == "=" -> when { // 代入文
+            node.left is IdentifierNode -> {
+                val name = node.left.string
+                val variable = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
+                variable.value = compileToGetter(node.right)
+                variable.value
+            }
+
+            else -> throw IllegalArgumentException("Illegal assignation: ${node.left::class} = ${node.right::class}")
+        }
+
+        node is InfixNode && node.operator.text == ":=" -> when { // 宣言文
+            node.left is IdentifierNode -> {
+                val name = node.left.string
+                val variable = Variable(true, FluoriteNull)
+                variables[name] = variable
+                variable.value = compileToGetter(node.right)
+                variable.value
+            }
+
+            else -> throw IllegalArgumentException("Illegal definition: ${node.left::class} := ${node.right::class}")
+        }
+
+        else -> compileToGetter(node) // 式文
+    }
 }
