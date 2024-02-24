@@ -1,6 +1,7 @@
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
+import mirrg.fluorite12.Environment
 import mirrg.fluorite12.Fluorite12Grammar
 import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.FluoriteValue
@@ -19,8 +20,13 @@ fun parse(src: String) = Fluorite12Grammar().tryParseToEnd(src)
 @JsName("evaluate")
 fun evaluate(node: Node) = GlobalScope.promise {
     val frame = Frame()
-    frame.defineCommonBuiltinVariables()
-    frame.compileToGetter(node)
+    val runners = frame.defineCommonBuiltinVariables()
+    val getter = frame.compileToGetter(node)
+    val env = Environment(null, frame.nextVariableIndex)
+    runners.forEach {
+        it.evaluate(env)
+    }
+    getter.evaluate(env)
 }
 
 @Suppress("unused")
