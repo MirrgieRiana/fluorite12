@@ -7,6 +7,7 @@ import mirrg.fluorite12.FluoriteArray
 import mirrg.fluorite12.FluoriteFunction
 import mirrg.fluorite12.FluoriteNull
 import mirrg.fluorite12.FluoriteStream
+import mirrg.fluorite12.FluoriteVoid
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.collect
 import mirrg.fluorite12.compileToGetter
@@ -45,6 +46,8 @@ fun main(args: Array<String>) = runBlocking {
                 println(it.toString())
             }
         }
+
+        is FluoriteVoid -> Unit
 
         else -> println(result.toString())
     }

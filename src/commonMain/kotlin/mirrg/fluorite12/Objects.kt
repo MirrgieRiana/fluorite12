@@ -34,6 +34,12 @@ object FluoriteNull : FluoriteValue {
 }
 
 
+object FluoriteVoid : FluoriteValue {
+    val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+    override val parent = fluoriteClass
+}
+
+
 interface FluoriteNumber : FluoriteValue {
     val value: Number
     fun negate(): FluoriteNumber

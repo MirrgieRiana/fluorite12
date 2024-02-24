@@ -5,6 +5,7 @@ import mirrg.fluorite12.Environment
 import mirrg.fluorite12.Fluorite12Grammar
 import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.FluoriteValue
+import mirrg.fluorite12.FluoriteVoid
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.collect
@@ -39,6 +40,8 @@ fun log(value: FluoriteValue) = GlobalScope.promise {
             }
         }
 
+        is FluoriteVoid -> Unit
+
         else -> console.log(value)
     }
 }
@@ -60,6 +63,8 @@ fun stringify(value: FluoriteValue): Promise<String> = GlobalScope.promise {
             }
             sb.toString()
         }
+
+        is FluoriteVoid -> ""
 
         else -> value.toString()
     }
