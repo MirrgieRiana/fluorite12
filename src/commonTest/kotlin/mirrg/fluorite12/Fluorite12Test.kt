@@ -240,10 +240,10 @@ class Fluorite12Test {
 }
 
 private suspend fun run(src: String): FluoriteValue {
-    val result = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
+    val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
     frame.defineCommonBuiltinVariables()
-    return frame.compileToGetter(result.value)
+    return frame.compileToGetter(parseResult.value)
 }
 
 private val FluoriteValue.int get() = (this as FluoriteInt).value
