@@ -135,26 +135,12 @@ class ToNegativeNumberGetter(private val getter: Getter) : Getter {
     }.negate()
 }
 
-// TODO to method
 class ToBooleanGetter(private val getter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = when (val value = getter.evaluate(env)) {
-        is FluoriteInt -> FluoriteBoolean.of(value.value != 0)
-        is FluoriteDouble -> FluoriteBoolean.of(value.value != 0.0)
-        is FluoriteString -> FluoriteBoolean.of(value.value != "")
-        is FluoriteBoolean -> value
-        else -> throw IllegalArgumentException("Can not convert to boolean: $value")
-    }
+    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteBoolean()
 }
 
-// TODO to method
 class ToNegativeBooleanGetter(private val getter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = when (val value = getter.evaluate(env)) {
-        is FluoriteInt -> FluoriteBoolean.of(value.value != 0)
-        is FluoriteDouble -> FluoriteBoolean.of(value.value != 0.0)
-        is FluoriteString -> FluoriteBoolean.of(value.value != "")
-        is FluoriteBoolean -> value
-        else -> throw IllegalArgumentException("Can not convert to boolean: $value")
-    }.not()
+    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteBoolean().not()
 }
 
 // TODO to method

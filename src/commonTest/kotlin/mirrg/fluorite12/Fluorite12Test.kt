@@ -145,6 +145,40 @@ class Fluorite12Test {
     }
 
     @Test
+    fun toBooleanTest() = runTest {
+        // ? で論理値になる
+
+        assertEquals(false, run("?NULL").boolean) // NULLはFALSE
+
+        assertEquals(false, run("?FALSE").boolean) // VOIDはFALSE
+
+        assertEquals(true, run("?1").boolean) // 0以外であればTRUE
+        assertEquals(false, run("?0").boolean) // 0はFALSE
+        assertEquals(true, run("?-1").boolean) // 負の数もTRUE
+
+        assertEquals(true, run("?1.0").boolean) // 0.0以外であればTRUE
+        assertEquals(false, run("?0.0").boolean) // 0.0はFALSE
+        assertEquals(true, run("?-1.0").boolean) // 負の数もTRUE
+
+        assertEquals(true, run("?TRUE").boolean) // TRUEはTRUE
+        assertEquals(false, run("?FALSE").boolean) // FALSEはFALSE
+
+        assertEquals(true, run("?'0'").boolean) // '' 以外であればTRUE
+        assertEquals(false, run("?''").boolean) // '' はFALSE
+        assertEquals(true, run("?'FALSE'").boolean) // 'FALSE' もTRUE
+        assertEquals(true, run("?'false'").boolean) // 'false' もTRUE
+
+        assertEquals(false, run("?(FALSE, FALSE, FALSE)").boolean) // ストリームは各要素のORを取る
+        assertEquals(true, run("?(FALSE, TRUE, FALSE)").boolean) // 1個でもTRUEがあればTRUE
+        assertEquals(false, run("?(,)").boolean) // 空ストリームはFALSE
+
+
+        assertEquals(false, run("!TRUE").boolean) // TRUEはFALSE
+        assertEquals(true, run("!FALSE").boolean) // FALSEはTRUE
+        assertEquals(true, run("!0").boolean) // ! も論理値に自動変換される
+    }
+
+    @Test
     fun toStringTest() = runTest {
         // & で文字列になる
         assertEquals("NULL", run("&NULL").string)

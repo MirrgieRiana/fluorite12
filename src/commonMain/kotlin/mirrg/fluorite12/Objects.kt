@@ -1,6 +1,8 @@
 package mirrg.fluorite12
 
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 
 
 interface FluoriteValue {
@@ -25,6 +27,7 @@ object FluoriteNull : FluoriteValue {
     val fluoriteClass by lazy {
         FluoriteObject(
             FluoriteValue.fluoriteClass, mutableMapOf(
+                "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.FALSE },
                 "TO_JSON" to FluoriteFunction { "null".toFluoriteString() },
             )
         )
@@ -35,7 +38,13 @@ object FluoriteNull : FluoriteValue {
 
 
 object FluoriteVoid : FluoriteValue {
-    val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+    val fluoriteClass by lazy {
+        FluoriteObject(
+            FluoriteValue.fluoriteClass, mutableMapOf(
+                "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.FALSE },
+            )
+        )
+    }
     override val parent = fluoriteClass
 }
 
@@ -51,6 +60,7 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteInt).value != 0).toFluoriteBoolean() },
                     "TO_JSON" to FluoriteFunction { "${(it[0] as FluoriteInt).value}".toFluoriteString() },
                 )
             )
@@ -70,6 +80,7 @@ class FluoriteDouble(override val value: Double) : FluoriteNumber {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteDouble).value != 0.0).toFluoriteBoolean() },
                     "TO_JSON" to FluoriteFunction { "${(it[0] as FluoriteDouble).value}".toFluoriteString() },
                 )
             )
@@ -93,6 +104,7 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_BOOLEAN" to FluoriteFunction { it[0] as FluoriteBoolean },
                     "TO_JSON" to FluoriteFunction { (if ((it[0] as FluoriteBoolean).value) "true" else "false").toFluoriteString() },
                 )
             )
@@ -106,12 +118,15 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
     fun not() = if (value) FALSE else TRUE
 }
 
+fun Boolean.toFluoriteBoolean() = if (this) FluoriteBoolean.TRUE else FluoriteBoolean.FALSE
+
 
 class FluoriteString(val value: String) : FluoriteValue {
     companion object {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
                     "TO_JSON" to FluoriteFunction {
                         val escaped = (it[0] as FluoriteString).value.escapeJsonString()
                         "\"$escaped\"".toFluoriteString()
@@ -194,7 +209,20 @@ class FluoriteFunction(val function: suspend (List<FluoriteValue>) -> FluoriteVa
 
 class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -> Unit) : FluoriteValue {
     companion object {
-        val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+        val fluoriteClass by lazy {
+            FluoriteObject(
+                FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_BOOLEAN" to FluoriteFunction { arguments ->
+                        flow {
+                            (arguments[0] as FluoriteStream).collect {
+                                if (it.toBoolean()) emit(FluoriteBoolean.TRUE)
+                            }
+                            emit(FluoriteBoolean.FALSE)
+                        }.first()
+                    },
+                )
+            )
+        }
     }
 
     override val parent get() = fluoriteClass
