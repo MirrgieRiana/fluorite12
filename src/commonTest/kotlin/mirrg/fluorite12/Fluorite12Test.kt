@@ -190,6 +190,19 @@ class Fluorite12Test {
     }
 
     @Test
+    fun conditionTest() = runTest {
+        // ? : で条件分岐ができる
+        assertEquals(1, run("TRUE ? 1 : 2").int)
+        assertEquals(2, run("FALSE ? 1 : 2").int)
+
+        // ? : を入れ子にすると右側が優先的にくっつく
+        assertEquals(1, run("TRUE ? TRUE ? 1 : 2 : TRUE ? 3 : 4").int)
+        assertEquals(2, run("TRUE ? FALSE ? 1 : 2 : FALSE ? 3 : 4").int)
+        assertEquals(3, run("FALSE ? TRUE ? 1 : 2 : TRUE ? 3 : 4").int)
+        assertEquals(4, run("FALSE ? FALSE ? 1 : 2 : FALSE ? 3 : 4").int)
+    }
+
+    @Test
     fun streamTest() = runTest {
         assertEquals("1,2,3", run("1, 2, 3").stream()) // , でストリームが作れる
         assertEquals("1,2,3", run(", , 1, 2, , , 3, , ").stream()) // , は無駄に大量にあってもよい
