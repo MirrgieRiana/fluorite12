@@ -101,6 +101,8 @@ class Fluorite12Test {
     fun arrayTest() = runTest {
         assertEquals("[1]", run("[1]").array) // [ ] で配列を作れる
         assertEquals("[1;2]", run("[1; 2]").array) // 要素は ; で区切ることができる
+        assertEquals("[1;2]", run("[; ; 1; ; 2; ; ]").array) // ; は無駄に大量にあってもよい
+        assertEquals("[]", run("[; ]").array) // ; しかなくてもよい
         assertEquals("[1;2]", run("[1, 2]").array) // 要素のストリームでもよい
         assertEquals("[1;2;3]", run("[1, 2; 3]").array) // 要素のストリームと要素が混在してもよい
         assertEquals("[1;2;3;4;5;6;7;8]", run("[1; 2..4; 0..2 | _ + 5; 8]").array) // 埋め込まれたストリームは自動的に展開される
@@ -114,6 +116,8 @@ class Fluorite12Test {
         assertEquals("{1:2}", run("{1: 2}").obj) // キーは数値でもよい
         assertEquals("{1:2}", run("1 | a => {(a): 2}").obj) // キーに ( ) を付けると変数を参照できる
         assertEquals("{a:1;b:2}", run("{a: 1; b: 2}").obj) // エントリーは ; で区切ることができる
+        assertEquals("{a:1;b:2}", run("{; ; a: 1; ; b: 2; ; }").obj) // ; は無駄に大量にあってもよい
+        assertEquals("{}", run("{; }").obj) // ; しかなくてもよい
         assertEquals("{a:1;b:2}", run("{(a: 1), (b: 2)}").obj) // エントリーのストリームでもよい
         assertEquals("{a:1;b:2;c:3}", run("{(a: 1), (b: 2); c: 3}").obj) // エントリーのストリームとエントリーが混在してもよい
         assertEquals("{1:2;2:4;3:6}", run("{1 .. 3 | a => (a): a * 2}").obj) // エントリー列を返す式でもよい

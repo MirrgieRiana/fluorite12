@@ -118,21 +118,13 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
             }
 
             "[" -> {
-                val nodes = when (node.main) {
-                    is EmptyNode -> listOf()
-                    is SemicolonNode -> node.main.nodes
-                    else -> listOf(node.main)
-                }
-                ArrayCreationGetter(nodes.map { compileToGetter(it) })
+                val nodes = if (node.main is SemicolonNode) node.main.nodes else listOf(node.main)
+                ArrayCreationGetter(nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
             }
 
             "{" -> {
-                val contentNodes = when (node.main) {
-                    is EmptyNode -> listOf()
-                    is SemicolonNode -> node.main.nodes
-                    else -> listOf(node.main)
-                }
-                ObjectCreationGetter(null, contentNodes.map { compileToGetter(it) })
+                val contentNodes = if (node.main is SemicolonNode) node.main.nodes else listOf(node.main)
+                ObjectCreationGetter(null, contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
             }
 
             else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} A ${node.right.text}")
@@ -165,12 +157,8 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
 
             "{" -> {
                 val parentGetter = compileToGetter(node.main)
-                val contentNodes = when (node.argument) {
-                    is EmptyNode -> listOf()
-                    is SemicolonNode -> node.argument.nodes
-                    else -> listOf(node.argument)
-                }
-                val contentGetters = contentNodes.map { compileToGetter(it) }
+                val contentNodes = if (node.argument is SemicolonNode) node.argument.nodes else listOf(node.argument)
+                val contentGetters = contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) }
                 ObjectCreationGetter(parentGetter, contentGetters)
             }
 
