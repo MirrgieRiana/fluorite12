@@ -223,7 +223,14 @@ class Fluorite12Grammar : Grammar<Node>() {
         condition map { Pair(listOf(it), listOf()) },
     )
     val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommaNode(it.first, it.second) }
-    val assignation: Parser<Node> by rightAssociative(commas, -s * (+(equal * -NotParser(greater)) or +(colon * -NotParser(equal or colon)) or +(colon * equal) or +(minus * greater) or +(equal * greater)) * -b, ::infixNode)
+    val assignationOperator: Parser<List<TokenMatch>> by OrCombinator(
+        +(equal * -NotParser(greater)),
+        +(colon * -NotParser(equal or colon)),
+        +(colon * equal),
+        +(minus * greater),
+        +(equal * greater),
+    )
+    val assignation: Parser<Node> by rightAssociative(commas, -s * assignationOperator * -b, ::infixNode)
     val stream: Parser<Node> by leftAssociative(assignation, -s * +pipe * -b, ::infixNode)
 
     val semicolonsPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
