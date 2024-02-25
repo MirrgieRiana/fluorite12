@@ -378,6 +378,13 @@ class IfGetter(private val conditionGetter: Getter, private val okGetter: Getter
     override suspend fun evaluate(env: Environment) = if ((conditionGetter.evaluate(env) as FluoriteBoolean).value) okGetter.evaluate(env) else ngGetter.evaluate(env)
 }
 
+class ElvisGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val left = leftGetter.evaluate(env)
+        return if (left != FluoriteNull) left else rightGetter.evaluate(env)
+    }
+}
+
 class StreamConcatenationGetter(private val getters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return FluoriteStream {

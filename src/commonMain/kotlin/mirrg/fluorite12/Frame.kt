@@ -194,6 +194,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
             "*" -> TimesGetter(compileToGetter(node.left), compileToGetter(node.right))
             "/" -> DivGetter(compileToGetter(node.left), compileToGetter(node.right))
             ".." -> RangeGetter(compileToGetter(node.left), compileToGetter(node.right))
+            "?:" -> ElvisGetter(compileToGetter(node.left), compileToGetter(node.right))
 
             ":" -> {
                 val leftGetter = when (node.left) {

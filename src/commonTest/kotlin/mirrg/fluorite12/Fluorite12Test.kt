@@ -200,6 +200,19 @@ class Fluorite12Test {
         assertEquals(2, run("TRUE ? FALSE ? 1 : 2 : FALSE ? 3 : 4").int)
         assertEquals(3, run("FALSE ? TRUE ? 1 : 2 : TRUE ? 3 : 4").int)
         assertEquals(4, run("FALSE ? FALSE ? 1 : 2 : FALSE ? 3 : 4").int)
+
+        assertEquals(1, run("1 ?: 2").int) // ?: の左辺が非NULLの場合、左辺を得る
+        assertEquals(2, run("NULL ?: 2").int) // ?: の左辺がNULLの場合、右辺を得る
+        assertEquals(false, run("FALSE ?: 2").boolean) // FALSEは非NULLである
+        assertEquals(FluoriteVoid, run("VOID ?: 2")) // VOIDは非NULLである
+
+        // 三項演算子とエルビス演算子は混ぜて書ける
+        assertEquals(1, run("TRUE ? 1 ?: 2 : 3 ?: 4").int)
+        assertEquals(2, run("TRUE ? NULL ?: 2 : NULL ?: 4").int)
+        assertEquals(3, run("FALSE ? 1 ?: 2 : 3 ?: 4").int)
+        assertEquals(4, run("FALSE ? NULL ?: 2 : NULL ?: 4").int)
+
+        assertEquals(4, run("FALSE ? 1 : NULL ?: FALSE ? 3 : 4").int) // == FALSE ? 1 : (NULL ?: (FALSE ? 3 : 4))
     }
 
     @Test

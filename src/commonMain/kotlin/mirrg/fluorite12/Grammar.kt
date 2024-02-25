@@ -18,7 +18,6 @@ import com.github.h0tk3y.betterParse.parser.EmptyParser
 import com.github.h0tk3y.betterParse.parser.Parser
 import com.github.h0tk3y.betterParse.utils.Tuple2
 import com.github.h0tk3y.betterParse.utils.Tuple3
-import com.github.h0tk3y.betterParse.utils.Tuple5
 import kotlin.jvm.JvmName
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
@@ -213,7 +212,11 @@ class Fluorite12Grammar : Grammar<Node>() {
             it.t1
         }
     }
-    val condition: Parser<Node> by (comparison * -s * question * -b * parser { condition } * -s * (colon * -NotParser(colon)) * -b * parser { condition } map ::conditionNode) or comparison
+    val condition: Parser<Node> by OrCombinator(
+        comparison * -s * question * -b * parser { condition } * -s * (colon * -NotParser(colon)) * -b * parser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
+        comparison * -s * +(question * colon) * -b * parser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
+        comparison,
+    )
 
     val commasPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
         (condition * -b or (EmptyParser map { EmptyNode })) * comma * (-b * parser { commasPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
@@ -243,5 +246,3 @@ private operator fun <T> Parser<Tuple2<T, T>>.unaryPlus() = this map { listOf(it
 private fun bracketNode(it: Tuple3<TokenMatch, Node?, TokenMatch>) = BracketNode(it.t1, it.t2 ?: EmptyNode, it.t3)
 
 private fun infixNode(left: Node, operator: List<TokenMatch>, right: Node) = InfixNode(left, operator, right)
-
-private fun conditionNode(it: Tuple5<Node, TokenMatch, Node, TokenMatch, Node>) = ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5)
