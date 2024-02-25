@@ -213,6 +213,10 @@ class Fluorite12Test {
         assertEquals(4, run("FALSE ? NULL ?: 2 : NULL ?: 4").int)
 
         assertEquals(4, run("FALSE ? 1 : NULL ?: FALSE ? 3 : 4").int) // == FALSE ? 1 : (NULL ?: (FALSE ? 3 : 4))
+
+        // 条件項はTO_BOOLEANで論理値に変換される
+        assertEquals(1, run("{TO_BOOLEAN: _ -> TRUE} ? 1 : 2").int)
+        assertEquals(2, run("{TO_BOOLEAN: _ -> FALSE} ? 1 : 2").int)
     }
 
     @Test

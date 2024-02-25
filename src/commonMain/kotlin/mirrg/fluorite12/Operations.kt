@@ -375,7 +375,7 @@ class ComparisonChainGetter(private val termGetters: List<Getter>, private val o
 }
 
 class IfGetter(private val conditionGetter: Getter, private val okGetter: Getter, private val ngGetter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = if ((conditionGetter.evaluate(env) as FluoriteBoolean).value) okGetter.evaluate(env) else ngGetter.evaluate(env)
+    override suspend fun evaluate(env: Environment) = if (conditionGetter.evaluate(env).toBoolean()) okGetter.evaluate(env) else ngGetter.evaluate(env)
 }
 
 class ElvisGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
