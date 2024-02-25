@@ -274,7 +274,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
 
         is ConditionNode -> IfGetter(compileToGetter(node.condition), compileToGetter(node.ok), compileToGetter(node.ng))
 
-        is CommaNode -> StreamConcatenationGetter(node.nodes.map { compileToGetter(it) })
+        is CommaNode -> StreamConcatenationGetter(node.nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
 
         is SemicolonNode -> throw IllegalArgumentException("Unexpected semicolon")
 

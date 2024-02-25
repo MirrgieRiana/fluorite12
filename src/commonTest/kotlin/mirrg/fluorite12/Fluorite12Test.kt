@@ -192,6 +192,7 @@ class Fluorite12Test {
     @Test
     fun streamTest() = runTest {
         assertEquals("1,2,3", run("1, 2, 3").stream()) // , でストリームが作れる
+        assertEquals("1,2,3", run(", , 1, 2, , , 3, , ").stream()) // , は無駄に大量にあってもよい
         assertEquals("1,2,3,4,5,6,7,8,9", run("(1, 2), 3, ((4 .. 6), 7, (8, 9))").stream()) // ストリームを結合すると自動的に平坦になる
     }
 
