@@ -235,7 +235,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 }
                 val identifierNodes = when {
                     commasNode is EmptyNode -> listOf()
-                    commasNode is ListNode && commasNode.operators.first().text == "," -> commasNode.nodes
+                    commasNode is CommaNode -> commasNode.nodes
                     commasNode is SemicolonNode -> commasNode.nodes
                     else -> listOf(commasNode)
                 }
@@ -286,10 +286,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
 
         is ConditionNode -> IfGetter(compileToGetter(node.condition), compileToGetter(node.ok), compileToGetter(node.ng))
 
-        is ListNode -> when (node.operators.first().text) {
-            "," -> StreamConcatenationGetter(node.nodes.map { compileToGetter(it) })
-            else -> throw IllegalArgumentException("Unknown operator: A ${node.operators.first().text} B")
-        }
+        is CommaNode -> StreamConcatenationGetter(node.nodes.map { compileToGetter(it) })
 
         is SemicolonNode -> throw IllegalArgumentException("Unexpected semicolon")
 

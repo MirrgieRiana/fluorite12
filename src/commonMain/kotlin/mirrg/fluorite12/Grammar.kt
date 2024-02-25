@@ -215,17 +215,21 @@ class Fluorite12Grammar : Grammar<Node>() {
     }
     val condition: Parser<Node> by (comparison * -s * question * -b * parser { condition } * -s * (colon * -NotParser(colon)) * -b * parser { condition } map ::conditionNode) or comparison
 
-    val enumeration: Parser<Node> by condition * zeroOrMore(-s * comma * -b * condition) map ::listNode
-    val assignation: Parser<Node> by rightAssociative(enumeration, -s * (+(equal * -NotParser(greater)) or +(colon * -NotParser(equal or colon)) or +(colon * equal) or +(minus * greater) or +(equal * greater)) * -b, ::infixNode)
+    val commasPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
+        (condition * -b or (EmptyParser map { EmptyNode })) * comma * (-b * parser { commasPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+        condition map { Pair(listOf(it), listOf()) },
+    )
+    val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommaNode(it.first, it.second) }
+    val assignation: Parser<Node> by rightAssociative(commas, -s * (+(equal * -NotParser(greater)) or +(colon * -NotParser(equal or colon)) or +(colon * equal) or +(minus * greater) or +(equal * greater)) * -b, ::infixNode)
     val stream: Parser<Node> by leftAssociative(assignation, -s * +pipe * -b, ::infixNode)
 
-    val linesPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
-        stream * -s * br * -b * parser { linesPart } map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
-        (stream * -s or (EmptyParser map { EmptyNode })) * semicolon * (-b * parser { linesPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+    val semicolonsPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
+        stream * -s * br * -b * parser { semicolonsPart } map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+        (stream * -s or (EmptyParser map { EmptyNode })) * semicolon * (-b * parser { semicolonsPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
         stream map { Pair(listOf(it), listOf()) },
     )
-    val lines: Parser<Node> by linesPart map { if (it.first.size == 1) it.first.first() else SemicolonNode(it.first, it.second) }
-    val expression: Parser<Node> by lines
+    val semicolons: Parser<Node> by semicolonsPart map { if (it.first.size == 1) it.first.first() else SemicolonNode(it.first, it.second) }
+    val expression: Parser<Node> by semicolons
 
     override val rootParser: Parser<Node> by -b * expression * -b map { RootNode(it) }
 }
@@ -241,11 +245,3 @@ private fun bracketNode(it: Tuple3<TokenMatch, Node?, TokenMatch>) = BracketNode
 private fun infixNode(left: Node, operator: List<TokenMatch>, right: Node) = InfixNode(left, operator, right)
 
 private fun conditionNode(it: Tuple5<Node, TokenMatch, Node, TokenMatch, Node>) = ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5)
-
-private fun listNode(it: Tuple2<Node, List<Tuple2<TokenMatch, Node>>>): Node {
-    return if (it.t2.isNotEmpty()) {
-        ListNode(listOf(it.t1) + it.t2.map { it.t2 }, it.t2.map { it.t1 })
-    } else {
-        it.t1
-    }
-}
