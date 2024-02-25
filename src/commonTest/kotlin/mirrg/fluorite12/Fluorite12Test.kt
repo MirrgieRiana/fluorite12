@@ -245,7 +245,7 @@ class Fluorite12Test {
         assertEquals(20, run("10\n20").int) // 改行で区切ってもよい
         assertEquals(FluoriteVoid, run("10;")) // 式を省略した場合、VOIDになる
         assertEquals(10, run("10\n").int) // 式の前後に余計な改行があっても無視される
-        assertEquals(FluoriteVoid, run("10;\n")) // ; の後に開業があった場合もVOIDになる
+        assertEquals(FluoriteVoid, run("10;\n")) // ; の後に改行があった場合もVOIDになる
         assertEquals(30, run("10; 20; 30").int) // ; が複数あってもよい
         assertEquals(20, run("; 10; ; 20").int) // ; の左は省略されていてもよい
         assertEquals(20, run("\n\n;;\n\n10\n\n;;\n\n;;\n\n20\n\n").int) // 改行と;が無駄に大量にあってもよい
