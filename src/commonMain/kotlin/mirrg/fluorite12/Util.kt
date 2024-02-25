@@ -36,3 +36,20 @@ class NotParser<T>(private val parser: Parser<T>) : Parser<Unit> {
 fun String.escapeJsonString() = this
     .replace("\n", "\n\n")
     .replace("\"", "\n\"")
+
+class CachedParser<T>(private val parser: Parser<T>) : Parser<T> {
+    private val cacheTable = mutableMapOf<Int, ParseResult<T>>()
+
+    override fun tryParse(tokens: TokenMatchesSequence, fromPosition: Int): ParseResult<T> {
+        val result = cacheTable[fromPosition]
+        return if (result != null) {
+            result
+        } else {
+            val newResult = parser.tryParse(tokens, fromPosition)
+            cacheTable[fromPosition] = newResult
+            newResult
+        }
+    }
+
+    fun clear() = cacheTable.clear()
+}

@@ -20,8 +20,23 @@ import com.github.h0tk3y.betterParse.utils.Tuple2
 import com.github.h0tk3y.betterParse.utils.Tuple3
 import kotlin.jvm.JvmName
 
+/** このクラスの同一インスタンスによって異なるソース文字列をパースする際には、その前に[clearCache]を呼び出す必要があります。 */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 class Fluorite12Grammar : Grammar<Node>() {
+    private val onClearCache = mutableListOf<() -> Unit>() // 最初に無いといけない
+
+    private fun <T> cachedParser(block: () -> Parser<T>): Parser<T> {
+        val cachedParser = CachedParser(parser(block))
+        onClearCache += { cachedParser.clear() }
+        return cachedParser
+    }
+
+    fun clearCache() {
+        onClearCache.forEach {
+            it()
+        }
+    }
+
     val tab by literalToken("\t")
     val br by regexToken("""\n|\r\n?""".toRegex())
 
@@ -154,7 +169,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val templateStringContent by OrCombinator(
         oneOrMore(templateStringCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) },
-        dollar * parser { factor } map { NodeStringContent(listOf(it.t1), it.t2, listOf()) },
+        dollar * cachedParser { factor } map { NodeStringContent(listOf(it.t1), it.t2, listOf()) },
     )
     val templateString by dQuote * zeroOrMore(templateStringContent) * dQuote map { TemplateStringNode(it.t1, it.t2, it.t3) }
 
@@ -164,19 +179,19 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val embeddedStringContent by OrCombinator(
         oneOrMore(embeddedStringCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) },
-        less * percent * equal * -b * parser { expression } * -b * percent * greater map { NodeStringContent(listOf(it.t1, it.t2, it.t3), it.t4, listOf(it.t5, it.t6)) }, // <%= expression %>
+        less * percent * equal * -b * cachedParser { expression } * -b * percent * greater map { NodeStringContent(listOf(it.t1, it.t2, it.t3), it.t4, listOf(it.t5, it.t6)) }, // <%= expression %>
     )
     val embeddedString by percent * greater * zeroOrMore(embeddedStringContent) * less * percent map { EmbeddedStringNode(listOf(it.t1, it.t2), it.t3, listOf(it.t4, it.t5)) } // %>string<%
 
-    val round: Parser<Node> by lRound * -b * optional(parser { expression } * -b) * rRound map ::bracketNode
-    val square: Parser<Node> by lSquare * -b * optional(parser { expression } * -b) * rSquare map ::bracketNode
-    val curly: Parser<Node> by lCurly * -b * optional(parser { expression } * -b) * rCurly map ::bracketNode
+    val round: Parser<Node> by lRound * -b * optional(cachedParser { expression } * -b) * rRound map ::bracketNode
+    val square: Parser<Node> by lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map ::bracketNode
+    val curly: Parser<Node> by lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map ::bracketNode
     val factor: Parser<Node> by identifier or float or integer or rawString or templateString or embeddedString or round or square or curly
 
     val rightOperator: Parser<(Node) -> Node> by OrCombinator(
-        -s * lRound * -b * optional(parser { expression } * -b) * rRound map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
-        -s * lSquare * -b * optional(parser { expression } * -b) * rSquare map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
-        -s * lCurly * -b * optional(parser { expression } * -b) * rCurly map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lRound * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -b * +period * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
         -b * +(colon * colon) * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
     )
@@ -213,13 +228,13 @@ class Fluorite12Grammar : Grammar<Node>() {
         }
     }
     val condition: Parser<Node> by OrCombinator(
-        comparison * -s * question * -b * parser { condition } * -s * (colon * -NotParser(colon)) * -b * parser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
-        comparison * -s * +(question * colon) * -b * parser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
+        comparison * -s * question * -b * cachedParser { condition } * -s * (colon * -NotParser(colon)) * -b * cachedParser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
+        comparison * -s * +(question * colon) * -b * cachedParser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
         comparison,
     )
 
     val commasPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
-        (condition * -b or (EmptyParser map { EmptyNode })) * comma * (-b * parser { commasPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+        (condition * -b or (EmptyParser map { EmptyNode })) * comma * (-b * cachedParser { commasPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
         condition map { Pair(listOf(it), listOf()) },
     )
     val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommaNode(it.first, it.second) }
@@ -234,8 +249,8 @@ class Fluorite12Grammar : Grammar<Node>() {
     val stream: Parser<Node> by leftAssociative(assignation, -s * +pipe * -b, ::infixNode)
 
     val semicolonsPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
-        stream * -s * br * -b * parser { semicolonsPart } map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
-        (stream * -s or (EmptyParser map { EmptyNode })) * semicolon * (-b * parser { semicolonsPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+        stream * -s * br * -b * cachedParser { semicolonsPart } map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+        (stream * -s or (EmptyParser map { EmptyNode })) * semicolon * (-b * cachedParser { semicolonsPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
         stream map { Pair(listOf(it), listOf()) },
     )
     val semicolons: Parser<Node> by semicolonsPart map { if (it.first.size == 1) it.first.first() else SemicolonNode(it.first, it.second) }

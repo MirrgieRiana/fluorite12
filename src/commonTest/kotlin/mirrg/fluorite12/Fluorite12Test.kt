@@ -12,6 +12,22 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalCoroutinesApi::class)
 class Fluorite12Test {
     @Test
+    fun cacheTest() = runTest {
+        // メモ化が行われているか
+        assertEquals("a", run(""" "$( "$( "$( "$( "$( "$( "$( "$( "$( "$( "a" )" )" )" )" )" )" )" )" )" )" """).string)
+        assertEquals("a", run(""" %><%= %><%= %><%= %><%= %><%= %><%= %>a<% %><% %><% %><% %><% %><% %><% """).string)
+        assertEquals(1, run("(((((((((1)))))))))").int)
+        assertEquals("[[[[[[[[[1]]]]]]]]]", run("&[[[[[[[[[1]]]]]]]]]").string)
+        assertEquals("{a:{a:{a:{a:{a:{a:{a:{a:1}}}}}}}}", run("&{a:{a:{a:{a:{a:{a:{a:{a:1}}}}}}}}").string)
+        assertEquals(1, run("a := x -> x; a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(1))))))))))))))))").int)
+        assertEquals(1, run("1?1?1?1?1?1?1?1?1?1?1?1?1?1?1?1?1:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0").int)
+        assertEquals(1, run("0?0:0?0:0?0:0?0:0?0:0?0:0?0:0?0:0?0:0?0:0?0:0?0:0?0:0?0:0?0:0?0:1").int)
+        assertEquals(1, run("NULL?:NULL?:NULL?:NULL?:NULL?:NULL?:NULL?:NULL?:NULL?:NULL?:NULL?:NULL?:1").int)
+        assertEquals("[0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1]", run("&[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]").string)
+        assertEquals("[0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1]", run("&[0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1]").string)
+    }
+
+    @Test
     fun builtInConstantTest() = runTest {
         assertEquals(FluoriteNull, run("NULL"))
         assertEquals(true, run("TRUE").boolean)
