@@ -217,6 +217,14 @@ class Fluorite12Test {
         // 条件項はTO_BOOLEANで論理値に変換される
         assertEquals(1, run("{TO_BOOLEAN: _ -> TRUE} ? 1 : 2").int)
         assertEquals(2, run("{TO_BOOLEAN: _ -> FALSE} ? 1 : 2").int)
+
+        // 評価されない項は副作用も起こさない
+        assertEquals(2, run("a := 1; TRUE ? (a = 2) : 0; a").int)
+        assertEquals(1, run("a := 1; FALSE ? (a = 2) : 0; a").int)
+        assertEquals(1, run("a := 1; TRUE ? 0 : (a = 2); a").int)
+        assertEquals(2, run("a := 1; FALSE ? 0 : (a = 2); a").int)
+        assertEquals(2, run("a := 1; NULL ?: (a = 2); a").int)
+        assertEquals(1, run("a := 1; 0 ?: (a = 2); a").int)
     }
 
     @Test
