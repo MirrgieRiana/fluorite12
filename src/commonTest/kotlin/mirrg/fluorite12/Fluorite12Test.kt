@@ -188,6 +188,7 @@ class Fluorite12Test {
         // 各クラスのtrue判定
         assertEquals(true, run("1 ?= VALUE_CLASS").boolean)
         assertEquals(true, run("NULL ?= NULL_CLASS").boolean)
+        assertEquals(true, run("VOID ?= VOID_CLASS").boolean)
         assertEquals(true, run("1 ?= INT_CLASS").boolean)
         assertEquals(true, run("1.2 ?= DOUBLE_CLASS").boolean)
         assertEquals(true, run("TRUE ?= BOOLEAN_CLASS").boolean)
