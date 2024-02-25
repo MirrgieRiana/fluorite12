@@ -3,6 +3,8 @@ package mirrg.fluorite12
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -188,6 +190,12 @@ class Fluorite12Test {
     }
 
     @Test
+    fun streamTest() = runTest {
+        assertEquals("1,2,3", run("1, 2, 3").stream()) // , でストリームが作れる
+        assertEquals("1,2,3,4,5,6,7,8,9", run("(1, 2), 3, ((4 .. 6), 7, (8, 9))").stream()) // ストリームを結合すると自動的に平坦になる
+    }
+
+    @Test
     fun builtInClassTest() = runTest {
         // 各クラスのtrue判定
         assertEquals(true, run("1 ?= VALUE_CLASS").boolean)
@@ -275,3 +283,4 @@ private val FluoriteValue.boolean get() = (this as FluoriteBoolean).value
 private val FluoriteValue.string get() = (this as FluoriteString).value
 private val FluoriteValue.obj get() = (this as FluoriteObject).toString()
 private val FluoriteValue.array get() = (this as FluoriteArray).toString()
+private suspend fun FluoriteValue.stream() = flow { (this@stream as FluoriteStream).flowProvider(this) }.toList(mutableListOf()).joinToString(",") { "$it" }
