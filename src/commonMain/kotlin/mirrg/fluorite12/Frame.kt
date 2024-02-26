@@ -175,6 +175,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 "$#" -> GetLengthGetter(compileToGetter(node.right))
                 "$&" -> MethodInvocationGetter(compileToGetter(node.right), "TO_JSON", listOf())
                 "$*" -> FromJsonGetter(compileToGetter(node.right))
+                "!!" -> ThrowGetter(compileToGetter(node.right))
                 else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} B")
             }
         }
@@ -194,6 +195,19 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
             "*" -> TimesGetter(compileToGetter(node.left), compileToGetter(node.right))
             "/" -> DivGetter(compileToGetter(node.left), compileToGetter(node.right))
             ".." -> RangeGetter(compileToGetter(node.left), compileToGetter(node.right))
+
+            "!?" -> {
+                val (name, rightNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
+                    require(node.right.left is IdentifierNode)
+                    Pair(node.right.left.string, node.right.right)
+                } else {
+                    Pair("_", node.right)
+                }
+                val newFrame = Frame(this)
+                val argumentVariableIndex = newFrame.defineVariable(name)
+                CatchGetter(compileToGetter(node.left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
+            }
+
             "?:" -> ElvisGetter(compileToGetter(node.left), compileToGetter(node.right))
 
             ":" -> {

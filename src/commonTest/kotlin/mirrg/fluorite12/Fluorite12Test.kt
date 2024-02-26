@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class Fluorite12Test {
@@ -213,6 +214,24 @@ class Fluorite12Test {
         assertEquals(FluoriteNull, run("$*'null'"))
         assertEquals("[1;2;3]", run("&$*'[1,2,3]'").string)
         assertEquals("{a:1;b:2}", run("&$*'{\"a\":1,\"b\":2}'").string)
+    }
+
+    @Test
+    fun exceptionTest() = runTest {
+        // !! でオブジェクトをスローするとFluoriteExceptionになって出てくる
+        try {
+            run("!!'a'")
+            fail()
+        } catch (e: FluoriteException) {
+            assertEquals("a", e.value.string)
+        }
+
+        assertEquals("b", run("!!'a' !? 'b'").string) // !? で例外をキャッチできる
+        assertEquals("b", run("1 + [2 + !!'a'] !? 'b'").string) // !! は深い階層にあってもよい
+        assertEquals("a", run("!!'a' !? _").string) // _ で例外オブジェクトを受け取れる
+        assertEquals("a", run("!!'a' !? e => e").string) // => で例外オブジェクトを受け取る変数を指定できる
+        assertEquals("a", run("t := () -> !!'a'; c := f -> f() !? e => () -> e; c(t)()").string) // ラムダ演算子と同じ結合優先度
+        assertEquals(1, run("a := 1; 1 !? a = 2; a").int) // !? の右辺は実行されなければ副作用が出ない
     }
 
     @Test

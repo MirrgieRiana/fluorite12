@@ -200,6 +200,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +plus map { { main -> LeftNode(it, main) } },
         +minus map { { main -> LeftNode(it, main) } },
         +question map { { main -> LeftNode(it, main) } },
+        +(exclamation * exclamation) map { { main -> LeftNode(it, main) } },
         +exclamation map { { main -> LeftNode(it, main) } },
         +ampersand map { { main -> LeftNode(it, main) } },
         +(dollar * sharp) map { { main -> LeftNode(it, main) } },
@@ -244,6 +245,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(colon * equal), // :=
         +(minus * greater), // ->
         +(equal * greater), // =>
+        +(exclamation * question), // !?
     )
     val assignation: Parser<Node> by rightAssociative(commas, -s * assignationOperator * -b, ::infixNode)
     val stream: Parser<Node> by leftAssociative(assignation, -s * +pipe * -b, ::infixNode)

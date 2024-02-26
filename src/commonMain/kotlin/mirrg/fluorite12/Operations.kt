@@ -175,6 +175,12 @@ class FromJsonGetter(private val getter: Getter) : Getter {
     }
 }
 
+class FluoriteException(val value: FluoriteValue) : Exception(value.toString())
+
+class ThrowGetter(private val getter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment) = throw FluoriteException(getter.evaluate(env))
+}
+
 // TODO to method
 class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
@@ -291,6 +297,18 @@ class RangeGetter(private val leftGetter: Getter, private val rightGetter: Gette
             range.forEach {
                 emit(FluoriteInt(it))
             }
+        }
+    }
+}
+
+class CatchGetter(private val leftGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        return try {
+            leftGetter.evaluate(env)
+        } catch (e: FluoriteException) {
+            val newEnv = Environment(env, 1)
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = e.value
+            rightGetter.evaluate(newEnv)
         }
     }
 }
