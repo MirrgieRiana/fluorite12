@@ -288,6 +288,38 @@ class DivGetter(private val leftGetter: Getter, private val rightGetter: Getter)
 }
 
 // TODO to method
+class DivisibleGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val left = leftGetter.evaluate(env)
+        val right = rightGetter.evaluate(env)
+        return when (left) {
+            is FluoriteInt -> when (right) {
+                is FluoriteInt -> (left.value % right.value == 0).toFluoriteBoolean()
+                else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+            }
+
+            else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
+        }
+    }
+}
+
+// TODO to method
+class ModGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val left = leftGetter.evaluate(env)
+        val right = rightGetter.evaluate(env)
+        return when (left) {
+            is FluoriteInt -> when (right) {
+                is FluoriteInt -> FluoriteInt(left.value % right.value)
+                else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+            }
+
+            else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
+        }
+    }
+}
+
+// TODO to method
 class RangeGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val left = leftGetter.evaluate(env)

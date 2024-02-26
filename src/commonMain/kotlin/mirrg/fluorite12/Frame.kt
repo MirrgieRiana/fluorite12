@@ -194,6 +194,8 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
             "-" -> MinusGetter(compileToGetter(node.left), compileToGetter(node.right))
             "*" -> TimesGetter(compileToGetter(node.left), compileToGetter(node.right))
             "/" -> DivGetter(compileToGetter(node.left), compileToGetter(node.right))
+            "%%" -> DivisibleGetter(compileToGetter(node.left), compileToGetter(node.right))
+            "%" -> ModGetter(compileToGetter(node.left), compileToGetter(node.right))
             ".." -> RangeGetter(compileToGetter(node.left), compileToGetter(node.right))
 
             "!?" -> {

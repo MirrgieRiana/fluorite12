@@ -251,6 +251,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun modTest() = runTest {
+        assertEquals(1, run("10 % 3").int) // % で余りを得る
+        assertEquals(false, run("10 %% 3").boolean) // %% は割り切れる場合にTRUE
+        assertEquals(true, run("10 %% 2").boolean) // %% は割り切れない場合にFALSE
+    }
+
+    @Test
     fun rangeTest() = runTest {
         assertEquals("[1;2;3;4]", run("&[1 .. 4]").string) // .. でその範囲をイテレートするストリームを得る
         assertEquals("[0;1;2;3]", run("&[0 .. 4 - 1]").string) // 項は0や四則演算等でもよい
