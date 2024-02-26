@@ -272,7 +272,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
 
         is ComparisonNode -> {
             val termGetters = node.nodes.map { compileToGetter(it) }
-            val operators: List<(FluoriteValue, FluoriteValue) -> Boolean> = node.operators.map {
+            val operators: List<suspend (FluoriteValue, FluoriteValue) -> Boolean> = node.operators.map {
                 when (it.text) {
                     "==" -> ({ a, b -> a == b })
                     "!=" -> ({ a, b -> a != b })

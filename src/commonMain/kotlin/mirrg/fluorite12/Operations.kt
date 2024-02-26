@@ -359,7 +359,7 @@ class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: In
     }
 }
 
-class ComparisonChainGetter(private val termGetters: List<Getter>, private val operators: List<(FluoriteValue, FluoriteValue) -> Boolean>) : Getter {
+class ComparisonChainGetter(private val termGetters: List<Getter>, private val operators: List<suspend (FluoriteValue, FluoriteValue) -> Boolean>) : Getter {
     init {
         require(operators.isNotEmpty())
         require(termGetters.size == operators.size + 1)
