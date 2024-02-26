@@ -258,6 +258,12 @@ class Fluorite12Test {
     }
 
     @Test
+    fun stringConcatenateTest() = runTest {
+        assertEquals("ab", run(" 'a' & 'b' ").string) // & で文字列の連結ができる
+        assertEquals("12", run(" 1 & 2 ").string) // 文字列に変換する
+    }
+
+    @Test
     fun rangeTest() = runTest {
         assertEquals("[1;2;3;4]", run("&[1 .. 4]").string) // .. でその範囲をイテレートするストリームを得る
         assertEquals("[0;1;2;3]", run("&[0 .. 4 - 1]").string) // 項は0や四則演算等でもよい

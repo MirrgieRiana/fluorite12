@@ -191,6 +191,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
             }
 
             "+" -> PlusGetter(compileToGetter(node.left), compileToGetter(node.right))
+            "&" -> StringConcatenationGetter(listOf(ConversionStringGetter(compileToGetter(node.left)), ConversionStringGetter(compileToGetter(node.right))))
             "-" -> MinusGetter(compileToGetter(node.left), compileToGetter(node.right))
             "*" -> TimesGetter(compileToGetter(node.left), compileToGetter(node.right))
             "/" -> DivGetter(compileToGetter(node.left), compileToGetter(node.right))
