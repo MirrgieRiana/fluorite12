@@ -220,6 +220,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +less, // <
         +(less * equal), // <=
         +(question * equal), // ?=
+        +atSign, // @
     )
     val comparison: Parser<Node> by range * zeroOrMore(-s * comparisonOperator * -b * range) map {
         if (it.t2.isNotEmpty()) {

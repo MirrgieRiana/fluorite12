@@ -131,6 +131,7 @@ class FluoriteString(val value: String) : FluoriteValue {
                         val escaped = (it[0] as FluoriteString).value.escapeJsonString()
                         "\"$escaped\"".toFluoriteString()
                     },
+                    "CONTAINS" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
                 )
             )
         }
@@ -160,6 +161,7 @@ class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
                         sb.append(']')
                         sb.toString().toFluoriteString()
                     },
+                    "CONTAINS" to FluoriteFunction { (it[1] in (it[0] as FluoriteArray).values).toFluoriteBoolean() }, // TODO EQUALSメソッドの使用
                 )
             )
         }
@@ -189,6 +191,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                         sb.append('}')
                         sb.toString().toFluoriteString()
                     },
+                    "CONTAINS" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteObject).map).toFluoriteBoolean() },
                 )
             )
         }

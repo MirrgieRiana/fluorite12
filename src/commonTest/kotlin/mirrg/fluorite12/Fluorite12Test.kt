@@ -259,6 +259,25 @@ class Fluorite12Test {
     }
 
     @Test
+    fun containsTest() = runTest {
+        // string @ string で部分一致
+        assertEquals(true, run("'abc' @ '---abc---'").boolean)
+        assertEquals(false, run("'123' @ '---abc---'").boolean)
+
+        // value @ array で要素が含まれているかどうか
+        assertEquals(true, run("30 @ [10, 20, 30]").boolean)
+        assertEquals(false, run("40 @ [10, 20, 30]").boolean)
+
+        // key @ object で要素が含まれているかどうか
+        assertEquals(true, run("'a' @ {a: 10; b: 20}").boolean)
+        assertEquals(false, run("'c' @ {a: 10; b: 20}").boolean)
+
+        // CONTAINSメソッドで上書きできる
+        assertEquals(true, run("'abc' @ {CONTAINS: this, value -> value @ '---abc---'}").boolean)
+        assertEquals(false, run("'123' @ {CONTAINS: this, value -> value @ '---abc---'}").boolean)
+    }
+
+    @Test
     fun conditionTest() = runTest {
         // ? : で条件分岐ができる
         assertEquals(1, run("TRUE ? 1 : 2").int)
