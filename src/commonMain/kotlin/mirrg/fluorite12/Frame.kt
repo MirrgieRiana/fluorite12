@@ -222,10 +222,10 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 } else {
                     node.left
                 }
-                val identifierNodes = when {
-                    commasNode is EmptyNode -> listOf()
-                    commasNode is CommaNode -> commasNode.nodes
-                    commasNode is SemicolonNode -> commasNode.nodes
+                val identifierNodes = when (commasNode) {
+                    is EmptyNode -> listOf()
+                    is CommaNode -> commasNode.nodes
+                    is SemicolonNode -> commasNode.nodes
                     else -> listOf(commasNode)
                 }
                 val variables = identifierNodes.map {
