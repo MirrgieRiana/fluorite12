@@ -310,7 +310,12 @@ class ModGetter(private val leftGetter: Getter, private val rightGetter: Getter)
         val right = rightGetter.evaluate(env)
         return when (left) {
             is FluoriteInt -> when (right) {
-                is FluoriteInt -> FluoriteInt(left.value % right.value)
+                is FluoriteInt -> {
+                    val a = left.value
+                    val b = right.value
+                    FluoriteInt(if (a >= 0) a % b else (b - 1) + (a + 1) % b)
+                }
+
                 else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
             }
 

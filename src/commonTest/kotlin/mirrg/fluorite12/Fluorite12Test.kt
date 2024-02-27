@@ -253,8 +253,14 @@ class Fluorite12Test {
     @Test
     fun modTest() = runTest {
         assertEquals(1, run("10 % 3").int) // % で余りを得る
+
+        // 負の余りは正になるまで割る数を足したものの余りと同じ（-1 + 3 = 2） % 3
+        // そのため同じ余りがループする
+        assertEquals("[0;1;2;3;4;0;1;2;3;4;0;1;2;3;4;0;1;2;3;4;0]", run("&[-10 .. 10 | _ % 5]").string)
+
         assertEquals(false, run("10 %% 3").boolean) // %% は割り切れる場合にTRUE
         assertEquals(true, run("10 %% 2").boolean) // %% は割り切れない場合にFALSE
+        assertEquals(true, run("-3 %% 3").boolean) // %% も負に対応
     }
 
     @Test
