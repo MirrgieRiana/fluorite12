@@ -215,10 +215,10 @@ class Fluorite12Grammar : Grammar<Node>() {
     val comparisonOperator: Parser<List<TokenMatch>> by OrCombinator(
         +(equal * equal), // ==
         +(exclamation * equal), // !=
-        +greater, // >
         +(greater * equal), // >=
-        +less, // <
+        +greater, // >
         +(less * equal), // <=
+        +less, // <
         +(question * equal), // ?=
         +atSign, // @
     )
