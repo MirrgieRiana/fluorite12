@@ -278,6 +278,23 @@ class Fluorite12Test {
     }
 
     @Test
+    fun compareTest() = runTest {
+        fun String.f() = this.replace(" ", "")
+
+        // 比較ができる
+        assertEquals("[FALSE;FALSE;TRUE ]".f(), run("[0 >  1; 1 >  1; 2 >  1]").array)
+        assertEquals("[TRUE ;FALSE;FALSE]".f(), run("[0 <  1; 1 <  1; 2 <  1]").array)
+        assertEquals("[FALSE;TRUE ;TRUE ]".f(), run("[0 >= 1; 1 >= 1; 2 >= 1]").array)
+        assertEquals("[TRUE ;TRUE ;FALSE]".f(), run("[0 <= 1; 1 <= 1; 2 <= 1]").array)
+
+        // 浮動小数でもよい
+        assertEquals("[FALSE;FALSE;FALSE]".f(), run("[1 >  1.0; 1.0 >  1; 1.0 >  1.0]").array)
+        assertEquals("[FALSE;FALSE;FALSE]".f(), run("[1 <  1.0; 1.0 <  1; 1.0 <  1.0]").array)
+        assertEquals("[TRUE ;TRUE ;TRUE ]".f(), run("[1 >= 1.0; 1.0 >= 1; 1.0 >= 1.0]").array)
+        assertEquals("[TRUE ;TRUE ;TRUE ]".f(), run("[1 <= 1.0; 1.0 <= 1; 1.0 <= 1.0]").array)
+    }
+
+    @Test
     fun containsTest() = runTest {
         // string @ string で部分一致
         assertEquals(true, run("'abc' @ '---abc---'").boolean)
