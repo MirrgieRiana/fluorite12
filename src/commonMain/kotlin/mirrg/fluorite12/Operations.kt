@@ -338,18 +338,6 @@ class RangeGetter(private val leftGetter: Getter, private val rightGetter: Gette
     }
 }
 
-class CatchGetter(private val leftGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightGetter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment): FluoriteValue {
-        return try {
-            leftGetter.evaluate(env)
-        } catch (e: FluoriteException) {
-            val newEnv = Environment(env, 1)
-            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = e.value
-            rightGetter.evaluate(newEnv)
-        }
-    }
-}
-
 class EntryGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = FluoriteArray(listOf(leftGetter.evaluate(env), rightGetter.evaluate(env)))
 }
@@ -445,6 +433,18 @@ class AssignmentGetter(private val frameIndex: Int, private val variableIndex: I
         val value = getter.evaluate(env)
         env.variableTable[frameIndex][variableIndex] = value
         return value
+    }
+}
+
+class CatchGetter(private val leftGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        return try {
+            leftGetter.evaluate(env)
+        } catch (e: FluoriteException) {
+            val newEnv = Environment(env, 1)
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = e.value
+            rightGetter.evaluate(newEnv)
+        }
     }
 }
 
