@@ -355,35 +355,6 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
     }
 }
 
-class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment): FluoriteValue {
-        return when (val stream = streamGetter.evaluate(env)) {
-            is FluoriteStream -> {
-                FluoriteStream {
-                    val newEnv = Environment(env, 1)
-                    stream.collect { value ->
-                        newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
-                        val result = contentGetter.evaluate(newEnv)
-                        if (result is FluoriteStream) {
-                            result.flowProvider(this)
-                        } else {
-                            emit(result)
-                        }
-                    }
-                }
-            }
-
-            is FluoriteVoid -> FluoriteVoid
-
-            else -> {
-                val newEnv = Environment(env, 1)
-                newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
-                contentGetter.evaluate(newEnv)
-            }
-        }
-    }
-}
-
 class ComparisonChainGetter(private val termGetters: List<Getter>, private val operators: List<suspend (FluoriteValue, FluoriteValue) -> Boolean>) : Getter {
     init {
         require(operators.isNotEmpty())
@@ -444,6 +415,35 @@ class CatchGetter(private val leftGetter: Getter, private val newFrameIndex: Int
             val newEnv = Environment(env, 1)
             newEnv.variableTable[newFrameIndex][argumentVariableIndex] = e.value
             rightGetter.evaluate(newEnv)
+        }
+    }
+}
+
+class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        return when (val stream = streamGetter.evaluate(env)) {
+            is FluoriteStream -> {
+                FluoriteStream {
+                    val newEnv = Environment(env, 1)
+                    stream.collect { value ->
+                        newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
+                        val result = contentGetter.evaluate(newEnv)
+                        if (result is FluoriteStream) {
+                            result.flowProvider(this)
+                        } else {
+                            emit(result)
+                        }
+                    }
+                }
+            }
+
+            is FluoriteVoid -> FluoriteVoid
+
+            else -> {
+                val newEnv = Environment(env, 1)
+                newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
+                contentGetter.evaluate(newEnv)
+            }
         }
     }
 }
