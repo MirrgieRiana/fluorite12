@@ -199,6 +199,8 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
             "%" -> ModGetter(compileToGetter(node.left), compileToGetter(node.right))
             ".." -> RangeGetter(compileToGetter(node.left), compileToGetter(node.right))
 
+            "?:" -> ElvisGetter(compileToGetter(node.left), compileToGetter(node.right))
+
             "!?" -> {
                 val (name, rightNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
                     require(node.right.left is IdentifierNode)
@@ -210,8 +212,6 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 val argumentVariableIndex = newFrame.defineVariable(name)
                 CatchGetter(compileToGetter(node.left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
             }
-
-            "?:" -> ElvisGetter(compileToGetter(node.left), compileToGetter(node.right))
 
             ":" -> {
                 val leftGetter = when (node.left) {
