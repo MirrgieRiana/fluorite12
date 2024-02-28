@@ -198,7 +198,8 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
             "%%" -> DivisibleGetter(compileToGetter(node.left), compileToGetter(node.right))
             "%" -> ModGetter(compileToGetter(node.left), compileToGetter(node.right))
             ".." -> RangeGetter(compileToGetter(node.left), compileToGetter(node.right))
-
+            "&&" -> AndGetter(compileToGetter(node.left), compileToGetter(node.right))
+            "||" -> OrGetter(compileToGetter(node.left), compileToGetter(node.right))
             "?:" -> ElvisGetter(compileToGetter(node.left), compileToGetter(node.right))
 
             "!?" -> {

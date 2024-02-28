@@ -229,10 +229,12 @@ class Fluorite12Grammar : Grammar<Node>() {
             it.t1
         }
     }
+    val and: Parser<Node> by leftAssociative(comparison, -s * +(ampersand * ampersand) * -b, ::infixNode)
+    val or: Parser<Node> by leftAssociative(and, -s * +(pipe * pipe) * -b, ::infixNode)
     val condition: Parser<Node> by OrCombinator(
-        comparison * -s * question * -b * cachedParser { condition } * -s * (colon * -NotParser(colon)) * -b * cachedParser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
-        comparison * -s * +(question * colon) * -b * cachedParser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
-        comparison,
+        or * -s * question * -b * cachedParser { condition } * -s * (colon * -NotParser(colon)) * -b * cachedParser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
+        or * -s * +(question * colon) * -b * cachedParser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
+        or,
     )
 
     val commasPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(

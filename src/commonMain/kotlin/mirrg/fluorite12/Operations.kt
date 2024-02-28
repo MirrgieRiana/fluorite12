@@ -374,6 +374,20 @@ class ComparisonChainGetter(private val termGetters: List<Getter>, private val o
     }
 }
 
+class AndGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val left = leftGetter.evaluate(env)
+        return if (!left.toBoolean(env)) left else rightGetter.evaluate(env)
+    }
+}
+
+class OrGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val left = leftGetter.evaluate(env)
+        return if (left.toBoolean(env)) left else rightGetter.evaluate(env)
+    }
+}
+
 class IfGetter(private val conditionGetter: Getter, private val okGetter: Getter, private val ngGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = if (conditionGetter.evaluate(env).toBoolean()) okGetter.evaluate(env) else ngGetter.evaluate(env)
 }

@@ -297,6 +297,33 @@ class Fluorite12Test {
     }
 
     @Test
+    fun andOrTest() = runTest {
+        // && は左辺がTRUEの場合に右辺を、 || は左辺がFALSEの場合に右辺を返す
+        assertEquals(0, run("0 && 2").int)
+        assertEquals(2, run("1 && 2").int)
+        assertEquals(2, run("0 || 2").int)
+        assertEquals(1, run("1 || 2").int)
+
+        // 評価されない右辺は副作用も発生させない
+        assertEquals(1, run("a := 1; 1 || (a = 2); a").int)
+        assertEquals(1, run("a := 1; 0 && (a = 2); a").int)
+
+        // 結合優先度のテスト
+        assertEquals(true, run("1 < 2 && 1 < 2").boolean)
+        assertEquals(false, run("1 < 2 && 2 < 1").boolean)
+        assertEquals(false, run("2 < 1 && 1 < 2").boolean)
+        assertEquals(false, run("2 < 1 && 2 < 1").boolean)
+        assertEquals(true, run("1 < 2 || 1 < 2").boolean)
+        assertEquals(true, run("1 < 2 || 2 < 1").boolean)
+        assertEquals(true, run("2 < 1 || 1 < 2").boolean)
+        assertEquals(false, run("2 < 1 || 2 < 1").boolean)
+        assertEquals(1, run("0 && 0 || 1").int)
+        assertEquals(0, run("0 && (0 || 1)").int)
+        assertEquals(1, run("1 || 0 && 0").int)
+        assertEquals(0, run("(1 || 0) && 0").int)
+    }
+
+    @Test
     fun conditionTest() = runTest {
         // ? : で条件分岐ができる
         assertEquals(1, run("TRUE ? 1 : 2").int)
