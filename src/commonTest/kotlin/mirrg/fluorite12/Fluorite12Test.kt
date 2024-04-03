@@ -199,7 +199,7 @@ class Fluorite12Test {
         assertEquals("10", run("$&10").string) // トップレベルがJsonArrayやJsonObjectでなくてもよい
         assertEquals("10.5", run("$&10.5").string)
         assertEquals("\"abc\"", run("$&'abc'").string)
-        assertEquals(""""a\"b\nc"""", run(""" $&"a\"b\nc" """).string)
+        assertEquals(""""a\"b\nc\\d"""", run(""" $&"a\"b\nc\\d" """).string)
         assertEquals("true", run("$&TRUE").string)
         assertEquals("false", run("$&FALSE").string)
         assertEquals("null", run("$&NULL").string)
@@ -210,7 +210,7 @@ class Fluorite12Test {
         assertEquals(10, run("$*'10'").int)
         assertEquals(10.5, run("$*'10.5'").double, 0.001)
         assertEquals("abc", run("$*'\"abc\"'").string)
-        assertEquals("a\"b\nc", run(""" $*'"a\"b\nc"' """).string)
+        assertEquals("a\"b\nc\\d", run(""" $*'"a\"b\nc\\d"' """).string)
         assertEquals(true, run("$*'true'").boolean)
         assertEquals(false, run("$*'false'").boolean)
         assertEquals(FluoriteNull, run("$*'null'"))
