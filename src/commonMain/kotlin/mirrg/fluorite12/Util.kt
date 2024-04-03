@@ -34,8 +34,8 @@ class NotParser<T>(private val parser: Parser<T>) : Parser<Unit> {
 }
 
 fun String.escapeJsonString() = this
-    .replace("\n", "\n\n")
-    .replace("\"", "\n\"")
+    .replace("\n", "\\n")
+    .replace("\"", "\\\"")
 
 class CachedParser<T>(private val parser: Parser<T>) : Parser<T> {
     private val cacheTable = mutableMapOf<Int, ParseResult<T>>()
