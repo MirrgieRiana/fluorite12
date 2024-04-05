@@ -151,7 +151,7 @@ class Fluorite12Test {
 
         assertEquals(false, run("?NULL").boolean) // NULLはFALSE
 
-        assertEquals(false, run("?FALSE").boolean) // VOIDはFALSE
+        assertEquals(false, run("?FALSE").boolean) // FALSEはFALSE
 
         assertEquals(true, run("?1").boolean) // 0以外であればTRUE
         assertEquals(false, run("?0").boolean) // 0はFALSE
