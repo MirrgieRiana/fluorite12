@@ -37,18 +37,6 @@ object FluoriteNull : FluoriteValue {
 }
 
 
-object FluoriteVoid : FluoriteValue {
-    val fluoriteClass by lazy {
-        FluoriteObject(
-            FluoriteValue.fluoriteClass, mutableMapOf(
-                "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.FALSE },
-            )
-        )
-    }
-    override val parent = fluoriteClass
-}
-
-
 interface FluoriteNumber : FluoriteValue {
     val value: Number
     fun negate(): FluoriteNumber
@@ -226,6 +214,7 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
                 )
             )
         }
+        val EMPTY = FluoriteStream {}
     }
 
     override val parent get() = fluoriteClass

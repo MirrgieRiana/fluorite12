@@ -58,7 +58,6 @@ fun Frame.defineConstant(name: String, value: FluoriteValue): Runner {
 fun Frame.defineCommonBuiltinVariables() = listOf(
     defineConstant("VALUE_CLASS", FluoriteValue.fluoriteClass),
     defineConstant("NULL_CLASS", FluoriteNull.fluoriteClass),
-    defineConstant("VOID_CLASS", FluoriteVoid.fluoriteClass),
     defineConstant("INT_CLASS", FluoriteInt.fluoriteClass),
     defineConstant("DOUBLE_CLASS", FluoriteDouble.fluoriteClass),
     defineConstant("BOOLEAN_CLASS", FluoriteBoolean.fluoriteClass),
@@ -71,7 +70,7 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
     defineConstant("NULL", FluoriteNull),
     defineConstant("TRUE", FluoriteBoolean.TRUE),
     defineConstant("FALSE", FluoriteBoolean.FALSE),
-    defineConstant("VOID", FluoriteVoid),
+    defineConstant("EMPTY", FluoriteStream.EMPTY),
 )
 
 suspend fun Frame.compileToGetter(node: Node): Getter {
@@ -342,7 +341,7 @@ private suspend fun Frame.compileRootNodeToGetter(node: Node): Getter {
         }
     }
     val getter = when (val getterNode = nodes.last()) {
-        is EmptyNode -> VoidGetter
+        is EmptyNode -> NullGetter
         else -> compileToGetter(getterNode)
     }
     return LinesGetter(runners, getter)

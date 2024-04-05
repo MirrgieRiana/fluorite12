@@ -357,7 +357,6 @@ class Fluorite12Test {
         assertEquals(1, run("1 ?: 2").int) // ?: の左辺が非NULLの場合、左辺を得る
         assertEquals(2, run("NULL ?: 2").int) // ?: の左辺がNULLの場合、右辺を得る
         assertEquals(false, run("FALSE ?: 2").boolean) // FALSEは非NULLである
-        assertEquals(FluoriteVoid, run("VOID ?: 2")) // VOIDは非NULLである
 
         // 三項演算子とエルビス演算子は混ぜて書ける
         assertEquals(1, run("TRUE ? 1 ?: 2 : 3 ?: 4").int)
@@ -394,7 +393,7 @@ class Fluorite12Test {
         assertEquals("5", run("1 .. 5 ?| _ %% 5").stream()) // 1件しかマッチしない場合でもストリームを返す
         assertEquals("", run("1 .. 5 ?| _ %% 7").stream()) // 何もマッチしない場合は空ストリームを返す
         assertEquals(5, run("5 ?| _ %% 5").int) // 左辺が非ストリームの場合、マッチした場合はそれをそのまま返す
-        assertEquals(FluoriteVoid, run("5 ?| _ %% 7")) // 左辺が非ストリームの場合でも、マッチしなかった場合は空ストリームを返す
+        assertEquals("", run("5 ?| _ %% 7").stream()) // 左辺が非ストリームの場合でも、マッチしなかった場合は空ストリームを返す
     }
 
     @Test
@@ -409,7 +408,6 @@ class Fluorite12Test {
         // 各クラスのtrue判定
         assertEquals(true, run("1 ?= VALUE_CLASS").boolean)
         assertEquals(true, run("NULL ?= NULL_CLASS").boolean)
-        assertEquals(true, run("VOID ?= VOID_CLASS").boolean)
         assertEquals(true, run("1 ?= INT_CLASS").boolean)
         assertEquals(true, run("1.2 ?= DOUBLE_CLASS").boolean)
         assertEquals(true, run("TRUE ?= BOOLEAN_CLASS").boolean)
@@ -465,9 +463,9 @@ class Fluorite12Test {
         assertEquals(10, run("10").int) // 式を書ける
         assertEquals(20, run("10; 20").int) // ; で区切ると左は式文になり、右が使われる
         assertEquals(20, run("10\n20").int) // 改行で区切ってもよい
-        assertEquals(FluoriteVoid, run("10;")) // 式を省略した場合、VOIDになる
+        assertEquals(FluoriteNull, run("10;")) // 式を省略した場合、NULLになる
         assertEquals(10, run("10\n").int) // 式の前後に余計な改行があっても無視される
-        assertEquals(FluoriteVoid, run("10;\n")) // ; の後に改行があった場合もVOIDになる
+        assertEquals(FluoriteNull, run("10;\n")) // ; の後に改行があった場合もNULLになる
         assertEquals(30, run("10; 20; 30").int) // ; が複数あってもよい
         assertEquals(20, run("; 10; ; 20").int) // ; の左は省略されていてもよい
         assertEquals(20, run("\n\n;;\n\n10\n\n;;\n\n;;\n\n20\n\n").int) // 改行と;が無駄に大量にあってもよい
