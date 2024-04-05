@@ -117,6 +117,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun bracketTest() = runTest {
+        assertEquals(1, run("(1)").int) // ( ) で囲うと中身をそのまま得られる
+        assertEquals(FluoriteNull, run("()")) // () でNULLになる
+        assertEquals("", run("(,)").stream()) // (,) で空ストリームになる
+    }
+
+    @Test
     fun arrayTest() = runTest {
         assertEquals("[1]", run("[1]").array) // [ ] で配列を作れる
         assertEquals("[1;2]", run("[1; 2]").array) // 要素は ; で区切ることができる
