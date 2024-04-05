@@ -271,6 +271,34 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 PipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
             }
 
+            "?|" -> {
+                val streamGetter = compileToGetter(node.left)
+                val (variable, contentNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
+                    require(node.right.left is IdentifierNode)
+                    Pair(node.right.left.string, node.right.right)
+                } else {
+                    Pair("_", node.right)
+                }
+                val newFrame = Frame(this)
+                val argumentVariableIndex = newFrame.defineVariable(variable)
+                val contentGetter = newFrame.compileToGetter(contentNode)
+                FilterPipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
+            }
+
+            "!|" -> {
+                val streamGetter = compileToGetter(node.left)
+                val (variable, contentNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
+                    require(node.right.left is IdentifierNode)
+                    Pair(node.right.left.string, node.right.right)
+                } else {
+                    Pair("_", node.right)
+                }
+                val newFrame = Frame(this)
+                val argumentVariableIndex = newFrame.defineVariable(variable)
+                val contentGetter = newFrame.compileToGetter(contentNode)
+                NotFilterPipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
+            }
+
             else -> throw IllegalArgumentException("Unknown operator: A ${node.operator.text} B")
         }
 

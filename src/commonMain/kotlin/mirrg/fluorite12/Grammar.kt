@@ -251,7 +251,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(exclamation * question), // !?
     )
     val assignation: Parser<Node> by rightAssociative(commas, -s * assignationOperator * -b, ::infixNode)
-    val stream: Parser<Node> by leftAssociative(assignation, -s * +pipe * -b, ::infixNode)
+    val stream: Parser<Node> by leftAssociative(assignation, -s * (+(question * pipe) or +(exclamation * pipe) or +pipe) * -b, ::infixNode)
 
     val semicolonsPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
         stream * -s * br * -b * cachedParser { semicolonsPart } map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
