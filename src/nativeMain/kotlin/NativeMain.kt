@@ -39,13 +39,12 @@ fun main(args: Array<String>) = runBlocking {
     runners.forEach {
         it.evaluate(env)
     }
-    when (val result = getter.evaluate(env)) {
-        is FluoriteStream -> {
-            result.collect {
-                println(it.toString())
-            }
+    val result = getter.evaluate(env)
+    if (result is FluoriteStream) {
+        result.collect {
+            println(it.toString())
         }
-
-        else -> println(result.toString())
+    } else {
+        println(result.toString())
     }
 }

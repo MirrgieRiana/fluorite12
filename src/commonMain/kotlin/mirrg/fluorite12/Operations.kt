@@ -53,14 +53,12 @@ class ArrayCreationGetter(private val getters: List<Getter>) : Getter {
         val values = mutableListOf<FluoriteValue>()
         getters.forEach {
             val value = it.evaluate(env)
-            when (value) {
-                is FluoriteStream -> {
-                    value.collect { item ->
-                        values += item
-                    }
+            if (value is FluoriteStream) {
+                value.collect { item ->
+                    values += item
                 }
-
-                else -> values += value
+            } else {
+                values += value
             }
         }
         return FluoriteArray(values)
@@ -73,20 +71,16 @@ class ObjectCreationGetter(private val parentGetter: Getter?, private val conten
         val map = mutableMapOf<String, FluoriteValue>()
         contentGetters.forEach {
             val value = it.evaluate(env)
-            when (value) {
-                is FluoriteStream -> {
-                    value.collect { item ->
-                        require(item is FluoriteArray)
-                        require(item.values.size == 2)
-                        map[item.values[0].toString()] = item.values[1]
-                    }
+            if (value is FluoriteStream) {
+                value.collect { item ->
+                    require(item is FluoriteArray)
+                    require(item.values.size == 2)
+                    map[item.values[0].toString()] = item.values[1]
                 }
-
-                else -> {
-                    require(value is FluoriteArray)
-                    require(value.values.size == 2)
-                    map[value.values[0].toString()] = value.values[1]
-                }
+            } else {
+                require(value is FluoriteArray)
+                require(value.values.size == 2)
+                map[value.values[0].toString()] = value.values[1]
             }
         }
         return FluoriteObject(parent, map)
@@ -399,9 +393,11 @@ class StreamConcatenationGetter(private val getters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return FluoriteStream {
             getters.forEach {
-                when (val value = it.evaluate(env)) {
-                    is FluoriteStream -> value.flowProvider(this)
-                    else -> emit(value)
+                val value = it.evaluate(env)
+                if (value is FluoriteStream) {
+                    value.flowProvider(this)
+                } else {
+                    emit(value)
                 }
             }
         }
@@ -430,75 +426,66 @@ class CatchGetter(private val leftGetter: Getter, private val newFrameIndex: Int
 
 class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        return when (val stream = streamGetter.evaluate(env)) {
-            is FluoriteStream -> {
-                FluoriteStream {
-                    val newEnv = Environment(env, 1)
-                    stream.collect { value ->
-                        newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
-                        val result = contentGetter.evaluate(newEnv)
-                        if (result is FluoriteStream) {
-                            result.flowProvider(this)
-                        } else {
-                            emit(result)
-                        }
+        val stream = streamGetter.evaluate(env)
+        return if (stream is FluoriteStream) {
+            FluoriteStream {
+                val newEnv = Environment(env, 1)
+                stream.collect { value ->
+                    newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
+                    val result = contentGetter.evaluate(newEnv)
+                    if (result is FluoriteStream) {
+                        result.flowProvider(this)
+                    } else {
+                        emit(result)
                     }
                 }
             }
-
-            else -> {
-                val newEnv = Environment(env, 1)
-                newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
-                contentGetter.evaluate(newEnv)
-            }
+        } else {
+            val newEnv = Environment(env, 1)
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
+            contentGetter.evaluate(newEnv)
         }
     }
 }
 
 class FilterPipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        return when (val stream = streamGetter.evaluate(env)) {
-            is FluoriteStream -> {
-                FluoriteStream {
-                    val newEnv = Environment(env, 1)
-                    stream.collect { value ->
-                        newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
-                        if (contentGetter.evaluate(newEnv).toBoolean()) {
-                            emit(value)
-                        }
+        val stream = streamGetter.evaluate(env)
+        return if (stream is FluoriteStream) {
+            FluoriteStream {
+                val newEnv = Environment(env, 1)
+                stream.collect { value ->
+                    newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
+                    if (contentGetter.evaluate(newEnv).toBoolean()) {
+                        emit(value)
                     }
                 }
             }
-
-            else -> {
-                val newEnv = Environment(env, 1)
-                newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
-                if (contentGetter.evaluate(newEnv).toBoolean()) stream else FluoriteStream.EMPTY
-            }
+        } else {
+            val newEnv = Environment(env, 1)
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
+            if (contentGetter.evaluate(newEnv).toBoolean()) stream else FluoriteStream.EMPTY
         }
     }
 }
 
 class NotFilterPipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        return when (val stream = streamGetter.evaluate(env)) {
-            is FluoriteStream -> {
-                FluoriteStream {
-                    val newEnv = Environment(env, 1)
-                    stream.collect { value ->
-                        newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
-                        if (!contentGetter.evaluate(newEnv).toBoolean()) {
-                            emit(value)
-                        }
+        val stream = streamGetter.evaluate(env)
+        return if (stream is FluoriteStream) {
+            FluoriteStream {
+                val newEnv = Environment(env, 1)
+                stream.collect { value ->
+                    newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
+                    if (!contentGetter.evaluate(newEnv).toBoolean()) {
+                        emit(value)
                     }
                 }
             }
-
-            else -> {
-                val newEnv = Environment(env, 1)
-                newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
-                if (!contentGetter.evaluate(newEnv).toBoolean()) stream else FluoriteStream.EMPTY
-            }
+        } else {
+            val newEnv = Environment(env, 1)
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
+            if (!contentGetter.evaluate(newEnv).toBoolean()) stream else FluoriteStream.EMPTY
         }
     }
 }
