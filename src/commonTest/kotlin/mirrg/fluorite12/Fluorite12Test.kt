@@ -476,6 +476,8 @@ class Fluorite12Test {
         assertEquals(30, run("10; 20; 30").int) // ; が複数あってもよい
         assertEquals(20, run("; 10; ; 20").int) // ; の左は省略されていてもよい
         assertEquals(20, run("\n\n;;\n\n10\n\n;;\n\n;;\n\n20\n\n").int) // 改行と;が無駄に大量にあってもよい
+        assertEquals(FluoriteNull, run("")) // 何も書かない場合、NULLになる
+        assertEquals(FluoriteNull, run(" \t\n ")) // 空白を書いても何もないのと同じになる
     }
 }
 

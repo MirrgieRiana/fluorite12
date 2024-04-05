@@ -261,7 +261,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val semicolons: Parser<Node> by semicolonsPart map { if (it.first.size == 1) it.first.first() else SemicolonNode(it.first, it.second) }
     val expression: Parser<Node> by semicolons
 
-    override val rootParser: Parser<Node> by -b * expression * -b map { RootNode(it) }
+    override val rootParser: Parser<Node> by -b * optional(expression * -b) map { RootNode(it ?: EmptyNode) }
 }
 
 @JvmName("unaryPlus1")
