@@ -36,8 +36,8 @@ fun FluoriteValue.getMethod(name: String): FluoriteValue? {
     }
 }
 
-suspend fun FluoriteValue.callMethod(env: Environment, name: String, vararg arguments: FluoriteValue) = (this.getMethod(env, name) as FluoriteFunction).function(listOf(this, *arguments))
-suspend fun FluoriteValue.callMethod(name: String, vararg arguments: FluoriteValue) = (this.getMethod(name) as FluoriteFunction).function(listOf(this, *arguments))
+suspend fun FluoriteValue.callMethod(env: Environment, name: String, vararg arguments: FluoriteValue) = (this.getMethod(env, name) as FluoriteFunction).call(listOf(this, *arguments))
+suspend fun FluoriteValue.callMethod(name: String, vararg arguments: FluoriteValue) = (this.getMethod(name) as FluoriteFunction).call(listOf(this, *arguments))
 
 suspend fun FluoriteValue.toJson(env: Environment) = this.callMethod(env, "TO_JSON")
 suspend fun FluoriteValue.toJson() = this.callMethod("TO_JSON")

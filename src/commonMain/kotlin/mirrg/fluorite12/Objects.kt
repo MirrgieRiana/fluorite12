@@ -190,13 +190,15 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
 }
 
 
-class FluoriteFunction(val function: suspend (List<FluoriteValue>) -> FluoriteValue) : FluoriteValue {
+class FluoriteFunction(val function: suspend FluoriteFunction.(List<FluoriteValue>) -> FluoriteValue) : FluoriteValue {
     companion object {
         val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
     }
 
     override val parent get() = fluoriteClass
 }
+
+suspend fun FluoriteFunction.call(arguments: List<FluoriteValue>) = this.function(this, arguments)
 
 
 class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -> Unit) : FluoriteValue {

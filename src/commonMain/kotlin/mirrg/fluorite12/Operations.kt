@@ -99,7 +99,7 @@ class FunctionInvocationGetter(private val functionGetter: Getter, private val a
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val function = functionGetter.evaluate(env) as FluoriteFunction
         val arguments = argumentGetters.map { it.evaluate(env) }
-        return function.function.invoke(arguments)
+        return function.call(arguments)
     }
 }
 
