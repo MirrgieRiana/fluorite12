@@ -28,7 +28,13 @@ fun main(args: Array<String>) = runBlocking {
         }),
         frame.defineConstant("OUT", FluoriteFunction { arguments ->
             arguments.forEach {
-                println(it.toString())
+                if (it is FluoriteStream) {
+                    it.collect { item ->
+                        println(item.toFluoriteString().value)
+                    }
+                } else {
+                    println(it.toFluoriteString().value)
+                }
             }
             this
         }),
