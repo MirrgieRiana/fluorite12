@@ -252,9 +252,9 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val assignation: Parser<Node> by rightAssociative(commas, -s * assignationOperator * -b, ::infixNode)
     val streamOperator: Parser<List<TokenMatch>> by OrCombinator(
+        +pipe,
         +(question * pipe),
         +(exclamation * pipe),
-        +pipe,
     )
     val stream: Parser<Node> by leftAssociative(assignation, -s * streamOperator * -b, ::infixNode)
 
