@@ -400,6 +400,11 @@ class Fluorite12Test {
         assertEquals("", run("1 .. 5 ?| _ %% 7").stream()) // 何もマッチしない場合は空ストリームを返す
         assertEquals(5, run("5 ?| _ %% 5").int) // 左辺が非ストリームの場合、マッチした場合はそれをそのまま返す
         assertEquals("", run("5 ?| _ %% 7").stream()) // 左辺が非ストリームの場合でも、マッチしなかった場合は空ストリームを返す
+
+        // 実行パイプ
+        assertEquals("1:2:3", run(""" 1, 2, 3 |> JOIN(":") """).string) // |> で右辺の関数に左辺を適用する
+        assertEquals(10.0, run("100 |> SQRT").double, 0.001) // 右辺は非ストリーム用の関数でもよい
+        assertEquals(20, run("10 |> x -> x * 2").int) // 右辺はラムダでもよい
     }
 
     @Test
