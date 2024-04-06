@@ -479,6 +479,11 @@ class Fluorite12Test {
         assertEquals(FluoriteNull, run("")) // 何も書かない場合、NULLになる
         assertEquals(FluoriteNull, run(" \t\n ")) // 空白を書いても何もないのと同じになる
     }
+
+    @Test
+    fun mathTest() = runTest {
+        assertEquals(10.0, run("SQRT(100)").double, 0.001)
+    }
 }
 
 private suspend fun run(src: String): FluoriteValue {

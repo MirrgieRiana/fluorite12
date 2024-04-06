@@ -1,5 +1,7 @@
 package mirrg.fluorite12
 
+import kotlin.math.sqrt
+
 
 class Frame(val parent: Frame? = null) {
     val frameIndex: Int = parent?.let { it.frameIndex + 1 } ?: 0
@@ -71,6 +73,13 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
     defineConstant("TRUE", FluoriteBoolean.TRUE),
     defineConstant("FALSE", FluoriteBoolean.FALSE),
     defineConstant("EMPTY", FluoriteStream.EMPTY),
+
+    defineConstant("SQRT", FluoriteFunction { arguments ->
+        when (arguments.size) {
+            1 -> FluoriteDouble(sqrt((arguments[0] as FluoriteNumber).value.toDouble()))
+            else -> throw IllegalArgumentException("Arguments mismatch: SQRT[${arguments.size}]")
+        }
+    }),
 )
 
 suspend fun Frame.compileToGetter(node: Node): Getter {
