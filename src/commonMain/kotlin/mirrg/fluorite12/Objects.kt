@@ -115,6 +115,7 @@ class FluoriteString(val value: String) : FluoriteValue {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
+                    "TO_STRING" to FluoriteFunction { it[0] as FluoriteString },
                     "TO_JSON" to FluoriteFunction {
                         val escaped = (it[0] as FluoriteString).value.escapeJsonString()
                         "\"$escaped\"".toFluoriteString()

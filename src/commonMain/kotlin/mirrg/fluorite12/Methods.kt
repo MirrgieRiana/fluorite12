@@ -42,8 +42,8 @@ suspend fun FluoriteValue.callMethod(name: String, vararg arguments: FluoriteVal
 suspend fun FluoriteValue.toJson(env: Environment) = this.callMethod(env, "TO_JSON")
 suspend fun FluoriteValue.toJson() = this.callMethod("TO_JSON")
 
-suspend fun FluoriteValue.toFluoriteString(env: Environment) = this.callMethod(env, "TO_STRING") as FluoriteString
-suspend fun FluoriteValue.toFluoriteString() = this.callMethod("TO_STRING") as FluoriteString
+suspend fun FluoriteValue.toFluoriteString(env: Environment): FluoriteString = this.callMethod(env, "TO_STRING").let { if (it is FluoriteString) it else it.toFluoriteString() }
+suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod("TO_STRING").let { if (it is FluoriteString) it else it.toFluoriteString() }
 
 suspend fun FluoriteValue.toFluoriteBoolean(env: Environment) = (if (this is FluoriteBoolean) this else this.callMethod(env, "TO_BOOLEAN") as FluoriteBoolean)
 suspend fun FluoriteValue.toFluoriteBoolean() = (if (this is FluoriteBoolean) this else this.callMethod("TO_BOOLEAN") as FluoriteBoolean)
