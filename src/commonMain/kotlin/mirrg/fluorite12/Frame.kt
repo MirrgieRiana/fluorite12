@@ -57,6 +57,8 @@ fun Frame.defineConstant(name: String, value: FluoriteValue): Runner {
 }
 
 
+private fun usage(vararg usages: String): Nothing = throw IllegalArgumentException(listOf("Usage:", *usages.map { "  $it" }.toTypedArray()).joinToString("\n"))
+
 fun Frame.defineCommonBuiltinVariables() = listOf(
     defineConstant("VALUE_CLASS", FluoriteValue.fluoriteClass),
     defineConstant("NULL_CLASS", FluoriteNull.fluoriteClass),
@@ -81,7 +83,12 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
         }
     }),
     defineConstant("JOIN", FluoriteFunction { arguments ->
-        suspend fun f(separator: String, stream: FluoriteValue): FluoriteString {
+        fun u(): Nothing = usage(
+            "JOIN(separator: VALUE; stream: VALUE): STRING",
+            "JOIN(separator: VALUE)(stream: VALUE): STRING",
+        )
+
+        suspend fun f(separator: String, stream: FluoriteValue): FluoriteValue {
             return if (stream is FluoriteStream) {
                 val sb = StringBuilder()
                 var isFirst = true
@@ -108,7 +115,7 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
                             f(separator, stream)
                         }
 
-                        else -> throw IllegalArgumentException("Arguments mismatch: JOIN[1][${arguments.size}]")
+                        else -> u()
                     }
                 }
             }
@@ -119,7 +126,7 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
                 f(separator, stream)
             }
 
-            else -> throw IllegalArgumentException("Arguments mismatch: JOIN[${arguments.size}]")
+            else -> u()
         }
     }),
 )
