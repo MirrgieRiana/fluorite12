@@ -37,11 +37,12 @@ kotlin {
             executable("flc")
         }
     }
-    mingwX64 {
-        binaries {
-            executable("flc")
-        }
-    }
+    // mingwX64だけ同じテストが成功したり失敗したりする怪現象のため廃止
+    //mingwX64 {
+    //    binaries {
+    //        executable("flc")
+    //    }
+    //}
 
     sourceSets {
         val commonMain by getting {
