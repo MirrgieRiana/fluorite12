@@ -249,6 +249,30 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 }
             }
 
+            "[" -> {
+                if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
+                    if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
+                    val receiverGetter = compileToGetter(node.main.left)
+                    val name = node.main.right.string
+                    val argumentNodes = when (node.argument) {
+                        is EmptyNode -> listOf()
+                        is SemicolonNode -> node.argument.nodes
+                        else -> listOf(node.argument)
+                    }
+                    val argumentGetters = argumentNodes.map { compileToGetter(it) }
+                    MethodBindGetter(receiverGetter, name, argumentGetters)
+                } else { // 関数呼び出し
+                    val functionGetter = compileToGetter(node.main)
+                    val argumentNodes = when (node.argument) {
+                        is EmptyNode -> listOf()
+                        is SemicolonNode -> node.argument.nodes
+                        else -> listOf(node.argument)
+                    }
+                    val argumentGetters = argumentNodes.map { compileToGetter(it) }
+                    FunctionBindGetter(functionGetter, argumentGetters)
+                }
+            }
+
             "{" -> {
                 val parentGetter = compileToGetter(node.main)
                 val contentNodes = if (node.argument is SemicolonNode) node.argument.nodes else listOf(node.argument)

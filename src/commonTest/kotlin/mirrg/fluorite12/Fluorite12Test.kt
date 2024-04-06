@@ -476,6 +476,15 @@ class Fluorite12Test {
     }
 
     @Test
+    fun bindTest() = runTest {
+        assertEquals("12", run("(a, b -> a & b)[1](2)").string) // [ ] で関数に部分適用できる
+        assertEquals("12", run("(a, b -> a & b)[1; 2]()").string) // [ ] の中に複数の引数があってもよい
+        assertEquals("12", run("(a, b -> a & b)[](1; 2)").string) // [ ] の中が空でもよい
+        assertEquals("12", run("(a, b -> a & b)[1][2]()").string) // [ ] を連続して書いてもよい
+        assertEquals("12", run("{m: _, a, b -> a & b}::m[1](2)").string) // メソッド呼び出しにも使用できる 
+    }
+
+    @Test
     fun rootTest() = runTest {
         assertEquals(10, run("10").int) // 式を書ける
         assertEquals(20, run("10; 20").int) // ; で区切ると左は式文になり、右が使われる
