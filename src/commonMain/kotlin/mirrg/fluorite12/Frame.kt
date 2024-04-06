@@ -80,6 +80,48 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
             else -> throw IllegalArgumentException("Arguments mismatch: SQRT[${arguments.size}]")
         }
     }),
+    defineConstant("JOIN", FluoriteFunction { arguments ->
+        suspend fun f(separator: String, stream: FluoriteValue): FluoriteString {
+            return if (stream is FluoriteStream) {
+                val sb = StringBuilder()
+                var isFirst = true
+                stream.collect { value ->
+                    if (isFirst) {
+                        isFirst = false
+                    } else {
+                        sb.append(separator)
+                    }
+                    sb.append(value.toFluoriteString().value)
+                }
+                sb.toString().toFluoriteString()
+            } else {
+                stream.toFluoriteString()
+            }
+        }
+        when (arguments.size) {
+            1 -> {
+                val separator = arguments[0].toFluoriteString().value
+                FluoriteFunction { arguments2 ->
+                    when (arguments2.size) {
+                        1 -> {
+                            val stream = arguments2[0]
+                            f(separator, stream)
+                        }
+
+                        else -> throw IllegalArgumentException("Arguments mismatch: JOIN[1][${arguments.size}]")
+                    }
+                }
+            }
+
+            2 -> {
+                val separator = arguments[0].toFluoriteString().value
+                val stream = arguments[1]
+                f(separator, stream)
+            }
+
+            else -> throw IllegalArgumentException("Arguments mismatch: JOIN[${arguments.size}]")
+        }
+    }),
 )
 
 suspend fun Frame.compileToGetter(node: Node): Getter {

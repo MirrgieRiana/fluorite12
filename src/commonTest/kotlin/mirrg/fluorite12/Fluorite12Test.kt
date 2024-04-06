@@ -484,6 +484,20 @@ class Fluorite12Test {
     fun mathTest() = runTest {
         assertEquals(10.0, run("SQRT(100)").double, 0.001)
     }
+
+    @Test
+    fun joinTest() = runTest {
+        assertEquals("a|b|c", run(""" JOIN("|"; "a", "b", "c") """).string) // JOIN で文字列を結合できる
+        assertEquals("abc", run(""" JOIN(""; "a", "b", "c") """).string) // セパレータは空文字でもよい
+        assertEquals("a123b123c", run(""" JOIN("123"; "a", "b", "c") """).string) // セパレータは複数文字でもよい
+        assertEquals("a|b", run(""" JOIN("|"; "a", "b") """).string) // ストリームは2要素でもよい
+        assertEquals("a", run(""" JOIN("|"; "a",) """).string) // ストリームは1要素でもよい
+        assertEquals("", run(""" JOIN("|"; ,) """).string) // ストリームは空でもよい
+        assertEquals("a", run(""" JOIN("|"; "a") """).string) // ストリームは非ストリームでもよい
+        assertEquals("10|[20]|30", run(""" JOIN("|"; 10, [20], {TO_STRING: _ -> 30}) """).string) // ストリームは文字列化される
+        assertEquals("a1b1c", run(""" JOIN(1; "a", "b", "c") """).string) // セパレータも文字列化される
+        assertEquals("a|b|c", run(""" JOIN("|")("a", "b", "c") """).string) // 1引数で呼び出すとセパレータが設定された関数を作る
+    }
 }
 
 private suspend fun run(src: String): FluoriteValue {
