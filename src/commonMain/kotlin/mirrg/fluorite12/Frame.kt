@@ -393,7 +393,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 NotFilterPipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
             }
 
-            "|>" -> {
+            ">>" -> {
                 val streamGetter = compileToGetter(node.left)
                 val functionGetter = compileToGetter(node.right)
                 FunctionInvocationGetter(functionGetter, listOf(streamGetter))

@@ -402,9 +402,9 @@ class Fluorite12Test {
         assertEquals("", run("5 ?| _ %% 7").stream()) // 左辺が非ストリームの場合でも、マッチしなかった場合は空ストリームを返す
 
         // 実行パイプ
-        assertEquals("1:2:3", run(""" 1, 2, 3 |> JOIN(":") """).string) // |> で右辺の関数に左辺を適用する
-        assertEquals(10.0, run("100 |> SQRT").double, 0.001) // 右辺は非ストリーム用の関数でもよい
-        assertEquals(20, run("10 |> x -> x * 2").int) // 右辺はラムダでもよい
+        assertEquals("1:2:3", run(""" 1, 2, 3 >> JOIN(":") """).string) // >> で右辺の関数に左辺を適用する
+        assertEquals(10.0, run("100 >> SQRT").double, 0.001) // 右辺は非ストリーム用の関数でもよい
+        assertEquals(20, run("10 >> x -> x * 2").int) // 右辺はラムダでもよい
     }
 
     @Test
@@ -517,7 +517,7 @@ class Fluorite12Test {
         assertEquals("a,b,c", run(""" SPLIT("|")("a|b|c") """).stream()) // 1引数で呼び出すとセパレータが設定された関数を作る
 
         // パイプ連携
-        assertEquals("10ABC20ABC30", run(""" "10abc20abc30" |> SPLIT("abc") |> JOIN("ABC") """).string)
+        assertEquals("10ABC20ABC30", run(""" "10abc20abc30" >> SPLIT("abc") >> JOIN("ABC") """).string)
     }
 }
 
