@@ -405,6 +405,10 @@ class Fluorite12Test {
         assertEquals("1:2:3", run(""" 1, 2, 3 >> JOIN(":") """).string) // >> で右辺の関数に左辺を適用する
         assertEquals(10.0, run("100 >> SQRT").double, 0.001) // 右辺は非ストリーム用の関数でもよい
         assertEquals(20, run("10 >> x -> x * 2").int) // 右辺はラムダでもよい
+        assertEquals("1:2:3", run(""" JOIN(":") << 1, 2, 3 """).string) // << は左右が逆になっただけ
+
+        // パイプの連結
+        assertEquals("11;33;55", run(""" SPLIT(":") << "1:2:3:4:5" !| +_ %% 2 | _ & _ >> JOIN(";") """).string)
     }
 
     @Test

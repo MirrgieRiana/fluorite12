@@ -399,6 +399,12 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 FunctionInvocationGetter(functionGetter, listOf(streamGetter))
             }
 
+            "<<" -> {
+                val streamGetter = compileToGetter(node.right)
+                val functionGetter = compileToGetter(node.left)
+                FunctionInvocationGetter(functionGetter, listOf(streamGetter))
+            }
+
             else -> throw IllegalArgumentException("Unknown operator: A ${node.operator.text} B")
         }
 

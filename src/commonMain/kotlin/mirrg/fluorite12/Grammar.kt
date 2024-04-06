@@ -256,6 +256,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(question * pipe),
         +(exclamation * pipe),
         +(greater * greater),
+        +(less * less),
     )
     val stream: Parser<Node> by leftAssociative(assignation, -s * streamOperator * -b, ::infixNode)
 
