@@ -402,13 +402,13 @@ class Fluorite12Test {
         assertEquals("", run("5 ?| _ %% 7").stream()) // 左辺が非ストリームの場合でも、マッチしなかった場合は空ストリームを返す
 
         // 実行パイプ
-        assertEquals("1:2:3", run(""" 1, 2, 3 >> JOIN(":") """).string) // >> で右辺の関数に左辺を適用する
+        assertEquals("1:2:3", run(""" 1, 2, 3 >> JOIN[":"] """).string) // >> で右辺の関数に左辺を適用する
         assertEquals(10.0, run("100 >> SQRT").double, 0.001) // 右辺は非ストリーム用の関数でもよい
         assertEquals(20, run("10 >> x -> x * 2").int) // 右辺はラムダでもよい
-        assertEquals("1:2:3", run(""" JOIN(":") << 1, 2, 3 """).string) // << は左右が逆になっただけ
+        assertEquals("1:2:3", run(""" JOIN[":"] << 1, 2, 3 """).string) // << は左右が逆になっただけ
 
         // パイプの連結
-        assertEquals("11;33;55", run(""" SPLIT(":") << "1:2:3:4:5" !| +_ %% 2 | _ & _ >> JOIN(";") """).string)
+        assertEquals("11;33;55", run(""" SPLIT[":"] << "1:2:3:4:5" !| +_ %% 2 | _ & _ >> JOIN[";"] """).string)
     }
 
     @Test
@@ -516,7 +516,7 @@ class Fluorite12Test {
         assertEquals("a", run(""" JOIN("|"; "a") """).string) // ストリームは非ストリームでもよい
         assertEquals("10|[20]|30", run(""" JOIN("|"; 10, [20], {TO_STRING: _ -> 30}) """).string) // ストリームは文字列化される
         assertEquals("a1b1c", run(""" JOIN(1; "a", "b", "c") """).string) // セパレータも文字列化される
-        assertEquals("a|b|c", run(""" JOIN("|")("a", "b", "c") """).string) // 1引数で呼び出すとセパレータが設定された関数を作る
+        assertEquals("a|b|c", run(""" JOIN["|"]("a", "b", "c") """).string) // 部分適用を使用した例
 
         // SPLIT
         assertEquals("a,b,c", run(""" SPLIT("|"; "a|b|c") """).stream()) // SPLIT で文字列を分割できる
@@ -527,10 +527,10 @@ class Fluorite12Test {
         assertEquals("", run(""" SPLIT("|"; "") """).stream()) // 文字列は空でもよい
         assertEquals("1,2,3", run(""" SPLIT("0"; 10203) """).stream()) // 文字列は文字列化される
         assertEquals("a,b,c", run(""" SPLIT(1; "a1b1c") """).stream()) // セパレータは文字列化される
-        assertEquals("a,b,c", run(""" SPLIT("|")("a|b|c") """).stream()) // 1引数で呼び出すとセパレータが設定された関数を作る
+        assertEquals("a,b,c", run(""" SPLIT["|"]("a|b|c") """).stream()) // 部分適用を使用した例
 
         // パイプ連携
-        assertEquals("10ABC20ABC30", run(""" "10abc20abc30" >> SPLIT("abc") >> JOIN("ABC") """).string)
+        assertEquals("10ABC20ABC30", run(""" "10abc20abc30" >> SPLIT["abc"] >> JOIN["ABC"] """).string)
     }
 }
 

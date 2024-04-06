@@ -83,13 +83,10 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
         }
     }),
     defineConstant("JOIN", FluoriteFunction { arguments ->
-        fun u(): Nothing = usage(
-            "JOIN(separator: VALUE; stream: VALUE): STRING",
-            "JOIN(separator: VALUE)(stream: VALUE): STRING",
-        )
-
-        suspend fun f(separator: String, stream: FluoriteValue): FluoriteValue {
-            return if (stream is FluoriteStream) {
+        if (arguments.size == 2) {
+            val separator = arguments[0].toFluoriteString().value
+            val stream = arguments[1]
+            if (stream is FluoriteStream) {
                 val sb = StringBuilder()
                 var isFirst = true
                 stream.collect { value ->
@@ -104,66 +101,21 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
             } else {
                 stream.toFluoriteString()
             }
-        }
-        when (arguments.size) {
-            1 -> {
-                val separator = arguments[0].toFluoriteString().value
-                FluoriteFunction { arguments2 ->
-                    when (arguments2.size) {
-                        1 -> {
-                            val stream = arguments2[0]
-                            f(separator, stream)
-                        }
-
-                        else -> u()
-                    }
-                }
-            }
-
-            2 -> {
-                val separator = arguments[0].toFluoriteString().value
-                val stream = arguments[1]
-                f(separator, stream)
-            }
-
-            else -> u()
+        } else {
+            usage("JOIN(separator: VALUE; stream: VALUE): STRING")
         }
     }),
     defineConstant("SPLIT", FluoriteFunction { arguments ->
-        fun u(): Nothing = usage(
-            "SPLIT(separator: VALUE; string: VALUE): STREAM<STRING>",
-            "SPLIT(separator: VALUE)(string: VALUE): STREAM<STRING>",
-        )
-
-        suspend fun f(separator: String, string: FluoriteValue): FluoriteValue {
-            return if (separator.isEmpty()) {
+        if (arguments.size == 2) {
+            val separator = arguments[0].toFluoriteString().value
+            val string = arguments[1]
+            if (separator.isEmpty()) {
                 FluoriteStream(string.toFluoriteString().value.map { "$it".toFluoriteString() })
             } else {
                 FluoriteStream(string.toFluoriteString().value.split(separator).map { it.toFluoriteString() })
             }
-        }
-        when (arguments.size) {
-            1 -> {
-                val separator = arguments[0].toFluoriteString().value
-                FluoriteFunction { arguments2 ->
-                    when (arguments2.size) {
-                        1 -> {
-                            val string = arguments2[0]
-                            f(separator, string)
-                        }
-
-                        else -> u()
-                    }
-                }
-            }
-
-            2 -> {
-                val separator = arguments[0].toFluoriteString().value
-                val string = arguments[1]
-                f(separator, string)
-            }
-
-            else -> u()
+        } else {
+            usage("SPLIT(separator: VALUE; string: VALUE): STREAM<STRING>")
         }
     })
 )
