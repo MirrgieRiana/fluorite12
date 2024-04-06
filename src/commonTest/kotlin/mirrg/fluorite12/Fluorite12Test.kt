@@ -388,13 +388,12 @@ class Fluorite12Test {
 
     @Test
     fun pipeTest() = runTest {
+        // パイプ
         assertEquals("10,20,30", run("1 .. 3 | _ * 10").stream()) // 左辺のストリームを変換する
         assertEquals(10, run("1 | _ * 10").int) // 左辺が非ストリームなら、出力をストリームで梱包しない
         assertEquals("", run("(,) | _ * 10").stream()) // 左辺が空ストリームなら、出力も空ストリームになる
-    }
 
-    @Test
-    fun filterPipeTest() = runTest {
+        // フィルターパイプ
         assertEquals("2,4", run("1 .. 5 ?| _ %% 2").stream()) // 左辺のストリームをフィルタする
         assertEquals("1,3,5", run("1 .. 5 !| _ %% 2").stream()) // 否定フィルタパイプ
         assertEquals("5", run("1 .. 5 ?| _ %% 5").stream()) // 1件しかマッチしない場合でもストリームを返す
