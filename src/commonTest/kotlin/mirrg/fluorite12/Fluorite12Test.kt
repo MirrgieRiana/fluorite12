@@ -492,7 +492,8 @@ class Fluorite12Test {
     }
 
     @Test
-    fun joinTest() = runTest {
+    fun joinSplitTest() = runTest {
+        // JOIN
         assertEquals("a|b|c", run(""" JOIN("|"; "a", "b", "c") """).string) // JOIN で文字列を結合できる
         assertEquals("abc", run(""" JOIN(""; "a", "b", "c") """).string) // セパレータは空文字でもよい
         assertEquals("a123b123c", run(""" JOIN("123"; "a", "b", "c") """).string) // セパレータは複数文字でもよい
@@ -503,6 +504,20 @@ class Fluorite12Test {
         assertEquals("10|[20]|30", run(""" JOIN("|"; 10, [20], {TO_STRING: _ -> 30}) """).string) // ストリームは文字列化される
         assertEquals("a1b1c", run(""" JOIN(1; "a", "b", "c") """).string) // セパレータも文字列化される
         assertEquals("a|b|c", run(""" JOIN("|")("a", "b", "c") """).string) // 1引数で呼び出すとセパレータが設定された関数を作る
+
+        // SPLIT
+        assertEquals("a,b,c", run(""" SPLIT("|"; "a|b|c") """).stream()) // SPLIT で文字列を分割できる
+        assertEquals("a,b,c", run(""" SPLIT(""; "abc") """).stream()) // セパレータは空文字でもよい
+        assertEquals("a,b,c", run(""" SPLIT("123"; "a123b123c") """).stream()) // セパレータは複数文字でもよい
+        assertEquals("a,b", run(""" SPLIT("|"; "a|b") """).stream()) // 文字列は2要素でもよい
+        assertEquals("a", run(""" SPLIT("|"; "a") """).stream()) // 文字列は1要素でもよい
+        assertEquals("", run(""" SPLIT("|"; "") """).stream()) // 文字列は空でもよい
+        assertEquals("1,2,3", run(""" SPLIT("0"; 10203) """).stream()) // 文字列は文字列化される
+        assertEquals("a,b,c", run(""" SPLIT(1; "a1b1c") """).stream()) // セパレータは文字列化される
+        assertEquals("a,b,c", run(""" SPLIT("|")("a|b|c") """).stream()) // 1引数で呼び出すとセパレータが設定された関数を作る
+
+        // パイプ連携
+        assertEquals("10ABC20ABC30", run(""" "10abc20abc30" |> SPLIT("abc") |> JOIN("ABC") """).string)
     }
 }
 

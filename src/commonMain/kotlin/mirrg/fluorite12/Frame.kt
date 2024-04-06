@@ -129,6 +129,43 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
             else -> u()
         }
     }),
+    defineConstant("SPLIT", FluoriteFunction { arguments ->
+        fun u(): Nothing = usage(
+            "SPLIT(separator: VALUE; string: VALUE): STREAM<STRING>",
+            "SPLIT(separator: VALUE)(string: VALUE): STREAM<STRING>",
+        )
+
+        suspend fun f(separator: String, string: FluoriteValue): FluoriteValue {
+            return if (separator.isEmpty()) {
+                FluoriteStream(string.toFluoriteString().value.map { "$it".toFluoriteString() })
+            } else {
+                FluoriteStream(string.toFluoriteString().value.split(separator).map { it.toFluoriteString() })
+            }
+        }
+        when (arguments.size) {
+            1 -> {
+                val separator = arguments[0].toFluoriteString().value
+                FluoriteFunction { arguments2 ->
+                    when (arguments2.size) {
+                        1 -> {
+                            val string = arguments2[0]
+                            f(separator, string)
+                        }
+
+                        else -> u()
+                    }
+                }
+            }
+
+            2 -> {
+                val separator = arguments[0].toFluoriteString().value
+                val string = arguments[1]
+                f(separator, string)
+            }
+
+            else -> u()
+        }
+    })
 )
 
 suspend fun Frame.compileToGetter(node: Node): Getter {
