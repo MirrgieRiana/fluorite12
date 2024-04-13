@@ -140,18 +140,19 @@ class Fluorite12Grammar : Grammar<Node>() {
     val b by zeroOrMore(space or tab) * zeroOrMore(br * zeroOrMore(space or tab))
     val uAlphabet by uA or uB or uC or uD or uE or uF or uG or uH or uI or uJ or uK or uL or uM or uN or uO or uP or uQ or uR or uS or uT or uU or uV or uW or uX or uY or uZ
     val lAlphabet by lA or lB or lC or lD or lE or lF or lG or lH or lI or lJ or lK or lL or lM or lN or lO or lP or lQ or lR or lS or lT or lU or lV or lW or lX or lY or lZ
+    val number by zero or nonZero
 
-    val identifier: Parser<Node> by (uAlphabet or lAlphabet or underscore) * zeroOrMore(uAlphabet or lAlphabet or underscore or zero or nonZero) map {
+    val identifier: Parser<Node> by (uAlphabet or lAlphabet or underscore) * zeroOrMore(uAlphabet or lAlphabet or underscore or number) map {
         val tokens = listOf(it.t1, *it.t2.toTypedArray())
         IdentifierNode(tokens, tokens.joinToString("") { t -> t.text })
     }
 
-    val float: Parser<Node> by oneOrMore(zero or nonZero) * period * oneOrMore(zero or nonZero) map {
+    val float: Parser<Node> by oneOrMore(number) * period * oneOrMore(number) map {
         val tokens = it.t1 + it.t2 + it.t3
         FloatNode(tokens, tokens.text)
     }
 
-    val integer: Parser<Node> by oneOrMore(zero or nonZero) map { IntegerNode(it, it.joinToString("") { t -> t.text }) }
+    val integer: Parser<Node> by oneOrMore(number) map { IntegerNode(it, it.joinToString("") { t -> t.text }) }
 
     val rawStringCharacter by OrCombinator(
         -NotParser(sQuote) * AnyParser map { Pair(listOf(it), it.text) }, // ' 以外の文字
