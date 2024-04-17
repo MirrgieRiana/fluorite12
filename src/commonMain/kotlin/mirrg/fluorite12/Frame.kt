@@ -132,6 +132,8 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
 
         is IntegerNode -> LiteralGetter(FluoriteInt(node.string.toInt()))
 
+        is HexadecimalNode -> LiteralGetter(FluoriteInt(node.string.toInt(16)))
+
         is FloatNode -> LiteralGetter(FluoriteDouble(node.string.toDouble()))
 
         is RawStringNode -> LiteralGetter(FluoriteString(node.node.string))
