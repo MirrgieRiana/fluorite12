@@ -41,6 +41,11 @@ class Fluorite12Test {
         assertEquals(0, run("0").int) // 0も普通に書ける
         assertEquals(100, run("00100").int) // 整数は先頭に余計な 0 があっても10進数として扱われる
 
+        assertEquals(0x10, run("H#10").int) // H# で16進数を記述できる
+        assertEquals(-0x10, run("-H#10").int) // 負の16進数
+        assertEquals(0xabcdef, run("H#abcdef").int) // 英字の16進数
+        assertEquals(0xABCDEF, run("H#ABCDEF").int) // 大文字の英字の16進数
+
         assertEquals(1.1, run("1.1").double, 0.001) // 小数を記述できる
         assertEquals(0.0, run("0.0").double) // 0.0も普通に書ける
         assertEquals(1.0, run("1.0").double) // .0 を付けると浮動小数点数で整数値を得る

@@ -154,6 +154,9 @@ class Fluorite12Grammar : Grammar<Node>() {
 
     val integer: Parser<Node> by oneOrMore(number) map { IntegerNode(it, it.joinToString("") { t -> t.text }) }
 
+    val hexadecimalCharacter by number or lA or uA or lB or uB or lC or uC or lD or uD or lE or uE or lF or uF
+    val hexadecimal: Parser<Node> by uH * sharp * oneOrMore(hexadecimalCharacter) map { HexadecimalNode(listOf(it.t1, it.t2, *it.t3.toTypedArray()), it.t3.joinToString("") { t -> t.text }) }
+
     val rawStringCharacter by OrCombinator(
         -NotParser(sQuote) * AnyParser map { Pair(listOf(it), it.text) }, // ' 以外の文字
         sQuote * sQuote map { Pair(listOf(it.t1, it.t2), "'") } // '
@@ -187,7 +190,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val round: Parser<Node> by lRound * -b * optional(cachedParser { expression } * -b) * rRound map ::bracketNode
     val square: Parser<Node> by lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map ::bracketNode
     val curly: Parser<Node> by lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map ::bracketNode
-    val factor: Parser<Node> by identifier or float or integer or rawString or templateString or embeddedString or round or square or curly
+    val factor: Parser<Node> by hexadecimal or identifier or float or integer or rawString or templateString or embeddedString or round or square or curly
 
     val rightOperator: Parser<(Node) -> Node> by OrCombinator(
         -s * lRound * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
