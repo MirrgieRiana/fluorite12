@@ -54,3 +54,110 @@ class CachedParser<T>(private val parser: Parser<T>) : Parser<T> {
 
     fun clear() = cacheTable.clear()
 }
+
+fun String.removeExponent(): String {
+
+    // 指数表記の分割
+    var mantissa: String
+    val exponent: Int
+    run a@{
+
+        // eを含む指数表記
+        run {
+            val index = this.indexOf('e')
+            if (index != -1) {
+                mantissa = this.take(index)
+                exponent = this.drop(index + 1).toInt()
+                return@a
+            }
+        }
+
+        // Eを含む指数表記
+        run {
+            val index = this.indexOf('E')
+            if (index != -1) {
+                mantissa = this.take(index)
+                exponent = this.drop(index + 1).toInt()
+                return@a
+            }
+        }
+
+        // 指数表記ではない
+        mantissa = this
+        exponent = 0
+    }
+
+    // 仮数部から符号を除去
+    val sign = when {
+        mantissa.startsWith('-') -> '-'
+        mantissa.startsWith('+') -> '+'
+        else -> null
+    }
+    if (sign != null) mantissa = mantissa.drop(1)
+
+    // 仮数部を小数点で分離
+    var integer: String
+    var decimal: String
+    run {
+        val index = mantissa.indexOf('.')
+        if (index != -1) {
+            // 小数点があった
+            integer = mantissa.take(index)
+            decimal = mantissa.drop(index + 1)
+        } else {
+            // 小数点がなかった
+            integer = mantissa
+            decimal = ""
+        }
+    }
+
+    // 小数点の移動
+    if (exponent > 0) {
+        // 指数部が正
+        // 数字を小数部から整数部に移動
+        val amount = exponent
+
+        // 小数部の右に0を補充
+        val lack = amount - decimal.length
+        if (lack > 0) decimal = (decimal + "0".repeat(lack))
+
+        integer = (integer + decimal.take(amount))
+        decimal = decimal.drop(amount)
+    } else if (exponent < 0) {
+        // 指数部が負
+        // 数字を整数部から小数部に移動
+        val amount = -exponent
+
+        // 整数部の左に0を補充
+        val lack = amount - integer.length
+        if (lack > 0) integer = ("0".repeat(lack) + integer)
+
+        decimal = (integer.takeLast(amount) + decimal)
+        integer = integer.dropLast(amount)
+    }
+
+    // 余分な0の除去
+    run {
+        var i = 0
+        while (i < integer.length) {
+            if (integer[i] != '0') break
+            i++
+        }
+        if (i > 0) integer = integer.drop(i)
+    }
+    run {
+        var i = 0
+        while (i < decimal.length) {
+            if (decimal[decimal.length - 1 - i] != '0') break
+            i++
+        }
+        if (i > 0) decimal = decimal.dropLast(i)
+    }
+
+    // 文字列化
+    if (integer.isEmpty()) integer = "0" // 整数部が空だった場合、0を補填
+    val real = if (decimal.isEmpty()) integer else "$integer.$decimal" // 小数部が空だった場合、小数点を追加しない
+    val result = if (sign != null) "$sign$real" else real
+
+    return result
+}
