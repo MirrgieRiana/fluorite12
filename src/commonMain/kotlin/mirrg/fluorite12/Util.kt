@@ -55,6 +55,11 @@ class CachedParser<T>(private val parser: Parser<T>) : Parser<T> {
     fun clear() = cacheTable.clear()
 }
 
+/**
+ * 指数表記の文字列を小数表記の文字列にします。
+ * 指数表記にはeもしくはEを使うことができます。
+ * 先頭と末尾の不要な0は常に削除されます。
+ */
 fun String.removeExponent(): String {
 
     // 指数表記の分割
