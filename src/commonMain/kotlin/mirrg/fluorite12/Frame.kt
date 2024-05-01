@@ -143,6 +143,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 when (it) {
                     is LiteralStringContent -> LiteralStringGetter(it.string)
                     is NodeStringContent -> ConversionStringGetter(compileToGetter(it.main))
+                    is FormattedStringContent -> FormattedStringGetter(it.formatter, compileToGetter(it.main))
                 }
             }
             StringConcatenationGetter(getters)
@@ -153,6 +154,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
                 when (it) {
                     is LiteralStringContent -> LiteralStringGetter(it.string)
                     is NodeStringContent -> ConversionStringGetter(compileToGetter(it.main))
+                    is FormattedStringContent -> FormattedStringGetter(it.formatter, compileToGetter(it.main))
                 }
             }
             StringConcatenationGetter(getters)

@@ -171,9 +171,38 @@ class Fluorite12Grammar : Grammar<Node>() {
         bSlash * (lR) map { Pair(listOf(it.t1, it.t2), "\r") },
         bSlash * (lN) map { Pair(listOf(it.t1, it.t2), "\n") },
     )
+    val formatterFlag by OrCombinator(
+        minus map { Pair(it, FormatterFlag.LEFT_ALIGNED) },
+        plus map { Pair(it, FormatterFlag.SIGNED) },
+        space map { Pair(it, FormatterFlag.SPACE_FOR_SIGN) },
+        zero map { Pair(it, FormatterFlag.LEADING_ZEROS) },
+    )
+    val formatterConversion by OrCombinator(
+        lD map { Pair(it, FormatterConversion.DECIMAL) },
+        lX map { Pair(it, FormatterConversion.HEXADECIMAL) },
+        lF map { Pair(it, FormatterConversion.FLOAT) },
+        lS map { Pair(it, FormatterConversion.STRING) },
+    )
     val templateStringContent by OrCombinator(
         oneOrMore(templateStringCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) },
         dollar * cachedParser { factor } map { NodeStringContent(listOf(it.t1), it.t2, listOf()) },
+        dollar * percent * zeroOrMore(formatterFlag) * zeroOrMore(number) * optional(period * oneOrMore(number)) * formatterConversion * cachedParser { round or square or curly } map { parameters ->
+            val left = mutableListOf(parameters.t1, parameters.t2)
+
+            val flags = parameters.t3.map { it.second }.toSet()
+            left += parameters.t3.map { it.first }
+
+            val width = if (parameters.t4.isNotEmpty()) parameters.t4.joinToString("") { it.text }.toInt() else null
+            left += parameters.t4
+
+            val precision = parameters.t5?.t2?.joinToString("") { a -> a.text }?.toInt()
+            left += parameters.t5?.let { listOf(it.t1) + it.t2 } ?: listOf()
+
+            val conversion = parameters.t6.second
+            left += parameters.t6.first
+
+            FormattedStringContent(left, Formatter(left.joinToString("") { it.text }, flags, width, precision, conversion), parameters.t7)
+        },
     )
     val templateString by dQuote * zeroOrMore(templateStringContent) * dQuote map { TemplateStringNode(it.t1, it.t2, it.t3) }
 

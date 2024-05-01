@@ -25,3 +25,20 @@ class RootNode(val main: Node) : Node()
 sealed class StringContent
 class LiteralStringContent(val tokens: List<TokenMatch>, val string: String) : StringContent()
 class NodeStringContent(val left: List<TokenMatch>, val main: Node, val right: List<TokenMatch>) : StringContent()
+class FormattedStringContent(val left: List<TokenMatch>, val formatter: Formatter, val main: Node) : StringContent()
+
+class Formatter(val string: String, val flags: Set<FormatterFlag>, val width: Int?, val precision: Int?, val conversion: FormatterConversion)
+
+enum class FormatterFlag {
+    LEFT_ALIGNED,
+    SIGNED,
+    SPACE_FOR_SIGN,
+    LEADING_ZEROS,
+}
+
+enum class FormatterConversion {
+    DECIMAL,
+    HEXADECIMAL,
+    FLOAT,
+    STRING,
+}

@@ -523,6 +523,10 @@ class ConversionStringGetter(private val getter: Getter) : StringGetter {
     override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteString(env).value
 }
 
+class FormattedStringGetter(private val formatter: Formatter, private val getter: Getter) : StringGetter {
+    override suspend fun evaluate(env: Environment) = formatter.format(getter.evaluate(env))
+}
+
 
 interface Runner {
     suspend fun evaluate(env: Environment)

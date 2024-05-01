@@ -100,6 +100,86 @@ class Fluorite12Test {
     }
 
     @Test
+    fun formatTest() = runTest {
+        // %-+ 09d  空白埋め  0埋め  左揃え  符号表示  符号余白  変換
+
+        // 整数
+        run {
+            val s = """123456, 12345, 123, 0, -123, -1234, -12345, -123456"""
+            assertEquals("[123456;12345;123;0;-123;-1234;-12345;-123456]", run(""" [$s | "$%d(_)"] """).array) // %d で整数
+            assertEquals("[123456;12345;  123;    0; -123;-1234;-12345;-123456]", run(""" [$s | "$%5d(_)"] """).array) // 空白埋め
+            assertEquals("[123456;12345;00123;00000;-0123;-1234;-12345;-123456]", run(""" [$s | "$%05d(_)"] """).array) // 0埋め
+            assertEquals("[123456;12345;123  ;0    ;-123 ;-1234;-12345;-123456]", run(""" [$s | "$%-5d(_)"] """).array) // 左揃え空白埋め
+            assertEquals("[+123456;+12345;+123;+0;-123;-1234;-12345;-123456]", run(""" [$s | "$%+d(_)"] """).array) // 符号表示
+            assertEquals("[ 123456; 12345; 123; 0;-123;-1234;-12345;-123456]", run(""" [$s | "$% d(_)"] """).array) // 符号余白
+            assertEquals("[+123456;+12345; +123;   +0; -123;-1234;-12345;-123456]", run(""" [$s | "$%+5d(_)"] """).array) // 符号表示 空白埋め
+            assertEquals("[ 123456; 12345;  123;    0; -123;-1234;-12345;-123456]", run(""" [$s | "$% 5d(_)"] """).array) // 符号余白 空白埋め
+            assertEquals("[+123456;+12345;+0123;+0000;-0123;-1234;-12345;-123456]", run(""" [$s | "$%+05d(_)"] """).array) // 符号表示 0埋め
+            assertEquals("[ 123456; 12345; 0123; 0000;-0123;-1234;-12345;-123456]", run(""" [$s | "$% 05d(_)"] """).array) // 符号余白 0埋め
+        }
+
+        // 16進数
+        run {
+            val s = """H#abcdef, H#abcde, H#abc, H#0, -H#abc, -H#abcd, -H#abcde, -H#abcdef"""
+            assertEquals("[abcdef;abcde;abc;0;-abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%x(_)"] """).array) // %x で16進数
+            assertEquals("[abcdef;abcde;  abc;    0; -abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%5x(_)"] """).array) // 空白埋め
+            assertEquals("[abcdef;abcde;00abc;00000;-0abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%05x(_)"] """).array) // 0埋め
+            assertEquals("[abcdef;abcde;abc  ;0    ;-abc ;-abcd;-abcde;-abcdef]", run(""" [$s | "$%-5x(_)"] """).array) // 左揃え空白埋め
+            assertEquals("[+abcdef;+abcde;+abc;+0;-abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%+x(_)"] """).array) // 符号表示
+            assertEquals("[ abcdef; abcde; abc; 0;-abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$% x(_)"] """).array) // 符号余白
+            assertEquals("[+abcdef;+abcde; +abc;   +0; -abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%+5x(_)"] """).array) // 符号表示 空白埋め
+            assertEquals("[ abcdef; abcde;  abc;    0; -abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$% 5x(_)"] """).array) // 符号余白 空白埋め
+            assertEquals("[+abcdef;+abcde;+0abc;+0000;-0abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%+05x(_)"] """).array) // 符号表示 0埋め
+            assertEquals("[ abcdef; abcde; 0abc; 0000;-0abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$% 05x(_)"] """).array) // 符号余白 0埋め
+        }
+
+        // 小数
+        run {
+            assertEquals("1.5", run(""" "$%f(1.5)" """).string) // 小数の埋め込み
+            assertEquals("-1.5", run(""" "$%f(-1.5)" """).string) // 負数
+            assertEquals("0", run(""" "$%f(0.0)" """).string) // 0
+            assertEquals("1", run(""" "$%f(1.0)" """).string) // 整数値は小数点以降が省略される
+            assertEquals("0.5", run(""" "$%f(0.5)" """).string) // 小数点の前は省略されない
+
+            assertEquals("1.111", run(""" "$%.3f(1.111222)" """).string) // 小数の切り詰め
+            assertEquals("1.111", run(""" "$%.3f(1.111777)" """).string) // 四捨五入はしない
+            assertEquals("-1.111", run(""" "$%.3f(-1.111777)" """).string) // 常に絶対値が小さい方に丸められる
+            assertEquals("1.500", run(""" "$%.3f(1.5)" """).string) // 小数の埋め合わせ
+            assertEquals("1.111", run(""" "$%.3f(1.111)" """).string) // 精度が丁度
+
+            // 小数点以下0桁の場合、小数点も消える
+            assertEquals("1", run(""" "$%.0f(1.5)" """).string)
+            assertEquals("1", run(""" "$%.0f(1.0)" """).string)
+
+            assertEquals("  1.5", run(""" "$%5f(1.5)" """).string) // 空白埋め指定は全体の文字数に作用する
+            assertEquals(" -1.5", run(""" "$%5f(-1.5)" """).string) // 負の空白埋め
+            assertEquals("12345.5", run(""" "$%5f(12345.5)" """).string) // 空白埋めは文字数を切り詰めない
+            assertEquals("1.5  ", run(""" "$%-5f(1.5)" """).string) // 左詰め
+            assertEquals("001.5", run(""" "$%05f(1.5)" """).string) // 0埋め
+            assertEquals("+01.5", run(""" "$%+05f(1.5)" """).string) // +を表示
+            assertEquals(" 01.5", run(""" "$% 05f(1.5)" """).string) // 符号用余白
+            assertEquals("1.000", run(""" "$%.3f(1.0)" """).string) // もともと小数点が含まれず、精度が1以上
+
+            assertEquals("-01.5", run(""" "$%05f(-1.5)" """).string) // 負の0埋めは符号を先に書く
+            assertEquals(" 01.5", run(""" "$% 05f(1.5)" """).string) // 0埋めでも符号用の余白は空白を書く
+
+            // 小数点なし左詰め0埋めは数学的に矛盾した挙動を示す
+            assertEquals("10000", run(""" "$%-05.0f(1.0)" """).string)
+            assertEquals("10000", run(""" "$%-05.0f(1.5)" """).string)
+
+            assertEquals("  1.123", run(""" "$%7.3f(1.123456)" """).string) // 空白埋めかつ精度指定
+        }
+
+        // 文字列
+        run {
+            val s = """ "", "abcd", "abcde", "abcdef" """
+            assertEquals("[;abcd;abcde;abcdef]", run(""" [$s | "$%s(_)"] """).array) // %s で文字列
+            assertEquals("[     ; abcd;abcde;abcdef]", run(""" [$s | "$%5s(_)"] """).array) // 空白埋め
+            assertEquals("[     ;abcd ;abcde;abcdef]", run(""" [$s | "$%-5s(_)"] """).array) // 左揃え空白埋め
+        }
+    }
+
+    @Test
     fun embeddedStringTest() = runTest {
         assertEquals("abcABC123", run(" %>abcABC123<% ").string) // %> <% で囲うと文字列になる
 
