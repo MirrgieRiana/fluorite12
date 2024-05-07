@@ -46,6 +46,8 @@ jobs:
           echo "HASH=$(git -C release-dir rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: リリース準備
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd release-dir
           git config --local user.email "action@github.com"
