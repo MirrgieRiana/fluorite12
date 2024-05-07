@@ -49,5 +49,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
-          git commit --allow-empty -m "${{ env.VERSION }} - ${{ env.HASH }}"
+          git commit --allow-empty -m "v${{ env.VERSION }} - ${{ env.HASH }}"
           git push --force origin release
