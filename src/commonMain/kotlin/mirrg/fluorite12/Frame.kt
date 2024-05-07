@@ -418,6 +418,7 @@ private suspend fun Frame.compileRootNodeToGetter(node: Node): Getter {
         is EmptyNode -> NullGetter
         else -> compileToGetter(getterNode)
     }
+    if (runners.isEmpty()) return getter
     return LinesGetter(runners, getter)
 }
 
