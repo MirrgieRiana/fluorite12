@@ -1,0 +1,53 @@
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: validate gradle wrapper
+        uses: gradle/actions/wrapper-validation@v3
+
+      - name: Javaのセットアップ
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: adopt
+
+      - name: リポジトリのチェックアウト（ビルド用）
+        uses: actions/checkout@v4
+        with:
+          path: build-dir
+          fetch-depth: 1
+
+      - name: ビルド
+        run: |
+          cd build-dir
+          bash gradlew build
+
+      - name: リポジトリのチェックアウト（リリース用）
+        uses: actions/checkout@v4
+        with:
+          path: release-dir
+          ref: release
+          fetch-depth: 1
+
+      - name: ファイルの同期
+        run: |
+          rsync -av --delete build-dir/build/bin/ release-dir/bin/
+
+      - name: コミット準備
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+          echo "HASH=$(git -C release-dir rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: リリース準備
+        run: |
+          cd release-dir
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit --allow-empty -m "${{ env.VERSION }} - ${{ env.HASH }}"
+          git push --force origin release
