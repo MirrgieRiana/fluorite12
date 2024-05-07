@@ -7,9 +7,6 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - name: validate gradle wrapper
-        uses: gradle/actions/wrapper-validation@v3
-
       - name: Javaのセットアップ
         uses: actions/setup-java@v3
         with:
@@ -21,6 +18,11 @@ jobs:
         with:
           path: build-dir
           fetch-depth: 1
+
+      - name: validate gradle wrapper
+        uses: gradle/actions/wrapper-validation@v3
+        with:
+          path: build-dir
 
       - name: ビルド
         run: |
