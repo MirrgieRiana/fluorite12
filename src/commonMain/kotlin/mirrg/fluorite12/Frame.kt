@@ -246,139 +246,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is LeftNode -> compileUnaryOperatorToGetter(node.left.text, node.right)
 
-        is InfixNode -> when (node.operator.text) {
-            "." -> {
-                val receiverGetter = compileToGetter(node.left)
-                val nameGetter = when (node.right) {
-                    is IdentifierNode -> LiteralGetter(FluoriteString(node.right.string))
-                    else -> compileToGetter(node.right)
-                }
-                ItemAccessGetter(receiverGetter, nameGetter)
-            }
-
-            "+" -> PlusGetter(compileToGetter(node.left), compileToGetter(node.right))
-            "&" -> StringConcatenationGetter(listOf(ConversionStringGetter(compileToGetter(node.left)), ConversionStringGetter(compileToGetter(node.right))))
-            "-" -> MinusGetter(compileToGetter(node.left), compileToGetter(node.right))
-            "*" -> TimesGetter(compileToGetter(node.left), compileToGetter(node.right))
-            "/" -> DivGetter(compileToGetter(node.left), compileToGetter(node.right))
-            "%%" -> DivisibleGetter(compileToGetter(node.left), compileToGetter(node.right))
-            "%" -> ModGetter(compileToGetter(node.left), compileToGetter(node.right))
-            ".." -> RangeGetter(compileToGetter(node.left), compileToGetter(node.right))
-            "&&" -> AndGetter(compileToGetter(node.left), compileToGetter(node.right))
-            "||" -> OrGetter(compileToGetter(node.left), compileToGetter(node.right))
-            "?:" -> ElvisGetter(compileToGetter(node.left), compileToGetter(node.right))
-
-            "!?" -> {
-                val (name, rightNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
-                    require(node.right.left is IdentifierNode)
-                    Pair(node.right.left.string, node.right.right)
-                } else {
-                    Pair("_", node.right)
-                }
-                val newFrame = Frame(this)
-                val argumentVariableIndex = newFrame.defineVariable(name)
-                CatchGetter(compileToGetter(node.left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
-            }
-
-            ":" -> {
-                val leftGetter = when (node.left) {
-                    is IdentifierNode -> LiteralGetter(FluoriteString(node.left.string))
-                    else -> compileToGetter(node.left)
-                }
-                EntryGetter(leftGetter, compileToGetter(node.right))
-            }
-
-            "=" -> {
-                when (node.left) {
-                    is IdentifierNode -> {
-                        val name = node.left.string
-                        val (frameIndex, variableIndex) = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
-                        AssignmentGetter(frameIndex, variableIndex, compileToGetter(node.right))
-                    }
-
-                    else -> throw IllegalArgumentException("Illegal assignation: ${node.left::class} = ${node.right::class}")
-                }
-            }
-
-            "->" -> {
-                val commasNode = if (node.left is BracketNode && node.left.left.text == "(") {
-                    node.left.main
-                } else {
-                    node.left
-                }
-                val identifierNodes = when (commasNode) {
-                    is EmptyNode -> listOf()
-                    is CommaNode -> commasNode.nodes
-                    is SemicolonNode -> commasNode.nodes
-                    else -> listOf(commasNode)
-                }
-                val variables = identifierNodes.map {
-                    require(it is IdentifierNode)
-                    it.string
-                }
-                val newFrame = Frame(this)
-                val argumentsVariableIndex = newFrame.defineVariable("__")
-                val variableIndices = variables.map { newFrame.defineVariable(it) }
-                val getter = newFrame.compileToGetter(node.right)
-                FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
-            }
-
-            "|" -> {
-                val streamGetter = compileToGetter(node.left)
-                val (variable, contentNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
-                    require(node.right.left is IdentifierNode)
-                    Pair(node.right.left.string, node.right.right)
-                } else {
-                    Pair("_", node.right)
-                }
-                val newFrame = Frame(this)
-                val argumentVariableIndex = newFrame.defineVariable(variable)
-                val contentGetter = newFrame.compileToGetter(contentNode)
-                PipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
-            }
-
-            "?|" -> {
-                val streamGetter = compileToGetter(node.left)
-                val (variable, contentNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
-                    require(node.right.left is IdentifierNode)
-                    Pair(node.right.left.string, node.right.right)
-                } else {
-                    Pair("_", node.right)
-                }
-                val newFrame = Frame(this)
-                val argumentVariableIndex = newFrame.defineVariable(variable)
-                val contentGetter = newFrame.compileToGetter(contentNode)
-                FilterPipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
-            }
-
-            "!|" -> {
-                val streamGetter = compileToGetter(node.left)
-                val (variable, contentNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
-                    require(node.right.left is IdentifierNode)
-                    Pair(node.right.left.string, node.right.right)
-                } else {
-                    Pair("_", node.right)
-                }
-                val newFrame = Frame(this)
-                val argumentVariableIndex = newFrame.defineVariable(variable)
-                val contentGetter = newFrame.compileToGetter(contentNode)
-                NotFilterPipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
-            }
-
-            ">>" -> {
-                val streamGetter = compileToGetter(node.left)
-                val functionGetter = compileToGetter(node.right)
-                FunctionInvocationGetter(functionGetter, listOf(streamGetter))
-            }
-
-            "<<" -> {
-                val streamGetter = compileToGetter(node.right)
-                val functionGetter = compileToGetter(node.left)
-                FunctionInvocationGetter(functionGetter, listOf(streamGetter))
-            }
-
-            else -> throw IllegalArgumentException("Unknown operator: A ${node.operator.text} B")
-        }
+        is InfixNode -> compileInfixOperatorToGetter(node.operator.text, node.left, node.right)
 
         is ComparisonNode -> {
             val termGetters = node.nodes.map { compileToGetter(it) }
@@ -439,6 +307,142 @@ private fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter
         "$*" -> FromJsonGetter(compileToGetter(main))
         "!!" -> ThrowGetter(compileToGetter(main))
         else -> throw IllegalArgumentException("Unknown operator: Unary $text")
+    }
+}
+
+private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: Node): Getter {
+    return when (text) {
+        "." -> {
+            val receiverGetter = compileToGetter(left)
+            val nameGetter = when (right) {
+                is IdentifierNode -> LiteralGetter(FluoriteString(right.string))
+                else -> compileToGetter(right)
+            }
+            ItemAccessGetter(receiverGetter, nameGetter)
+        }
+
+        "+" -> PlusGetter(compileToGetter(left), compileToGetter(right))
+        "&" -> StringConcatenationGetter(listOf(ConversionStringGetter(compileToGetter(left)), ConversionStringGetter(compileToGetter(right))))
+        "-" -> MinusGetter(compileToGetter(left), compileToGetter(right))
+        "*" -> TimesGetter(compileToGetter(left), compileToGetter(right))
+        "/" -> DivGetter(compileToGetter(left), compileToGetter(right))
+        "%%" -> DivisibleGetter(compileToGetter(left), compileToGetter(right))
+        "%" -> ModGetter(compileToGetter(left), compileToGetter(right))
+        ".." -> RangeGetter(compileToGetter(left), compileToGetter(right))
+        "&&" -> AndGetter(compileToGetter(left), compileToGetter(right))
+        "||" -> OrGetter(compileToGetter(left), compileToGetter(right))
+        "?:" -> ElvisGetter(compileToGetter(left), compileToGetter(right))
+
+        "!?" -> {
+            val (name, rightNode) = if (right is InfixNode && right.operator.text == "=>") {
+                require(right.left is IdentifierNode)
+                Pair(right.left.string, right.right)
+            } else {
+                Pair("_", right)
+            }
+            val newFrame = Frame(this)
+            val argumentVariableIndex = newFrame.defineVariable(name)
+            CatchGetter(compileToGetter(left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
+        }
+
+        ":" -> {
+            val leftGetter = when (left) {
+                is IdentifierNode -> LiteralGetter(FluoriteString(left.string))
+                else -> compileToGetter(left)
+            }
+            EntryGetter(leftGetter, compileToGetter(right))
+        }
+
+        "=" -> {
+            when (left) {
+                is IdentifierNode -> {
+                    val name = left.string
+                    val (frameIndex, variableIndex) = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
+                    AssignmentGetter(frameIndex, variableIndex, compileToGetter(right))
+                }
+
+                else -> throw IllegalArgumentException("Illegal assignation: ${left::class} = ${right::class}")
+            }
+        }
+
+        "->" -> {
+            val commasNode = if (left is BracketNode && left.left.text == "(") {
+                left.main
+            } else {
+                left
+            }
+            val identifierNodes = when (commasNode) {
+                is EmptyNode -> listOf()
+                is CommaNode -> commasNode.nodes
+                is SemicolonNode -> commasNode.nodes
+                else -> listOf(commasNode)
+            }
+            val variables = identifierNodes.map {
+                require(it is IdentifierNode)
+                it.string
+            }
+            val newFrame = Frame(this)
+            val argumentsVariableIndex = newFrame.defineVariable("__")
+            val variableIndices = variables.map { newFrame.defineVariable(it) }
+            val getter = newFrame.compileToGetter(right)
+            FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
+        }
+
+        "|" -> {
+            val streamGetter = compileToGetter(left)
+            val (variable, contentNode) = if (right is InfixNode && right.operator.text == "=>") {
+                require(right.left is IdentifierNode)
+                Pair(right.left.string, right.right)
+            } else {
+                Pair("_", right)
+            }
+            val newFrame = Frame(this)
+            val argumentVariableIndex = newFrame.defineVariable(variable)
+            val contentGetter = newFrame.compileToGetter(contentNode)
+            PipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
+        }
+
+        "?|" -> {
+            val streamGetter = compileToGetter(left)
+            val (variable, contentNode) = if (right is InfixNode && right.operator.text == "=>") {
+                require(right.left is IdentifierNode)
+                Pair(right.left.string, right.right)
+            } else {
+                Pair("_", right)
+            }
+            val newFrame = Frame(this)
+            val argumentVariableIndex = newFrame.defineVariable(variable)
+            val contentGetter = newFrame.compileToGetter(contentNode)
+            FilterPipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
+        }
+
+        "!|" -> {
+            val streamGetter = compileToGetter(left)
+            val (variable, contentNode) = if (right is InfixNode && right.operator.text == "=>") {
+                require(right.left is IdentifierNode)
+                Pair(right.left.string, right.right)
+            } else {
+                Pair("_", right)
+            }
+            val newFrame = Frame(this)
+            val argumentVariableIndex = newFrame.defineVariable(variable)
+            val contentGetter = newFrame.compileToGetter(contentNode)
+            NotFilterPipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
+        }
+
+        ">>" -> {
+            val streamGetter = compileToGetter(left)
+            val functionGetter = compileToGetter(right)
+            FunctionInvocationGetter(functionGetter, listOf(streamGetter))
+        }
+
+        "<<" -> {
+            val streamGetter = compileToGetter(right)
+            val functionGetter = compileToGetter(left)
+            FunctionInvocationGetter(functionGetter, listOf(streamGetter))
+        }
+
+        else -> throw IllegalArgumentException("Unknown operator: A $text B")
     }
 }
 
