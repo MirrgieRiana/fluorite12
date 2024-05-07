@@ -619,6 +619,14 @@ class Fluorite12Test {
     }
 }
 
+private suspend fun parse(src: String): String {
+    val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
+    val frame = Frame()
+    val runners = frame.defineCommonBuiltinVariables()
+    val getter = frame.compileToGetter(parseResult.value)
+    return getter.code
+}
+
 private suspend fun run(src: String): FluoriteValue {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
