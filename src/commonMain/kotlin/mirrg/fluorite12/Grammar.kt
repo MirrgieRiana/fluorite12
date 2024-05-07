@@ -305,10 +305,13 @@ class Fluorite12Grammar : Grammar<Node>() {
 }
 
 @JvmName("unaryPlus1")
-private operator fun <T> Parser<T>.unaryPlus() = this map { listOf(it) }
+private operator fun Parser<TokenMatch>.unaryPlus() = this map { listOf(it) }
 
 @JvmName("unaryPlus2")
-private operator fun <T> Parser<Tuple2<T, T>>.unaryPlus() = this map { listOf(it.t1, it.t2) }
+private operator fun Parser<Tuple2<TokenMatch, TokenMatch>>.unaryPlus() = this map { listOf(it.t1, it.t2) }
+
+@JvmName("unaryPlus3")
+private operator fun Parser<Tuple3<TokenMatch, TokenMatch, TokenMatch>>.unaryPlus() = this map { listOf(it.t1, it.t2, it.t3) }
 
 private fun bracketNode(it: Tuple3<TokenMatch, Node?, TokenMatch>) = BracketNode(it.t1, it.t2 ?: EmptyNode, it.t3)
 
