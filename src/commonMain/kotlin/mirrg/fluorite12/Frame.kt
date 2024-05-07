@@ -239,20 +239,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
             else -> throw IllegalArgumentException("Unknown operator: A ${node.left.text} B ${node.right.text}")
         }
 
-        is LeftNode -> {
-            when (node.left.text) {
-                "+" -> ToNumberGetter(compileToGetter(node.right))
-                "-" -> ToNegativeNumberGetter(compileToGetter(node.right))
-                "?" -> ToBooleanGetter(compileToGetter(node.right))
-                "!" -> ToNegativeBooleanGetter(compileToGetter(node.right))
-                "&" -> MethodInvocationGetter(compileToGetter(node.right), "TO_STRING", listOf())
-                "$#" -> GetLengthGetter(compileToGetter(node.right))
-                "$&" -> MethodInvocationGetter(compileToGetter(node.right), "TO_JSON", listOf())
-                "$*" -> FromJsonGetter(compileToGetter(node.right))
-                "!!" -> ThrowGetter(compileToGetter(node.right))
-                else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} B")
-            }
-        }
+        is LeftNode -> compileUnaryOperatorToGetter(node.left.text, node.right)
 
         is InfixNode -> when (node.operator.text) {
             "." -> {
@@ -432,6 +419,21 @@ private suspend fun Frame.compileRootNodeToGetter(node: Node): Getter {
         else -> compileToGetter(getterNode)
     }
     return LinesGetter(runners, getter)
+}
+
+private suspend fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter {
+    return when (text) {
+        "+" -> ToNumberGetter(compileToGetter(main))
+        "-" -> ToNegativeNumberGetter(compileToGetter(main))
+        "?" -> ToBooleanGetter(compileToGetter(main))
+        "!" -> ToNegativeBooleanGetter(compileToGetter(main))
+        "&" -> MethodInvocationGetter(compileToGetter(main), "TO_STRING", listOf())
+        "$#" -> GetLengthGetter(compileToGetter(main))
+        "$&" -> MethodInvocationGetter(compileToGetter(main), "TO_JSON", listOf())
+        "$*" -> FromJsonGetter(compileToGetter(main))
+        "!!" -> ThrowGetter(compileToGetter(main))
+        else -> throw IllegalArgumentException("Unknown operator: Unary $text")
+    }
 }
 
 private suspend fun Frame.compileToRunner(node: Node): Runner {
