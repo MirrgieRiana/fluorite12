@@ -225,17 +225,28 @@ class Fluorite12Grammar : Grammar<Node>() {
         -s * lRound * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -s * lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> RightBracketNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+
         -b * +period * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
         -b * +(colon * colon) * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
+
+        -b * +(period * plus) map { { main -> RightNode(main, it) } },
+        -b * +(period * minus) map { { main -> RightNode(main, it) } },
+        -b * +(period * question) map { { main -> RightNode(main, it) } },
+        -b * +(period * exclamation * exclamation) map { { main -> RightNode(main, it) } },
+        -b * +(period * exclamation) map { { main -> RightNode(main, it) } },
+        -b * +(period * ampersand) map { { main -> RightNode(main, it) } },
+        -b * +(period * dollar * sharp) map { { main -> RightNode(main, it) } },
+        -b * +(period * dollar * ampersand) map { { main -> RightNode(main, it) } },
+        -b * +(period * dollar * asterisk) map { { main -> RightNode(main, it) } },
     )
     val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
     val leftOperator: Parser<(Node) -> Node> by OrCombinator(
-        +plus map { { main -> LeftNode(it, main) } },
-        +minus map { { main -> LeftNode(it, main) } },
-        +question map { { main -> LeftNode(it, main) } },
+        +(plus) map { { main -> LeftNode(it, main) } },
+        +(minus) map { { main -> LeftNode(it, main) } },
+        +(question) map { { main -> LeftNode(it, main) } },
         +(exclamation * exclamation) map { { main -> LeftNode(it, main) } },
-        +exclamation map { { main -> LeftNode(it, main) } },
-        +ampersand map { { main -> LeftNode(it, main) } },
+        +(exclamation) map { { main -> LeftNode(it, main) } },
+        +(ampersand) map { { main -> LeftNode(it, main) } },
         +(dollar * sharp) map { { main -> LeftNode(it, main) } },
         +(dollar * ampersand) map { { main -> LeftNode(it, main) } },
         +(dollar * asterisk) map { { main -> LeftNode(it, main) } },

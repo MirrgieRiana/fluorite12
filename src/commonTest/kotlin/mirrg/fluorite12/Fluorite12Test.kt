@@ -272,6 +272,23 @@ class Fluorite12Test {
     }
 
     @Test
+    fun rightTest() = runTest {
+        assertEquals("ToNumber[Literal[100]]", parse("100.+"))
+
+        assertEquals(parse("+100"), parse("100.+"))
+        assertEquals(parse("-100"), parse("100.-"))
+        assertEquals(parse("?100"), parse("100.?"))
+        assertEquals(parse("!!100"), parse("100.!!"))
+        assertEquals(parse("!100"), parse("100.!"))
+        assertEquals(parse("&100"), parse("100.&"))
+        assertEquals(parse("$#100"), parse("100.$#"))
+        assertEquals(parse("$&100"), parse("100.$&"))
+        assertEquals(parse("$*100"), parse("100.$*"))
+
+        assertEquals(parse("-+100"), parse("100.+.-"))
+    }
+
+    @Test
     fun toStringTest() = runTest {
         // & で文字列になる
         assertEquals("NULL", run("&NULL").string)

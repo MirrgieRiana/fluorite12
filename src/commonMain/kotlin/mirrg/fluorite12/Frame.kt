@@ -180,6 +180,11 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
             else -> throw IllegalArgumentException("Unknown operator: ${node.left.text} A ${node.right.text}")
         }
 
+        is RightNode -> when {
+            node.right.text.startsWith(".") -> compileUnaryOperatorToGetter(node.right.text.drop(1), node.left)
+            else -> throw IllegalArgumentException("Unknown operator: A ${node.right.text}")
+        }
+
         is RightBracketNode -> when (node.left.text) {
             "(" -> {
                 if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
