@@ -120,7 +120,7 @@ fun Frame.defineCommonBuiltinVariables() = listOf(
     })
 )
 
-suspend fun Frame.compileToGetter(node: Node): Getter {
+fun Frame.compileToGetter(node: Node): Getter {
     return when (node) {
         is EmptyNode -> throw IllegalArgumentException("Unexpected empty")
 
@@ -408,7 +408,7 @@ suspend fun Frame.compileToGetter(node: Node): Getter {
     }
 }
 
-private suspend fun Frame.compileRootNodeToGetter(node: Node): Getter {
+private fun Frame.compileRootNodeToGetter(node: Node): Getter {
     val nodes = when (node) {
         is SemicolonNode -> node.nodes
         else -> listOf(node)
@@ -427,7 +427,7 @@ private suspend fun Frame.compileRootNodeToGetter(node: Node): Getter {
     return LinesGetter(runners, getter)
 }
 
-private suspend fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter {
+private fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter {
     return when (text) {
         "+" -> ToNumberGetter(compileToGetter(main))
         "-" -> ToNegativeNumberGetter(compileToGetter(main))
@@ -442,7 +442,7 @@ private suspend fun Frame.compileUnaryOperatorToGetter(text: String, main: Node)
     }
 }
 
-private suspend fun Frame.compileToRunner(node: Node): Runner {
+private fun Frame.compileToRunner(node: Node): Runner {
     return when {
         node is InfixNode && node.operator.text == "=" -> when { // 代入文
             node.left is IdentifierNode -> {

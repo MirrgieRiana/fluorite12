@@ -272,7 +272,7 @@ class Fluorite12Test {
     }
 
     @Test
-    fun rightTest() = runTest {
+    fun rightTest() {
         assertEquals("ToNumber[Literal[100]]", parse("100.+"))
 
         assertEquals(parse("+100"), parse("100.+"))
@@ -636,7 +636,7 @@ class Fluorite12Test {
     }
 }
 
-private suspend fun parse(src: String): String {
+private fun parse(src: String): String {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
     frame.defineCommonBuiltinVariables()
