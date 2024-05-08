@@ -13,6 +13,13 @@ jobs:
           java-version: 17
           distribution: adopt
 
+      - name: Gradleキャッシュの復元
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: gradle
+
       - name: リポジトリのチェックアウト（ビルド用）
         uses: actions/checkout@v4
         with:
