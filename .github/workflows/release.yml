@@ -45,7 +45,7 @@ jobs:
           echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
           echo "HASH=$(git -C release-dir rev-parse HEAD)" >> $GITHUB_ENV
 
-      - name: リリース準備
+      - name: コミット・リリース
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
