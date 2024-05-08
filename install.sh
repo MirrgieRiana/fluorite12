@@ -11,6 +11,9 @@ else
 fi
 
 destination=/usr/local/bin/flc
-
 rm -f "$destination" || exit
 ln -s "$(pwd)"/fluorite12/bin/linuxX64/flcReleaseExecutable/flc.kexe "$destination" || exit
+
+destination=/usr/local/bin/flc-update
+rm -f "$destination" || exit
+ln -s "$(pwd)"/fluorite12/update.sh "$destination" || exit
