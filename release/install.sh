@@ -12,9 +12,5 @@ fi
 
 destination=/usr/local/bin/flc
 
-if [ -e "$destination" ]
-then
-  rm -i "$destination" || exit
-fi
-
+rm -f "$destination" || exit
 ln -s "$(pwd)"/fluorite12/bin/linuxX64/flcReleaseExecutable/flc.kexe "$destination" || exit
