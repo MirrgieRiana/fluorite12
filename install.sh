@@ -11,21 +11,28 @@ else
 fi
 
 # インストールディレクトリの準備
+echo "Preparing install directory: $SCRIPT_DIR"
 mkdir -p "$SCRIPT_DIR" || exit
 
 # リポジトリを最新の状態に更新
 if [ -d "$SCRIPT_DIR"/.git ]
 then
+  echo "Updating repository"
   git -C "$SCRIPT_DIR" fetch origin release || exit
   git -C "$SCRIPT_DIR" reset --hard origin/release || exit
 else
+  echo "Cloning repository"
   git clone --single-branch --branch release --depth 1 https://github.com/MirrgieRiana/fluorite12.git "$SCRIPT_DIR" || exit
 fi
 
 # /usr/local/bin にインストール
+echo "Updating /usr/local/bin/flc"
 destination=/usr/local/bin/flc
 rm -f "$destination" || exit
 ln -s "$SCRIPT_DIR"/bin/linuxX64/flcReleaseExecutable/flc.kexe "$destination" || exit
+echo "Updating /usr/local/bin/flc-update"
 destination=/usr/local/bin/flc-update
 rm -f "$destination" || exit
 ln -s "$SCRIPT_DIR"/install.sh "$destination" || exit
+
+echo "OK"
