@@ -17,4 +17,4 @@ then
   rm -i "$destination" || exit
 fi
 
-ln -s fluorite12/bin/linuxX64/flcReleaseExecutable/flc.kexe "$destination" || exit
+ln -s "$(pwd)"/fluorite12/bin/linuxX64/flcReleaseExecutable/flc.kexe "$destination" || exit
