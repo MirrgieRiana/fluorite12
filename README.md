@@ -1,3 +1,6 @@
+[![.github/workflows/release.yml](https://github.com/MirrgieRiana/fluorite12/actions/workflows/release.yml/badge.svg)](https://github.com/MirrgieRiana/fluorite12/actions/workflows/release.yml)
+![](https://img.shields.io/github/v/tag/MirrgieRiana/fluorite12.svg?label=Latest%20Version)
+
 # NAME
 
 fluorite12(flc) - Interpreted language for one-liners
