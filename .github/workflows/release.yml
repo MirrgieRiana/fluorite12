@@ -47,6 +47,7 @@ jobs:
         run: |
           rsync -av --delete build-dir/build/bin/ release-dir/bin/
           rsync -av build-dir/release/ release-dir/
+          chmod a+x release-dir/*.sh
 
       - name: コミット準備
         run: |
