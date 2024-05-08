@@ -51,7 +51,7 @@ jobs:
       - name: コミット準備
         run: |
           echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-          echo "HASH=$(git -C release-dir rev-parse HEAD)" >> $GITHUB_ENV
+          echo "HASH=$(git -C build-dir rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: コミット・リリース
         env:
