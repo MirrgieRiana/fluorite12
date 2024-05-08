@@ -39,6 +39,7 @@ jobs:
       - name: ファイルの同期
         run: |
           rsync -av --delete build-dir/build/bin/ release-dir/bin/
+          rsync -av build-dir/release/ release-dir/
 
       - name: コミット準備
         run: |
