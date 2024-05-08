@@ -43,3 +43,7 @@ curl -s https://raw.githubusercontent.com/MirrgieRiana/fluorite12/release/instal
 ```
 
 Download the `flc` binary to the `./fluorite12`, and register it in `/usr/local/bin`.
+
+# SYNTAX
+
+- [Japanese](SYNTAX-ja.md)
