@@ -10,7 +10,7 @@ fun FluoriteValue.instanceOf(clazz: FluoriteValue): Boolean {
 }
 
 fun FluoriteValue.getMethod(env: Environment, name: String): FluoriteValue? {
-    var currentObject = if (this is FluoriteObject) this else parent
+    var currentObject = parent
     while (true) {
         if (currentObject == null) return null
 
@@ -25,7 +25,7 @@ fun FluoriteValue.getMethod(env: Environment, name: String): FluoriteValue? {
 }
 
 fun FluoriteValue.getMethod(name: String): FluoriteValue? {
-    var currentObject = if (this is FluoriteObject) this else parent
+    var currentObject = parent
     while (true) {
         if (currentObject == null) return null
 

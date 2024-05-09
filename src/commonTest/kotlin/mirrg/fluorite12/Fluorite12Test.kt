@@ -299,7 +299,7 @@ class Fluorite12Test {
         assertEquals("[1;2;3]", run("&[1, 2, 3]").string)
         assertEquals("{a:1;b:2}", run("&{a: 1; b: 2}").string)
 
-        assertEquals("10", run("&{a: 10; TO_STRING: this -> &this.a}").string) // 文字列化のオーバーライド
+        assertEquals("10", run("&{TO_STRING: this -> &this.a}{a: 10}").string) // 文字列化のオーバーライド
     }
 
     @Test
@@ -420,8 +420,8 @@ class Fluorite12Test {
         assertEquals(false, run("'c' @ {a: 10; b: 20}").boolean)
 
         // CONTAINSメソッドで上書きできる
-        assertEquals(true, run("'abc' @ {CONTAINS: this, value -> value @ '---abc---'}").boolean)
-        assertEquals(false, run("'123' @ {CONTAINS: this, value -> value @ '---abc---'}").boolean)
+        assertEquals(true, run("'abc' @ {CONTAINS: this, value -> value @ '---abc---'}{}").boolean)
+        assertEquals(false, run("'123' @ {CONTAINS: this, value -> value @ '---abc---'}{}").boolean)
     }
 
     @Test
@@ -476,8 +476,8 @@ class Fluorite12Test {
         assertEquals(4, run("FALSE ? 1 : NULL ?: FALSE ? 3 : 4").int) // == FALSE ? 1 : (NULL ?: (FALSE ? 3 : 4))
 
         // 条件項はTO_BOOLEANで論理値に変換される
-        assertEquals(1, run("{TO_BOOLEAN: _ -> TRUE} ? 1 : 2").int)
-        assertEquals(2, run("{TO_BOOLEAN: _ -> FALSE} ? 1 : 2").int)
+        assertEquals(1, run("{TO_BOOLEAN: _ -> TRUE}{} ? 1 : 2").int)
+        assertEquals(2, run("{TO_BOOLEAN: _ -> FALSE}{} ? 1 : 2").int)
 
         // 評価されない項は副作用も起こさない
         assertEquals(2, run("a := 1; TRUE ? (a = 2) : 0; a").int)
@@ -568,13 +568,15 @@ class Fluorite12Test {
 
     @Test
     fun methodTest() = runTest {
-        assertEquals(10, run("{method: () -> 10}::method()").int) // a::b() でaのbを呼び出せる
-        assertEquals(10, run("{a: 10; method: this -> this.a}::method()").int) // メソッド関数は最初の引数にthisを受け取る
-        assertEquals(20, run("{a: 10; method: this, b -> this.a * b}::method(2)").int) // 2個目以降の引数にメソッド呼び出し時の引数を受け取る
+        assertEquals(10, run("{method: () -> 10}{}::method()").int) // a::b() でaのbを呼び出せる
+        assertEquals(10, run("{method: this -> this.a}{a: 10}::method()").int) // メソッド関数は最初の引数にthisを受け取る
+        assertEquals(20, run("{method: this, b -> this.a * b}{a: 10}::method(2)").int) // 2個目以降の引数にメソッド呼び出し時の引数を受け取る
 
         assertEquals("10", run("10::TO_STRING()").string) // 組み込みメソッドの呼び出し
 
         assertEquals(10, run("A := {m: _ -> _.v}; a := A {v: 10}; a::m()").int) // メソッドの継承
+
+        assertEquals("{TO_STRING:1}", run("&{TO_STRING: 1}").string) // オブジェクトキーがメソッド名と衝突する場合でもオーバーライドしない
     }
 
     @Test
@@ -583,7 +585,7 @@ class Fluorite12Test {
         assertEquals("12", run("(a, b -> a & b)[1; 2]()").string) // [ ] の中に複数の引数があってもよい
         assertEquals("12", run("(a, b -> a & b)[](1; 2)").string) // [ ] の中が空でもよい
         assertEquals("12", run("(a, b -> a & b)[1][2]()").string) // [ ] を連続して書いてもよい
-        assertEquals("12", run("{m: _, a, b -> a & b}::m[1](2)").string) // メソッド呼び出しにも使用できる 
+        assertEquals("12", run("{m: _, a, b -> a & b}{}::m[1](2)").string) // メソッド呼び出しにも使用できる
     }
 
     @Test
@@ -616,7 +618,7 @@ class Fluorite12Test {
         assertEquals("a", run(""" JOIN("|"; "a",) """).string) // ストリームは1要素でもよい
         assertEquals("", run(""" JOIN("|"; ,) """).string) // ストリームは空でもよい
         assertEquals("a", run(""" JOIN("|"; "a") """).string) // ストリームは非ストリームでもよい
-        assertEquals("10|[20]|30", run(""" JOIN("|"; 10, [20], {TO_STRING: _ -> 30}) """).string) // ストリームは文字列化される
+        assertEquals("10|[20]|30", run(""" JOIN("|"; 10, [20], {TO_STRING: _ -> 30}{}) """).string) // ストリームは文字列化される
         assertEquals("a1b1c", run(""" JOIN(1; "a", "b", "c") """).string) // セパレータも文字列化される
         assertEquals("a|b|c", run(""" JOIN["|"]("a", "b", "c") """).string) // 部分適用を使用した例
 
