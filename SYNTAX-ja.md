@@ -33,6 +33,11 @@ $ flc '00123'
 ```shell
 $ flc " 'abc''def' "
 # abc'def
+
+$ flc " 'abc
+def' "
+# abc
+# def
 ```
 
 ---
