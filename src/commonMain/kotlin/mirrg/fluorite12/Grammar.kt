@@ -158,14 +158,16 @@ class Fluorite12Grammar : Grammar<Node>() {
     val hexadecimal: Parser<Node> by uH * sharp * oneOrMore(hexadecimalCharacter) map { HexadecimalNode(listOf(it.t1, it.t2, *it.t3.toTypedArray()), it.t3.joinToString("") { t -> t.text }) }
 
     val rawStringCharacter by OrCombinator(
-        -NotParser(sQuote) * AnyParser map { Pair(listOf(it), it.text) }, // ' 以外の文字
+        -NotParser(sQuote or br) * AnyParser map { Pair(listOf(it), it.text) }, // ' 以外の文字
+        br map { Pair(listOf(it), "\n") }, // 改行
         sQuote * sQuote map { Pair(listOf(it.t1, it.t2), "'") } // '
     )
     val rawStringContent by zeroOrMore(rawStringCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) }
     val rawString by sQuote * rawStringContent * sQuote map { RawStringNode(it.t1, it.t2, it.t3) }
 
     val templateStringCharacter by OrCombinator(
-        -NotParser(dQuote or dollar or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
+        -NotParser(dQuote or br or dollar or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
+        br map { Pair(listOf(it), "\n") }, // 改行
         bSlash * (dQuote or dollar or bSlash) map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた記号
         bSlash * (lT) map { Pair(listOf(it.t1, it.t2), "\t") },
         bSlash * (lR) map { Pair(listOf(it.t1, it.t2), "\r") },
@@ -207,7 +209,8 @@ class Fluorite12Grammar : Grammar<Node>() {
     val templateString by dQuote * zeroOrMore(templateStringContent) * dQuote map { TemplateStringNode(it.t1, it.t2, it.t3) }
 
     val embeddedStringCharacter by OrCombinator(
-        -NotParser(less * percent) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
+        -NotParser(less * percent or br) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
+        br map { Pair(listOf(it), "\n") }, // 改行
         less * percent * percent map { Pair(listOf(it.t1, it.t2, it.t3), "<%") }, // <%% で <% になる
     )
     val embeddedStringContent by OrCombinator(

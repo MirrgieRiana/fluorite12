@@ -72,6 +72,8 @@ class Fluorite12Test {
         assertEquals("🍰", run(" '🍰' ").string) // サロゲートペア
 
         assertEquals(" ' ", run(" ' '' ' ").string) // '' が ' になる
+
+        assertEquals("\n \n \n", run(" '\n \r \r\n' ").string) // 改行は \n に統一される
     }
 
     @Test
@@ -97,6 +99,8 @@ class Fluorite12Test {
         assertEquals("10", run(""" (a -> "${'$'}a")(10) """).string) // 変数の埋め込み
         assertEquals("10", run(""" "$(2 * 5)" """).string) // 式の埋め込み
         assertEquals(" abc ", run(""" " $( "abc" ) " """).string) // 入れ子状の埋め込み
+
+        assertEquals("\n \n \n", run(""" "${"\n \r \r\n"}" """).string) // 改行は \n に統一される
     }
 
     @Test
@@ -199,6 +203,8 @@ class Fluorite12Test {
 
         assertEquals(" 10 ", run(" %> <%= 1 < 2 ? 10 : 100 %> <% ").string) // 式の埋め込み
         assertEquals(" abc ", run(" %> <%= %>abc<% %> <% ").string) // 入れ子状の埋め込み
+
+        assertEquals("\n \n \n", run(" %>\n \r \r\n<% ").string) // 改行は \n に統一される
     }
 
     @Test
