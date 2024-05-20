@@ -568,6 +568,9 @@ class Fluorite12Test {
 
         assertEquals("[1;2;3;4]", run("(s -> &[s])(1, 2, 3, 4)").string) // 引数で , を使うとストリームを渡せる
 
+        assertEquals("[1;2;3;4;5]", run("(() -> &__)(1; 2; 3; 4; 5)").string) // __ で引数を配列で受け取れる
+        assertEquals("[4;5;6]", run("(() -> &[__.1])(1 .. 3; 4 .. 6; 7 .. 9)").string) // 引数列ではストリームを展開しない
+
         assertEquals(120, run("f := n -> n == 0 ? 1 : n * f(n - 1); f(5)").int) // 再帰関数の例
         assertEquals(120, run("(f -> f(f))(f -> n -> n == 0 ? 1 : n * f(f)(n - 1))(5)").int) // 複雑なラムダ計算の例
     }
