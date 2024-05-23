@@ -9,7 +9,7 @@ import mirrg.fluorite12.Frame
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.collect
 import mirrg.fluorite12.compileToGetter
-import mirrg.fluorite12.defineCommonBuiltinVariables
+import mirrg.fluorite12.defineCommonBuiltinConstants
 import kotlin.js.Promise
 
 @Suppress("unused")
@@ -20,7 +20,7 @@ fun parse(src: String) = Fluorite12Grammar().tryParseToEnd(src)
 @JsName("evaluate")
 fun evaluate(node: Node) = GlobalScope.promise {
     val frame = Frame()
-    val runners = frame.defineCommonBuiltinVariables()
+    val runners = frame.defineCommonBuiltinConstants()
     val getter = frame.compileToGetter(node)
     val env = Environment(null, frame.nextVariableIndex)
     runners.forEach {

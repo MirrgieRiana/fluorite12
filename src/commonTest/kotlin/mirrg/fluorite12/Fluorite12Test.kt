@@ -650,7 +650,7 @@ class Fluorite12Test {
 private fun parse(src: String): String {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
-    frame.defineCommonBuiltinVariables()
+    frame.defineCommonBuiltinConstants()
     val getter = frame.compileToGetter(parseResult.value)
     return getter.code
 }
@@ -658,7 +658,7 @@ private fun parse(src: String): String {
 private suspend fun run(src: String): FluoriteValue {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
-    val runners = frame.defineCommonBuiltinVariables()
+    val runners = frame.defineCommonBuiltinConstants()
     val getter = frame.compileToGetter(parseResult.value)
     val env = Environment(null, frame.nextVariableIndex)
     runners.forEach {

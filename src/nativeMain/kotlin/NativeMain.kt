@@ -9,7 +9,7 @@ import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.collect
 import mirrg.fluorite12.compileToGetter
-import mirrg.fluorite12.defineCommonBuiltinVariables
+import mirrg.fluorite12.defineCommonBuiltinConstants
 import mirrg.fluorite12.defineConstant
 import mirrg.fluorite12.toFluoriteString
 
@@ -18,7 +18,7 @@ fun main(args: Array<String>) = runBlocking {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
     val runners = listOf(
-        *frame.defineCommonBuiltinVariables().toTypedArray(),
+        *frame.defineCommonBuiltinConstants().toTypedArray(),
         frame.defineConstant("ARGS", FluoriteArray(args.drop(1).map { it.toFluoriteString() })),
         frame.defineConstant("IN", FluoriteStream {
             while (true) {
