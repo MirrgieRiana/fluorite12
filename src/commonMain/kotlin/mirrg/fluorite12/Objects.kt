@@ -214,6 +214,14 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
                             emit(FluoriteBoolean.FALSE)
                         }.first()
                     },
+                    "TO_STRING" to FluoriteFunction {
+                        val stream = it[0] as FluoriteStream
+                        val sb = StringBuilder()
+                        stream.collect { item ->
+                            sb.append(item.toFluoriteString().value)
+                        }
+                        "$sb".toFluoriteString()
+                    },
                 )
             )
         }
