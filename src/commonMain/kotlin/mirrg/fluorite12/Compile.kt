@@ -33,7 +33,13 @@ fun Frame.compileToGetter(node: Node): Getter {
             val getters = node.stringContents.map {
                 when (it) {
                     is LiteralStringContent -> LiteralStringGetter(it.string)
-                    is NodeStringContent -> ConversionStringGetter(compileToGetter(it.main))
+
+                    is NodeStringContent -> {
+                        val frame = Frame(this)
+                        val newNode = frame.compileRootNodeToGetter(it.main)
+                        ConversionStringGetter(NewEnvironmentGetter(frame.nextVariableIndex, newNode))
+                    }
+
                     is FormattedStringContent -> FormattedStringGetter(it.formatter, compileToGetter(it.main))
                 }
             }

@@ -204,6 +204,8 @@ class Fluorite12Test {
         assertEquals(" 10 ", run(" %> <%= 1 < 2 ? 10 : 100 %> <% ").string) // 式の埋め込み
         assertEquals(" abc ", run(" %> <%= %>abc<% %> <% ").string) // 入れ子状の埋め込み
 
+        assertEquals("_30_10_10", run(" a := 10; b := %>_<%= a := 20; a = 30; a %>_<%= a %>_<%; b & a ").string) // スコープを作る
+
         assertEquals("\n \n \n", run(" %>\n \r \r\n<% ").string) // 改行は \n に統一される
     }
 
