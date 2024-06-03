@@ -139,10 +139,32 @@ class MethodBindGetter(private val receiverGetter: Getter, private val name: Str
 
 class FunctionBindGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        val function = functionGetter.evaluate(env) as FluoriteFunction
-        val arguments = argumentGetters.map { it.evaluate(env) }
-        return FluoriteFunction { arguments2 ->
-            function.call(arguments + arguments2)
+        return when (val value = functionGetter.evaluate(env)) {
+            is FluoriteFunction -> {
+                val arguments = argumentGetters.map { it.evaluate(env) }
+                return FluoriteFunction { arguments2 ->
+                    value.call(arguments + arguments2)
+                }
+            }
+
+            is FluoriteArray -> when (argumentGetters.size) {
+                0 -> FluoriteStream(value.values)
+                else -> throw IllegalArgumentException("Element access is not supported") // TODO
+            }
+
+            is FluoriteObject -> when (argumentGetters.size) {
+                0 -> {
+                    FluoriteStream {
+                        value.map.entries.forEach {
+                            emit(FluoriteArray(listOf(it.key.toFluoriteString(), it.value)))
+                        }
+                    }
+                }
+
+                else -> throw IllegalArgumentException("Element access is not supported") // TODO
+            }
+
+            else -> throw IllegalArgumentException("This value does not support element access: $value")
         }
     }
 

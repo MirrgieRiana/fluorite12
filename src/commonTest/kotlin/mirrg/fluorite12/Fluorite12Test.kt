@@ -370,6 +370,12 @@ class Fluorite12Test {
     }
 
     @Test
+    fun bracketAccessTest() = runTest {
+        assertEquals("1,2,3", run("[1; 2; 3][]").stream()) // array[] でストリームにする
+        assertEquals("[a;1],[b;2],[c;3]", run("{a: 1; b: 2; c: 3}[]").stream()) // object[] でエントリーのストリームにする
+    }
+
+    @Test
     fun modTest() = runTest {
         assertEquals(1, run("10 % 3").int) // % で余りを得る
 
