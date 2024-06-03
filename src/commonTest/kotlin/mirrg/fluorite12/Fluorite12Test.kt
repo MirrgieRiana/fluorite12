@@ -670,6 +670,12 @@ class Fluorite12Test {
         // パイプ連携
         assertEquals("10ABC20ABC30", run(""" "10abc20abc30" >> SPLIT["abc"] >> JOIN["ABC"] """).string)
     }
+
+    @Test
+    fun keysValuesTest() = runTest {
+        assertEquals("a,b,c", run("KEYS({a: 1; b: 2; c: 3})").stream()) // KEYS でオブジェクトのキーを得る
+        assertEquals("1,2,3", run("VALUES({a: 1; b: 2; c: 3})").stream()) // VALUES でオブジェクトの値を得る
+    }
 }
 
 private fun parse(src: String): String {

@@ -1160,3 +1160,29 @@ $ flc '"10|20|30" >> SPLIT["|"] | +_ / 10'
 # 2
 # 3
 ```
+
+### `KEYS` オブジェクトのキーのストリームを取得
+
+`KEYS(object: OBJECT): STREAM<STRING>`
+
+第1引数のオブジェクトのキーのストリームを返します。
+
+```shell
+$ flc 'KEYS({a: 1; b: 2; c: 3})'
+# a
+# b
+# c
+```
+
+### `VALUES` オブジェクトの値のストリームを取得
+
+`VALUES(object: OBJECT): STREAM<VALUE>`
+
+第1引数のオブジェクトの値のストリームを返します。
+
+```shell
+$ flc 'VALUES({a: 1; b: 2; c: 3})'
+# 1
+# 2
+# 3
+```

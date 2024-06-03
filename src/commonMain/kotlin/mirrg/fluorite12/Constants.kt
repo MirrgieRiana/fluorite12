@@ -104,4 +104,28 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
             usage("SPLIT(separator: VALUE; string: VALUE): STREAM<STRING>")
         }
     }),
+    defineConstant("KEYS", FluoriteFunction { arguments ->
+        if (arguments.size == 1) {
+            val obj = arguments[0]
+            if (obj is FluoriteObject) {
+                FluoriteStream(obj.map.keys.map { it.toFluoriteString() })
+            } else {
+                usage("KEYS(object: OBJECT): STREAM<STRING>")
+            }
+        } else {
+            usage("KEYS(object: OBJECT): STREAM<STRING>")
+        }
+    }),
+    defineConstant("VALUES", FluoriteFunction { arguments ->
+        if (arguments.size == 1) {
+            val obj = arguments[0]
+            if (obj is FluoriteObject) {
+                FluoriteStream(obj.map.values)
+            } else {
+                usage("VALUES(object: OBJECT): STREAM<VALUE>")
+            }
+        } else {
+            usage("VALUES(object: OBJECT): STREAM<VALUE>")
+        }
+    }),
 )
