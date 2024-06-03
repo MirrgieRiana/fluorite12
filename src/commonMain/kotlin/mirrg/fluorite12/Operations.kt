@@ -430,8 +430,8 @@ class EntryGetter(private val leftGetter: Getter, private val rightGetter: Gette
 
 class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariableIndex: Int, private val variableIndices: List<Int>, private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        val newEnv = Environment(env, 1 + variableIndices.size)
         return FluoriteFunction { arguments ->
+            val newEnv = Environment(env, 1 + variableIndices.size)
             newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = FluoriteArray(arguments)
             variableIndices.forEachIndexed { i, variableIndex ->
                 newEnv.variableTable[newFrameIndex][variableIndex] = arguments.getOrNull(i) ?: FluoriteNull

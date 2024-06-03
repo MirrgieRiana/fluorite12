@@ -581,6 +581,9 @@ class Fluorite12Test {
 
         assertEquals(120, run("f := n -> n == 0 ? 1 : n * f(n - 1); f(5)").int) // 再帰関数の例
         assertEquals(120, run("(f -> f(f))(f -> n -> n == 0 ? 1 : n * f(f)(n - 1))(5)").int) // 複雑なラムダ計算の例
+
+        // 同じ関数を再帰的に2度呼び出した場合に、関数のフレームが分離されているかどうかのテスト
+        assertEquals("[2;1;2]", run("f := n -> n == 1 ? 1 : [n, f(1), n]; f(2)").array)
     }
 
     @Test
