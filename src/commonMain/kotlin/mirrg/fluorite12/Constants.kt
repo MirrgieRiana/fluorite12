@@ -103,5 +103,5 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
         } else {
             usage("SPLIT(separator: VALUE; string: VALUE): STREAM<STRING>")
         }
-    })
+    }),
 )
