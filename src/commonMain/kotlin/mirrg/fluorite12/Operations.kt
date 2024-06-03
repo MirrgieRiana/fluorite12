@@ -348,13 +348,13 @@ class DivGetter(private val leftGetter: Getter, private val rightGetter: Getter)
         val right = rightGetter.evaluate(env)
         return when (left) {
             is FluoriteInt -> when (right) {
-                is FluoriteInt -> FluoriteInt(left.value / right.value)
-                is FluoriteDouble -> FluoriteDouble(left.value / right.value)
+                is FluoriteInt -> FluoriteDouble(left.value.toDouble() / right.value.toDouble())
+                is FluoriteDouble -> FluoriteDouble(left.value.toDouble() / right.value)
                 else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
             }
 
             is FluoriteDouble -> when (right) {
-                is FluoriteInt -> FluoriteDouble(left.value / right.value)
+                is FluoriteInt -> FluoriteDouble(left.value / right.value.toDouble())
                 is FluoriteDouble -> FluoriteDouble(left.value / right.value)
                 else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
             }
