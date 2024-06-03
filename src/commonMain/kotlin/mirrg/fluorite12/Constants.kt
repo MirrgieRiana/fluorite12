@@ -128,4 +128,20 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
             usage("VALUES(object: OBJECT): STREAM<VALUE>")
         }
     }),
+    defineConstant("SUM", FluoriteFunction { arguments ->
+        if (arguments.size == 1) {
+            val stream = arguments[0]
+            if (stream is FluoriteStream) {
+                var sum = 0.0
+                stream.collect { value ->
+                    sum += (value as FluoriteNumber).value.toDouble()
+                }
+                FluoriteDouble(sum)
+            } else {
+                stream
+            }
+        } else {
+            usage("SUM(numbers: STREAM<NUMBER>): NUMBER")
+        }
+    }),
 )

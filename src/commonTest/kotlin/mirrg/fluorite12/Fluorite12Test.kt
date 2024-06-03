@@ -676,6 +676,13 @@ class Fluorite12Test {
         assertEquals("a,b,c", run("KEYS({a: 1; b: 2; c: 3})").stream()) // KEYS でオブジェクトのキーを得る
         assertEquals("1,2,3", run("VALUES({a: 1; b: 2; c: 3})").stream()) // VALUES でオブジェクトの値を得る
     }
+
+    @Test
+    fun sumFunctionTest() = runTest {
+        assertEquals(0.0, run("SUM(,)").double, 0.001) // 引数がない場合は0
+        assertEquals(1.0, run("SUM(1.0)").double, 0.001) // 引数が1つの場合はそのまま
+        assertEquals(3.0, run("SUM(1.0, 2.0)").double, 0.001) // 引数が2つ以上の場合は合計
+    }
 }
 
 private fun parse(src: String): String {

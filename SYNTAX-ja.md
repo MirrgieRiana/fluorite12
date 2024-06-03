@@ -1186,3 +1186,14 @@ $ flc 'VALUES({a: 1; b: 2; c: 3})'
 # 2
 # 3
 ```
+
+### `SUM` ストリームの要素の合計
+
+`SUM(numbers: STREAM<NUMBER>): NUMBER`
+
+第1引数のストリームの各要素を加算した値を返します。
+
+```shell
+$ flc 'SUM(1 .. 3)'
+# 6.0
+```
