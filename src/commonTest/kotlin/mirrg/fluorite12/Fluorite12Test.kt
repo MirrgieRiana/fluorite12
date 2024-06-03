@@ -633,6 +633,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun objectFunctionTest() = runTest {
+        assertEquals("{a:1;b:2;c:3}", run("OBJECT((a: 1), (b: 2), (c: 3))").obj) // OBJECT関数はストリームをオブジェクトにする
+        assertEquals("{a:100}", run("OBJECT(a: 100)").obj) // ストリームでなくてもよい
+        assertEquals("{1:10;2:20;3:30}", run("1 .. 3 | (_): _ * 10 >> OBJECT").obj) // OBJECT関数はパイプ演算子と組み合わせて使うと便利
+    }
+
+    @Test
     fun joinSplitTest() = runTest {
         // JOIN
         assertEquals("a|b|c", run(""" JOIN("|"; "a", "b", "c") """).string) // JOIN で文字列を結合できる

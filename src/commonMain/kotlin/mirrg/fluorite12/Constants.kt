@@ -48,6 +48,26 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
             usage("ARRAY(stream: VALUE): ARRAY")
         }
     }),
+    defineConstant("OBJECT", FluoriteFunction { arguments ->
+        if (arguments.size == 1) {
+            val stream = arguments[0]
+            val map = mutableMapOf<String, FluoriteValue>()
+            if (stream is FluoriteStream) {
+                stream.collect { item ->
+                    require(item is FluoriteArray)
+                    require(item.values.size == 2)
+                    map[item.values[0].toString()] = item.values[1]
+                }
+            } else {
+                require(stream is FluoriteArray)
+                require(stream.values.size == 2)
+                map[stream.values[0].toString()] = stream.values[1]
+            }
+            FluoriteObject(FluoriteObject.fluoriteClass, map)
+        } else {
+            usage("OBJECT(stream: STREAM<ARRAY<STRING, VALUE>>): OBJECT")
+        }
+    }),
     defineConstant("JOIN", FluoriteFunction { arguments ->
         if (arguments.size == 2) {
             val separator = arguments[0].toFluoriteString().value
