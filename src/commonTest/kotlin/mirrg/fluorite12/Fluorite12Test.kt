@@ -626,6 +626,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun arrayFunctionTest() = runTest {
+        assertEquals("[1;2;3]", run("ARRAY(1, 2, 3)").array) // ARRAY関数はストリームを配列にする
+        assertEquals("[100]", run("ARRAY(100)").array) // ストリームでなくてもよい
+        assertEquals("[10;20;30]", run("1 .. 3 | _ * 10 >> ARRAY").array) // ARRAY関数はパイプ演算子と組み合わせて使うと便利
+    }
+
+    @Test
     fun joinSplitTest() = runTest {
         // JOIN
         assertEquals("a|b|c", run(""" JOIN("|"; "a", "b", "c") """).string) // JOIN で文字列を結合できる

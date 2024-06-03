@@ -27,6 +27,23 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
             else -> throw IllegalArgumentException("Arguments mismatch: SQRT[${arguments.size}]")
         }
     }),
+    defineConstant("ARRAY", FluoriteFunction { arguments ->
+        if (arguments.size == 1) {
+            val stream = arguments[0]
+            val list = if (stream is FluoriteStream) {
+                val values = mutableListOf<FluoriteValue>()
+                stream.collect { value ->
+                    values.add(value)
+                }
+                values
+            } else {
+                listOf(stream)
+            }
+            FluoriteArray(list)
+        } else {
+            usage("ARRAY(stream: VALUE): ARRAY")
+        }
+    }),
     defineConstant("JOIN", FluoriteFunction { arguments ->
         if (arguments.size == 2) {
             val separator = arguments[0].toFluoriteString().value
