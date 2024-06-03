@@ -1,5 +1,7 @@
 package mirrg.fluorite12
 
+import kotlin.math.E
+import kotlin.math.PI
 import kotlin.math.sqrt
 
 private fun usage(vararg usages: String): Nothing = throw IllegalArgumentException(listOf("Usage:", *usages.map { "  $it" }.toTypedArray()).joinToString("\n"))
@@ -21,6 +23,8 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
     defineConstant("FALSE", FluoriteBoolean.FALSE),
     defineConstant("EMPTY", FluoriteStream.EMPTY),
 
+    defineConstant("PI", FluoriteDouble(PI)),
+    defineConstant("E", FluoriteDouble(E)),
     defineConstant("SQRT", FluoriteFunction { arguments ->
         when (arguments.size) {
             1 -> FluoriteDouble(sqrt((arguments[0] as FluoriteNumber).value.toDouble()))
