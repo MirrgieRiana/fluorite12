@@ -136,7 +136,11 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
                 stream.collect { value ->
                     sum += (value as FluoriteNumber).value.toDouble()
                 }
-                FluoriteDouble(sum)
+                if (sum.toInt().toDouble() == sum) {
+                    FluoriteInt(sum.toInt())
+                } else {
+                    FluoriteDouble(sum)
+                }
             } else {
                 stream
             }

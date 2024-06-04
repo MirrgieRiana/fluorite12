@@ -186,7 +186,11 @@ class ToNumberGetter(private val getter: Getter) : Getter {
             value.collect { item ->
                 v += (item as FluoriteNumber).value.toDouble()
             }
-            FluoriteDouble(v)
+            if (v.toInt().toDouble() == v) {
+                FluoriteInt(v.toInt())
+            } else {
+                FluoriteDouble(v)
+            }
         }
 
         else -> throw IllegalArgumentException("Can not convert to number: $value")
@@ -209,7 +213,11 @@ class ToNegativeNumberGetter(private val getter: Getter) : Getter {
             value.collect { item ->
                 v += (item as FluoriteNumber).value.toDouble()
             }
-            FluoriteDouble(v)
+            if (v.toInt().toDouble() == v) {
+                FluoriteInt(v.toInt())
+            } else {
+                FluoriteDouble(v)
+            }
         }
 
         else -> throw IllegalArgumentException("Can not convert to number: $value")

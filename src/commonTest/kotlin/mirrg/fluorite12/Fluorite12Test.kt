@@ -261,7 +261,7 @@ class Fluorite12Test {
         assertEquals(1, run("+1").int) // 整数はそのまま
         assertEquals(1.0, run("+1.0").double, 0.001) // 小数もそのまま
 
-        assertEquals(55.0, run("+(1 .. 10)").double, 0.001) // ストリームは各要素の合計
+        assertEquals(55, run("+(1 .. 10)").int) // ストリームは各要素の合計
     }
 
     @Test
@@ -734,9 +734,9 @@ class Fluorite12Test {
 
     @Test
     fun sumFunctionTest() = runTest {
-        assertEquals(0.0, run("SUM(,)").double, 0.001) // 引数がない場合は0
-        assertEquals(1.0, run("SUM(1.0)").double, 0.001) // 引数が1つの場合はそのまま
-        assertEquals(3.0, run("SUM(1.0, 2.0)").double, 0.001) // 引数が2つ以上の場合は合計
+        assertEquals(0, run("SUM(,)").int) // 引数がない場合は0
+        assertEquals(1, run("SUM(1)").int) // 引数が1つの場合はそのまま
+        assertEquals(3, run("SUM(1, 2)").int) // 引数が2つ以上の場合は合計
     }
 }
 
