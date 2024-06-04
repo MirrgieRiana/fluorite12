@@ -586,6 +586,9 @@ class Fluorite12Test {
 
         // パイプの連結
         assertEquals("11;33;55", run(""" SPLIT[":"] << "1:2:3:4:5" !| +_ %% 2 | _ & _ >> JOIN[";"] """).string)
+
+        // パイプと代入系演算子は相互に右優先結合だが、パイプ同士の連結部分だけは左優先結合になる
+        assertEquals("1-21-2", run("x := 0; f := s -> s >> SPLIT[','] >> JOIN['-'] | x = _ | _ * 2; f('1,2'); x").string)
     }
 
     @Test
