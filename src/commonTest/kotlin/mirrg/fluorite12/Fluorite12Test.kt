@@ -246,6 +246,25 @@ class Fluorite12Test {
     }
 
     @Test
+    fun toNumberTest() = runTest {
+        // + で数値になる
+
+        assertEquals(0, run("+NULL").int) // NULLは0
+
+        // 文字列の数値化
+        assertEquals(123, run("+'123'").int)
+        assertEquals(123.456, run("+'123.456'").double, 0.001)
+
+        assertEquals(1, run("+TRUE").int) // TRUEは1
+        assertEquals(0, run("+FALSE").int) // FALSEは0
+
+        assertEquals(1, run("+1").int) // 整数はそのまま
+        assertEquals(1.0, run("+1.0").double, 0.001) // 小数もそのまま
+
+        assertEquals(55.0, run("+(1 .. 10)").double, 0.001) // ストリームは各要素の合計
+    }
+
+    @Test
     fun toBooleanTest() = runTest {
         // ? で論理値になる
 
