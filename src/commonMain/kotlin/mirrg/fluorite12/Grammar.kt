@@ -254,7 +254,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(dollar * ampersand) map { { main -> LeftNode(it, main) } },
         +(dollar * asterisk) map { { main -> LeftNode(it, main) } },
     )
-    val left: Parser<Node> by zeroOrMore(leftOperator) * right map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
+    val left: Parser<Node> by zeroOrMore(leftOperator * -b) * right map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
     val mul: Parser<Node> by leftAssociative(left, -s * (+asterisk or +slash or +(percent * percent) or +percent) * -b, ::infixNode)
     val add: Parser<Node> by leftAssociative(mul, -s * (+plus or +(minus * -NotParser(greater)) or +(ampersand * -NotParser(ampersand))) * -b, ::infixNode)
