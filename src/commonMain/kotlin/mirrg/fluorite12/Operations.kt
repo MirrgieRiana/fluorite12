@@ -180,6 +180,15 @@ class ToNumberGetter(private val getter: Getter) : Getter {
         is FluoriteDouble -> value
         is FluoriteString -> if ("." in value.value) FluoriteDouble(value.value.toDouble()) else FluoriteInt(value.value.toInt())
         is FluoriteBoolean -> FluoriteInt(if (value.value) 1 else 0)
+
+        is FluoriteStream -> {
+            var v = 0.0
+            value.collect { item ->
+                v += (item as FluoriteNumber).value.toDouble()
+            }
+            FluoriteDouble(v)
+        }
+
         else -> throw IllegalArgumentException("Can not convert to number: $value")
     }
 
@@ -194,6 +203,15 @@ class ToNegativeNumberGetter(private val getter: Getter) : Getter {
         is FluoriteDouble -> value
         is FluoriteString -> if ("." in value.value) FluoriteDouble(value.value.toDouble()) else FluoriteInt(value.value.toInt())
         is FluoriteBoolean -> FluoriteInt(if (value.value) 1 else 0)
+
+        is FluoriteStream -> {
+            var v = 0.0
+            value.collect { item ->
+                v += (item as FluoriteNumber).value.toDouble()
+            }
+            FluoriteDouble(v)
+        }
+
         else -> throw IllegalArgumentException("Can not convert to number: $value")
     }.negate()
 
