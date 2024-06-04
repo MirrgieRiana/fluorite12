@@ -175,6 +175,7 @@ class FunctionBindGetter(private val functionGetter: Getter, private val argumen
 // TODO to method
 class ToNumberGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = when (val value = getter.evaluate(env)) {
+        is FluoriteNull -> FluoriteInt(0)
         is FluoriteInt -> value
         is FluoriteDouble -> value
         is FluoriteString -> if ("." in value.value) FluoriteDouble(value.value.toDouble()) else FluoriteInt(value.value.toInt())
@@ -188,6 +189,7 @@ class ToNumberGetter(private val getter: Getter) : Getter {
 // TODO to method
 class ToNegativeNumberGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = when (val value = getter.evaluate(env)) {
+        is FluoriteNull -> FluoriteInt(0)
         is FluoriteInt -> value
         is FluoriteDouble -> value
         is FluoriteString -> if ("." in value.value) FluoriteDouble(value.value.toDouble()) else FluoriteInt(value.value.toInt())
