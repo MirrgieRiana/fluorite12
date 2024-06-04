@@ -418,6 +418,19 @@ class Fluorite12Test {
     }
 
     @Test
+    fun timesTest() = runTest {
+        assertEquals(6, run("2 * 3").int) // * で乗算ができる
+
+        // どちらかが浮動小数点数なら結果も浮動小数点数になる
+        assertEquals(6.0, run("2.0 * 3").double, 0.001)
+        assertEquals(6.0, run("2 * 3.0").double, 0.001)
+        assertEquals(6.0, run("2.0 * 3.0").double, 0.001)
+
+        assertEquals("abcabcabc", run("'abc' * 3").string) // 文字列の乗算は繰り返す
+        assertEquals("[1;2;3;1;2;3;1;2;3]", run("[1; 2; 3] * 3").array) // 配列の乗算は繰り返す
+    }
+
+    @Test
     fun modTest() = runTest {
         assertEquals(1, run("10 % 3").int) // % で余りを得る
 
