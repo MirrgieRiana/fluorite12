@@ -297,7 +297,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         condition map { Pair(listOf(it), listOf()) },
     )
     val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommaNode(it.first, it.second) }
-    val assignationOperator: Parser<List<TokenMatch>> by OrCombinator(
+    val assignmentOperator: Parser<List<TokenMatch>> by OrCombinator(
         +(equal * -NotParser(greater)), // =
         +(colon * -NotParser(equal or colon)), // :
         +(colon * equal), // :=
@@ -305,7 +305,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(equal * greater), // =>
         +(exclamation * question), // !?
     )
-    val assignation: Parser<Node> by rightAssociative(commas, -s * assignationOperator * -b, ::infixNode)
+    val assignment: Parser<Node> by rightAssociative(commas, -s * assignmentOperator * -b, ::infixNode)
     val streamOperator: Parser<List<TokenMatch>> by OrCombinator(
         +pipe, // |
         +(question * pipe), // ?|
@@ -313,7 +313,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(greater * greater), // >>
         +(less * less), // <<
     )
-    val stream: Parser<Node> by leftAssociative(assignation, -s * streamOperator * -b, ::infixNode)
+    val stream: Parser<Node> by leftAssociative(assignment, -s * streamOperator * -b, ::infixNode)
 
     val semicolonsPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
         stream * -s * br * -b * cachedParser { semicolonsPart } map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
