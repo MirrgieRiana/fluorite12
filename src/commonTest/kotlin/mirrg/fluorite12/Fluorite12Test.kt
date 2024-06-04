@@ -431,6 +431,12 @@ class Fluorite12Test {
     }
 
     @Test
+    fun addTest() = runTest {
+        // TODO
+        assertEquals("[1;2;3;4]", run("[1; 2] + [3; 4]").array) // 配列の加算は配列同士を連結する
+    }
+
+    @Test
     fun modTest() = runTest {
         assertEquals(1, run("10 % 3").int) // % で余りを得る
 

@@ -313,6 +313,8 @@ class PlusGetter(private val leftGetter: Getter, private val rightGetter: Getter
                 else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
             }
 
+            is FluoriteArray -> FluoriteArray(left.values + (right as FluoriteArray).values)
+
             else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
         }
     }
