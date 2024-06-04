@@ -5,7 +5,6 @@ import com.github.h0tk3y.betterParse.combinators.map
 import com.github.h0tk3y.betterParse.combinators.oneOrMore
 import com.github.h0tk3y.betterParse.combinators.optional
 import com.github.h0tk3y.betterParse.combinators.or
-import com.github.h0tk3y.betterParse.combinators.rightAssociative
 import com.github.h0tk3y.betterParse.combinators.times
 import com.github.h0tk3y.betterParse.combinators.unaryMinus
 import com.github.h0tk3y.betterParse.combinators.zeroOrMore
@@ -297,6 +296,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         condition map { Pair(listOf(it), listOf()) },
     )
     val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommaNode(it.first, it.second) }
+
     val assignmentOperator: Parser<List<TokenMatch>> by OrCombinator(
         +(equal * -NotParser(greater)), // =
         +(colon * -NotParser(equal or colon)), // :
@@ -305,7 +305,6 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(equal * greater), // =>
         +(exclamation * question), // !?
     )
-    val assignment: Parser<Node> by rightAssociative(commas, -s * assignmentOperator * -b, ::infixNode)
     val streamOperator: Parser<List<TokenMatch>> by OrCombinator(
         +pipe, // |
         +(question * pipe), // ?|
@@ -313,12 +312,18 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(greater * greater), // >>
         +(less * less), // <<
     )
-    val stream: Parser<Node> by leftAssociative(assignment, -s * streamOperator * -b, ::infixNode)
+    val assignmentAndStream: Parser<Node> by OrCombinator(
+        commas * -s * assignmentOperator * -b * cachedParser { assignmentAndStream } map { InfixNode(it.t1, it.t2, it.t3) },
+        oneOrMore(commas * -b * streamOperator * -b) * cachedParser { assignmentAndStream } map { (left, right) ->
+            left.fold({ n: Node -> n }) { c, t -> { n: Node -> InfixNode(c(t.t1), t.t2, n) } }(right)
+        },
+        commas,
+    )
 
     val semicolonsPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(
-        stream * -s * br * -b * cachedParser { semicolonsPart } map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
-        (stream * -s or (EmptyParser map { EmptyNode })) * semicolon * (-b * cachedParser { semicolonsPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
-        stream map { Pair(listOf(it), listOf()) },
+        assignmentAndStream * -s * br * -b * cachedParser { semicolonsPart } map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+        (assignmentAndStream * -s or (EmptyParser map { EmptyNode })) * semicolon * (-b * cachedParser { semicolonsPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
+        assignmentAndStream map { Pair(listOf(it), listOf()) },
     )
     val semicolons: Parser<Node> by semicolonsPart map { if (it.first.size == 1) it.first.first() else SemicolonNode(it.first, it.second) }
     val expression: Parser<Node> by semicolons
