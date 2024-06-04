@@ -355,6 +355,8 @@ class TimesGetter(private val leftGetter: Getter, private val rightGetter: Gette
                 else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
             }
 
+            is FluoriteString -> left.value.repeat((right as FluoriteNumber).value.toInt()).toFluoriteString()
+            is FluoriteArray -> FluoriteArray((0 until (right as FluoriteNumber).value.toInt()).flatMap { left.values })
             else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
         }
     }
