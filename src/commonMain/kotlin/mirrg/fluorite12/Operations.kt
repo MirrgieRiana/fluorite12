@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlin.math.pow
 
 interface Operation {
     val code: String
@@ -405,6 +406,16 @@ class ModGetter(private val leftGetter: Getter, private val rightGetter: Getter)
     }
 
     override val code get() = "Mod[${leftGetter.code};${rightGetter.code}]"
+}
+
+class PowerGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val left = leftGetter.evaluate(env) as FluoriteNumber
+        val right = rightGetter.evaluate(env) as FluoriteNumber
+        return FluoriteDouble(left.value.toDouble().pow(right.value.toDouble()))
+    }
+
+    override val code get() = "Power[${leftGetter.code};${rightGetter.code}]"
 }
 
 // TODO to method

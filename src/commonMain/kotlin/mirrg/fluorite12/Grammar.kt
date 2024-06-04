@@ -243,6 +243,14 @@ class Fluorite12Grammar : Grammar<Node>() {
         -b * +(period * dollar * asterisk) map { { main -> RightNode(main, it) } },
     )
     val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
+    val pow: Parser<Node> by right * optional(-s * +circumflex * -b * cachedParser { left }) map {
+        val right = it.t2
+        if (right != null) {
+            InfixNode(it.t1, right.t1, right.t2)
+        } else {
+            it.t1
+        }
+    }
     val leftOperator: Parser<(Node) -> Node> by OrCombinator(
         +(plus) map { { main -> LeftNode(it, main) } },
         +(minus) map { { main -> LeftNode(it, main) } },
@@ -254,7 +262,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(dollar * ampersand) map { { main -> LeftNode(it, main) } },
         +(dollar * asterisk) map { { main -> LeftNode(it, main) } },
     )
-    val left: Parser<Node> by zeroOrMore(leftOperator * -b) * right map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
+    val left: Parser<Node> by zeroOrMore(leftOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
     val mul: Parser<Node> by leftAssociative(left, -s * (+asterisk or +slash or +(percent * percent) or +percent) * -b, ::infixNode)
     val add: Parser<Node> by leftAssociative(mul, -s * (+plus or +(minus * -NotParser(greater)) or +(ampersand * -NotParser(ampersand))) * -b, ::infixNode)

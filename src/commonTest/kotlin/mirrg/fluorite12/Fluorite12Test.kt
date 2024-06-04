@@ -376,6 +376,29 @@ class Fluorite12Test {
     }
 
     @Test
+    fun powTest() = runTest {
+        assertEquals(16.0, run("4 ^ 2").double, 0.00001) // ^ でべき乗ができる、べき乗すると常に浮動小数点数になる
+
+        // ^ は右優先結合
+        assertEquals("Power[Literal[1];Power[Literal[2];Literal[3]]]", parse("1 ^ 2 ^ 3"))
+        assertEquals(256.0, run("2 ^ 2 ^ 3").double, 0.00001)
+        assertEquals(64.0, run("(2 ^ 2) ^ 3").double, 0.00001)
+
+        // ^ は乗算よりも優先される
+        assertEquals("Times[Times[Literal[1];Power[Literal[2];Literal[3]]];Literal[4]]", parse("1 * 2 ^ 3 * 4"))
+        assertEquals(280.0, run("5 * 2 ^ 3 * 7").double, 0.00001)
+
+        // ^ は前置演算子よりも優先される
+        assertEquals("ToNegativeNumber[Power[Literal[1];Literal[2]]]", parse("- 1 ^ 2"))
+        assertEquals(-16.0, run("- 4 ^ 2").double, 0.00001)
+
+        // ^ の右に前置演算子があってもよい
+        assertEquals(0.0625, run("4 ^ - 2").double, 0.00001)
+
+        assertEquals(432.0, run("- 2 * - 2 ^ - - 3 * - 3 ^ - - 2 * - 3").double, 0.00001) // 複合的なテスト
+    }
+
+    @Test
     fun modTest() = runTest {
         assertEquals(1, run("10 % 3").int) // % で余りを得る
 
