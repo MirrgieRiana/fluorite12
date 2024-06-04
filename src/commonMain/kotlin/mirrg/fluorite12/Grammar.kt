@@ -97,8 +97,8 @@ class Fluorite12Grammar : Grammar<Node>() {
     val lSquare by literalToken("[")
     val bSlash by literalToken("\\")
     val rSquare by literalToken("]")
-    val circumflex by regexToken("^")
-    val underscore by regexToken("_")
+    val circumflex by literalToken("^")
+    val underscore by literalToken("_")
 
     val bQuote by literalToken("`")
     val lA by literalToken("a")
