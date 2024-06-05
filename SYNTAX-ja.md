@@ -1496,3 +1496,31 @@ $ flc '1 .. 3'
 ```shell
 $ flc '1 + 2; ,'
 ```
+
+# サンプルコード
+
+## フィボナッチ数列
+
+```shell
+$ flc '
+  fib := n -> n < 2 ? n : fib(n - 1) + fib(n - 2)
+  fib(10)
+'
+# 55
+```
+
+## クイックソート
+
+```shell
+$ flc '
+  quicksort := list -> $#list < 2 ? list : (
+    pivot  := list.0
+    high   := [list[] ?| _ >  pivot]
+    middle := [list[] ?| _ == pivot]
+    low    := [list[] ?| _ <  pivot]
+    quicksort(low) + middle + quicksort(high)
+  )
+  quicksort([3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5])
+'
+# [1;1;2;3;3;4;5;5;5;6;9]
+```
