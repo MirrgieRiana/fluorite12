@@ -47,9 +47,9 @@ fun main(args: Array<String>) = runBlocking {
     val result = getter.evaluate(env)
     if (result is FluoriteStream) {
         result.collect {
-            println(it.toString())
+            println(it.toFluoriteString())
         }
     } else {
-        println(result.toString())
+        println(result.toFluoriteString())
     }
 }
