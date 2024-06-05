@@ -1386,6 +1386,28 @@ $ flc 'SUM(1 .. 3)'
 # 6
 ```
 
+### `ARRAY` ストリームを配列に変換
+
+`ARRAY(stream: STREAM<VALUE>): ARRAY<VALUE>`
+
+第1引数のストリームの各要素を配列に変換します。
+
+```shell
+$ flc 'ARRAY(1 .. 3)'
+# [1;2;3]
+```
+
+### `OBJECT` エントリーのストリームをオブジェクトに変換
+
+`OBJECT(stream: STREAM<ARRAY<STRING; VALUE>>): OBJECT`
+
+第1引数のストリームの各要素をエントリーとしてオブジェクトに変換します。
+
+```shell
+$ flc 'OBJECT(("a": 1), ("b": 2), ("c": 3))'
+# {a:1;b:2;c:3}
+```
+
 ## CLI版限定の関数
 
 CLI版fluorite12でのみ利用可能な関数です。
