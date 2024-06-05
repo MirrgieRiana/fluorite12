@@ -45,7 +45,7 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
             }
             FluoriteArray(list)
         } else {
-            usage("ARRAY(stream: STREAM<VALUE>): ARRAY")
+            usage("ARRAY(stream: STREAM<VALUE>): ARRAY<VALUE>")
         }
     }),
     defineConstant("OBJECT", FluoriteFunction { arguments ->
@@ -65,7 +65,7 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
             }
             FluoriteObject(FluoriteObject.fluoriteClass, map)
         } else {
-            usage("OBJECT(stream: STREAM<ARRAY<STRING, VALUE>>): OBJECT")
+            usage("OBJECT(stream: STREAM<ARRAY<STRING; VALUE>>): OBJECT")
         }
     }),
     defineConstant("JOIN", FluoriteFunction { arguments ->
