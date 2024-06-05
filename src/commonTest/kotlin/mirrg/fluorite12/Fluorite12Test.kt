@@ -327,6 +327,9 @@ class Fluorite12Test {
         assertEquals("{a:1;b:2}", run("&{a: 1; b: 2}").string)
 
         assertEquals("10", run("&{TO_STRING: this -> &this.a}{a: 10}").string) // 文字列化のオーバーライド
+
+        assertEquals("[1;2;3]", run("&[1;2;3]").string) // 配列の文字列化
+        assertEquals("{a:1;b:2}", run("&{a:1;b:2}").string) // オブジェクトの文字列化
     }
 
     @Test

@@ -140,6 +140,16 @@ class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_STRING" to FluoriteFunction {
+                        val sb = StringBuilder()
+                        sb.append('[')
+                        (it[0] as FluoriteArray).values.forEachIndexed { i, value ->
+                            if (i != 0) sb.append(';')
+                            sb.append(value.toFluoriteString().value)
+                        }
+                        sb.append(']')
+                        sb.toString().toFluoriteString()
+                    },
                     "TO_JSON" to FluoriteFunction {
                         val sb = StringBuilder()
                         sb.append('[')
@@ -166,6 +176,18 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_STRING" to FluoriteFunction {
+                        val sb = StringBuilder()
+                        sb.append('{')
+                        (it[0] as FluoriteObject).map.entries.forEachIndexed { i, (key, value) ->
+                            if (i != 0) sb.append(';')
+                            sb.append(key)
+                            sb.append(':')
+                            sb.append(value.toFluoriteString().value)
+                        }
+                        sb.append('}')
+                        sb.toString().toFluoriteString()
+                    },
                     "TO_JSON" to FluoriteFunction {
                         val sb = StringBuilder()
                         sb.append('{')
