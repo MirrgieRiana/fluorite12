@@ -676,6 +676,11 @@ class Fluorite12Test {
     }
 
     @Test
+    fun runnerTest() = runTest {
+        assertEquals(55, run("x := 0; 1 .. 10 | x = x + _; x").int) // runner部分がストリームの式だった場合、イテレーションはする
+    }
+
+    @Test
     fun rootTest() = runTest {
         assertEquals(10, run("10").int) // 式を書ける
         assertEquals(20, run("10; 20").int) // ; で区切ると左は式文になり、右が使われる

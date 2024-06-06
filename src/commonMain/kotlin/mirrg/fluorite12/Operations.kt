@@ -680,7 +680,12 @@ interface Runner : Operation {
 
 class GetterRunner(private val getter: Getter) : Runner {
     override suspend fun evaluate(env: Environment) {
-        getter.evaluate(env)
+        val result = getter.evaluate(env)
+        if (result is FluoriteStream) {
+            result.collect {
+                // イテレーションは行うがその結果は握りつぶす
+            }
+        }
     }
 
     override val code get() = "Getter[${getter.code}]"
