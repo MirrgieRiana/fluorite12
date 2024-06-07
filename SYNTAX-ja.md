@@ -1471,6 +1471,8 @@ $ flc '
 
 ### `SQRT` 平方根の取得
 
+`SQRT(number: NUMBER): NUMBER`
+
 第1引数の正の平方根を返します。
 
 ```shell
