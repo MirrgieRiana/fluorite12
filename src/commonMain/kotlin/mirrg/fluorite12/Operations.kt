@@ -453,12 +453,25 @@ class PowerGetter(private val leftGetter: Getter, private val rightGetter: Gette
 // TODO to method
 class RangeGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        val left = leftGetter.evaluate(env)
-        val right = rightGetter.evaluate(env)
-        val range = (left as FluoriteInt).value..(right as FluoriteInt).value
-        return FluoriteStream {
-            range.forEach {
-                emit(FluoriteInt(it))
+        val left = (leftGetter.evaluate(env) as FluoriteInt).value
+        val right = (rightGetter.evaluate(env) as FluoriteInt).value
+        return if (left > right) {
+            // 下降
+            FluoriteStream {
+                var i = left
+                while (i >= right) {
+                    emit(FluoriteInt(i))
+                    i--
+                }
+            }
+        } else {
+            // 上昇
+            FluoriteStream {
+                var i = left
+                while (i <= right) {
+                    emit(FluoriteInt(i))
+                    i++
+                }
             }
         }
     }
