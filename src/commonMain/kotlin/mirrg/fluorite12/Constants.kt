@@ -28,7 +28,7 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
     defineConstant("SQRT", FluoriteFunction { arguments ->
         when (arguments.size) {
             1 -> FluoriteDouble(sqrt((arguments[0] as FluoriteNumber).value.toDouble()))
-            else -> throw IllegalArgumentException("Arguments mismatch: SQRT[${arguments.size}]")
+            else -> usage("SQRT(number: NUMBER): NUMBER")
         }
     }),
     defineConstant("ARRAY", FluoriteFunction { arguments ->
