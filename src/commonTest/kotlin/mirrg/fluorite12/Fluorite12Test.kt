@@ -722,6 +722,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun floorFunctionTest() = runTest {
+        assertEquals(10, run("FLOOR(10.1)").int) // FLOOR関数は小数点以下を切り捨てて内部的な型をINTEGERにする
+        assertEquals(10, run("FLOOR(10)").int) // 整数はそのまま
+        assertEquals(-11, run("FLOOR(-10.1)").int) // 負の数も値が小さくなるように切り捨てる
+    }
+
+    @Test
     fun joinSplitTest() = runTest {
         // JOIN
         assertEquals("a|b|c", run(""" JOIN("|"; "a", "b", "c") """).string) // JOIN で文字列を結合できる

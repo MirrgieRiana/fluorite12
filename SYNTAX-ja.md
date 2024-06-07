@@ -1469,6 +1469,17 @@ $ flc '
 
 ## 数学系関数
 
+### `FLOOR` 小数点以下切り捨て
+
+`FLOOR(number: NUMBER): INTEGER`
+
+第1引数の数値を、値が小さい方の整数に丸めます。
+
+```shell
+$ flc 'FLOOR(1.5)'
+# 1
+```
+
 ### `SQRT` 平方根の取得
 
 `SQRT(number: NUMBER): NUMBER`
