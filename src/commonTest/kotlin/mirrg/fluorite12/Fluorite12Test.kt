@@ -462,7 +462,7 @@ class Fluorite12Test {
     fun rangeTest() = runTest {
         assertEquals("1,2,3,4", run("1 .. 4").stream()) // .. でその範囲をイテレートするストリームを得る
         assertEquals("0,1,2,3", run("0 .. 4 - 1").stream()) // 項は0や四則演算等でもよい
-        assertEquals("-1,0,1", run("-1 .. 1").stream()) // 項は0や四則演算等でもよい
+        assertEquals("-1,0,1", run("-1 .. 1").stream()) // 項は前置演算子がついていたり、負の値でもよいし、正負をまたいでもよい
         assertEquals("[1;2;3;4],[1;2;3;4]", run("a := 1 .. 4; [a], [a]").stream()) // 範囲ストリームは再利用できる
         assertEquals("4,3,2,1", run("4 .. 1").stream()) // 下降も可能
     }
