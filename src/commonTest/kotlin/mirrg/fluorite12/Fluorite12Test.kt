@@ -466,6 +466,11 @@ class Fluorite12Test {
         assertEquals("-1,0,1", run("-1 .. 1").stream()) // 項は前置演算子がついていたり、負の値でもよいし、正負をまたいでもよい
         assertEquals("[1;2;3;4],[1;2;3;4]", run("a := 1 .. 4; [a], [a]").stream()) // 範囲ストリームは再利用できる
         assertEquals("4,3,2,1", run("4 .. 1").stream()) // 下降も可能
+
+        assertEquals("1,2,3", run("1 ~ 4").stream()) // 半開区間演算子は終端を含まない
+        assertEquals("", run("1 ~ 1").stream()) // 範囲が一つの場合は空ストリームになる
+        assertEquals("[1;2;3],[1;2;3]", run("a := 1 ~ 4; [a], [a]").stream()) // 再利用のテスト
+        assertEquals("", run("4 ~ 1").stream()) // 右辺が左辺より小さい場合は空ストリームになる
     }
 
     @Test

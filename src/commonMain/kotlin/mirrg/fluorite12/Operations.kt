@@ -479,6 +479,23 @@ class RangeGetter(private val leftGetter: Getter, private val rightGetter: Gette
     override val code get() = "Range[${leftGetter.code};${rightGetter.code}]"
 }
 
+// TODO to method
+class ExclusiveRangeGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val left = (leftGetter.evaluate(env) as FluoriteInt).value
+        val right = (rightGetter.evaluate(env) as FluoriteInt).value
+        return FluoriteStream {
+            var i = left
+            while (i < right) {
+                emit(FluoriteInt(i))
+                i++
+            }
+        }
+    }
+
+    override val code get() = "Range[${leftGetter.code};${rightGetter.code}]"
+}
+
 class EntryGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = FluoriteArray(listOf(leftGetter.evaluate(env), rightGetter.evaluate(env)))
     override val code get() = "Entry[${leftGetter.code};${rightGetter.code}]"

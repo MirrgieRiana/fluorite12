@@ -216,6 +216,7 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
         "%" -> ModGetter(compileToGetter(left), compileToGetter(right))
         "^" -> PowerGetter(compileToGetter(left), compileToGetter(right))
         ".." -> RangeGetter(compileToGetter(left), compileToGetter(right))
+        "~" -> ExclusiveRangeGetter(compileToGetter(left), compileToGetter(right))
         "&&" -> AndGetter(compileToGetter(left), compileToGetter(right))
         "||" -> OrGetter(compileToGetter(left), compileToGetter(right))
         "?:" -> ElvisGetter(compileToGetter(left), compileToGetter(right))
