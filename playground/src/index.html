@@ -18,6 +18,7 @@
 
         html {
             height: 100%;
+            font-size: 125%;
         }
         body {
             height: 100%;
@@ -28,12 +29,24 @@
             height: 100%;
             border-collapse: collapse;
         }
+        #container td {
+            padding: 0;
+        }
         #input_container > .cm-editor, #output {
             box-sizing: border-box;
             width: 100%;
             height: 100%;
+        }
+        #input_container > .cm-editor {
+            border-bottom: 1px solid #777777;
+        }
+        #output {
             margin: 0%;
             background-color: #FFFFFF;
+            vertical-align: top;
+        }
+        #input_container > .cm-editor.cm-focused {
+            outline: none !important;
         }
     </style>
     <script src="fluorite12.js"></script>
@@ -70,14 +83,19 @@
 </head>
 <body>
 <table id="container">
-    <tr style="height: 50%;">
-        <td id="input_container"></td>
+    <tr style="height: 80%;">
+        <td id="input_container" colspan="2"></td>
     </tr>
     <tr style="height: 0%;">
-        <td><input type="button" value="Run" onclick="run()" title="(Ctrl+Enter)"></td>
+        <td style="padding: 0.1em;">
+            <input type="button" value="Run (F9, Ctrl+Enter)" onclick="run()">
+        </td>
+        <td style="padding: 0.1em; text-align: right;">
+            <a href="https://github.com/MirrgieRiana/fluorite12" target="_blank">About fluorite12</a>
+        </td>
     </tr>
-    <tr style="height: 50%;">
-        <td><textarea id="output"></textarea></td>
+    <tr style="height: 20%;">
+        <td colspan="2"><textarea id="output"></textarea></td>
     </tr>
 </table>
 <script src="editor.bundle.js"></script>
