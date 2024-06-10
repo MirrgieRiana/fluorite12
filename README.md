@@ -47,6 +47,12 @@ curl -s https://raw.githubusercontent.com/MirrgieRiana/fluorite12/release/instal
 
 Download the `flc` binary to the `./fluorite12`, and register it in `/usr/local/bin`.
 
+# Playground
+
+There is a web tool available online that can run fluorite12.
+
+[fluorite12 Playground](https://mirrgieriana.github.io/fluorite12/playground/)
+
 # SYNTAX
 
 - [Japanese](SYNTAX-ja.md)
