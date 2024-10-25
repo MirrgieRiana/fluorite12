@@ -442,6 +442,9 @@ class Fluorite12Test {
     @Test
     fun modTest() = runTest {
         assertEquals(1, run("10 % 3").int) // % で余りを得る
+        assertEquals(0.25, run("1.75 % 0.5").double) // 浮動小数点数でもよい
+        assertEquals(0.5, run("2 % 0.75").double) // 右側だけが浮動小数点数でもよい
+        assertEquals(0.25, run("10.25 % 5").double) // 左側だけが浮動小数点数でもよい
 
         // 負の余りは正になるまで割る数を足したものの余りと同じ（-1 + 3 = 2） % 3
         // そのため同じ余りがループする
@@ -450,6 +453,10 @@ class Fluorite12Test {
         assertEquals(false, run("10 %% 3").boolean) // %% は割り切れる場合にTRUE
         assertEquals(true, run("10 %% 2").boolean) // %% は割り切れない場合にFALSE
         assertEquals(true, run("-3 %% 3").boolean) // %% も負に対応
+        assertEquals(true, run("10.0 %% 2.0").boolean) // 浮動小数点数として表現されていてもよい
+        assertEquals(true, run("1.75 %% 0.25").boolean) // 2進数で割り切れるのであれば小数でもよい
+        assertEquals(true, run("25 %% 0.25").boolean) // 右側だけが浮動小数点数でもよい
+        assertEquals(true, run("25.0 %% 5").boolean) // 左側だけが浮動小数点数でもよい
     }
 
     @Test

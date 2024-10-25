@@ -407,6 +407,13 @@ class DivisibleGetter(private val leftGetter: Getter, private val rightGetter: G
         return when (left) {
             is FluoriteInt -> when (right) {
                 is FluoriteInt -> (left.value % right.value == 0).toFluoriteBoolean()
+                is FluoriteDouble -> (left.value.toDouble() % right.value == 0.0).toFluoriteBoolean()
+                else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+            }
+
+            is FluoriteDouble -> when (right) {
+                is FluoriteInt -> (left.value % right.value.toDouble() == 0.0).toFluoriteBoolean()
+                is FluoriteDouble -> (left.value % right.value == 0.0).toFluoriteBoolean()
                 else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
             }
 
@@ -428,6 +435,28 @@ class ModGetter(private val leftGetter: Getter, private val rightGetter: Getter)
                     val a = left.value
                     val b = right.value
                     FluoriteInt(if (a >= 0) a % b else (b - 1) + (a + 1) % b)
+                }
+
+                is FluoriteDouble -> {
+                    val a = left.value
+                    val b = right.value
+                    FluoriteDouble(if (a >= 0) a % b else (b - 1) + (a + 1) % b)
+                }
+
+                else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+            }
+
+            is FluoriteDouble -> when (right) {
+                is FluoriteInt -> {
+                    val a = left.value
+                    val b = right.value
+                    FluoriteDouble(if (a >= 0) a % b else (b - 1) + (a + 1) % b)
+                }
+
+                is FluoriteDouble -> {
+                    val a = left.value
+                    val b = right.value
+                    FluoriteDouble(if (a >= 0) a % b else (b - 1) + (a + 1) % b)
                 }
 
                 else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
