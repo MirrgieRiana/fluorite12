@@ -27,6 +27,7 @@ object FluoriteNull : FluoriteValue {
     val fluoriteClass by lazy {
         FluoriteObject(
             FluoriteValue.fluoriteClass, mutableMapOf(
+                "EQUALS" to FluoriteFunction { (it[1] is FluoriteNull).toFluoriteBoolean() },
                 "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.FALSE },
                 "TO_JSON" to FluoriteFunction { "null".toFluoriteString() },
             )
@@ -48,6 +49,11 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "EQUALS" to FluoriteFunction {
+                        val a = it[0] as FluoriteInt
+                        val b = it[1] as? FluoriteInt ?: return@FluoriteFunction FluoriteBoolean.FALSE
+                        (a.value == b.value).toFluoriteBoolean()
+                    },
                     "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteInt).value != 0).toFluoriteBoolean() },
                     "TO_JSON" to FluoriteFunction { "${(it[0] as FluoriteInt).value}".toFluoriteString() },
                 )
@@ -68,6 +74,11 @@ class FluoriteDouble(override val value: Double) : FluoriteNumber {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "EQUALS" to FluoriteFunction {
+                        val a = it[0] as FluoriteDouble
+                        val b = it[1] as? FluoriteDouble ?: return@FluoriteFunction FluoriteBoolean.FALSE
+                        (a.value == b.value).toFluoriteBoolean()
+                    },
                     "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteDouble).value != 0.0).toFluoriteBoolean() },
                     "TO_JSON" to FluoriteFunction { "${(it[0] as FluoriteDouble).value}".toFluoriteString() },
                 )
@@ -92,6 +103,11 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "EQUALS" to FluoriteFunction {
+                        val a = it[0] as FluoriteBoolean
+                        val b = it[1] as? FluoriteBoolean ?: return@FluoriteFunction FluoriteBoolean.FALSE
+                        (a.value == b.value).toFluoriteBoolean()
+                    },
                     "TO_BOOLEAN" to FluoriteFunction { it[0] as FluoriteBoolean },
                     "TO_JSON" to FluoriteFunction { (if ((it[0] as FluoriteBoolean).value) "true" else "false").toFluoriteString() },
                 )
@@ -114,6 +130,11 @@ class FluoriteString(val value: String) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "EQUALS" to FluoriteFunction {
+                        val a = it[0] as FluoriteString
+                        val b = it[1] as? FluoriteString ?: return@FluoriteFunction FluoriteBoolean.FALSE
+                        (a.value == b.value).toFluoriteBoolean()
+                    },
                     "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
                     "TO_STRING" to FluoriteFunction { it[0] as FluoriteString },
                     "TO_JSON" to FluoriteFunction {
@@ -140,6 +161,7 @@ class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+<<<<<<< Updated upstream
                     "TO_STRING" to FluoriteFunction {
                         val sb = StringBuilder()
                         sb.append('[')
@@ -149,6 +171,16 @@ class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
                         }
                         sb.append(']')
                         sb.toString().toFluoriteString()
+=======
+                    "EQUALS" to FluoriteFunction { it ->
+                        val a = it[0] as FluoriteArray
+                        val b = it[1] as? FluoriteArray ?: return@FluoriteFunction FluoriteBoolean.FALSE
+                        if (a.values.size != b.values.size) return@FluoriteFunction FluoriteBoolean.FALSE
+                        a.values.indices.forEach { i ->
+                            if (!a.values[i].fluoriteEquals(b.values[i]).value) return@FluoriteFunction FluoriteBoolean.FALSE
+                        }
+                        FluoriteBoolean.TRUE
+>>>>>>> Stashed changes
                     },
                     "TO_JSON" to FluoriteFunction {
                         val sb = StringBuilder()
@@ -160,7 +192,14 @@ class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
                         sb.append(']')
                         sb.toString().toFluoriteString()
                     },
-                    "CONTAINS" to FluoriteFunction { (it[1] in (it[0] as FluoriteArray).values).toFluoriteBoolean() }, // TODO EQUALSメソッドの使用
+                    "CONTAINS" to FluoriteFunction {
+                        val array = it[0] as FluoriteArray
+                        val targetItem = it[1]
+                        array.values.forEach { item ->
+                            if (item.fluoriteEquals(targetItem).value) return@FluoriteFunction FluoriteBoolean.TRUE
+                        }
+                        FluoriteBoolean.FALSE
+                    },
                 )
             )
         }
@@ -176,6 +215,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+<<<<<<< Updated upstream
                     "TO_STRING" to FluoriteFunction {
                         val sb = StringBuilder()
                         sb.append('{')
@@ -187,6 +227,21 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                         }
                         sb.append('}')
                         sb.toString().toFluoriteString()
+=======
+                    "EQUALS" to FluoriteFunction {
+                        val a = it[0] as FluoriteObject
+                        val b = it[1] as? FluoriteObject ?: return@FluoriteFunction FluoriteBoolean.FALSE
+                        if (a.map.size != b.map.size) return@FluoriteFunction FluoriteBoolean.FALSE
+                        val aIterator = a.map.entries.sortedBy { it.key }.iterator()
+                        val bIterator = b.map.entries.sortedBy { it.key }.iterator()
+                        repeat(a.map.size) {
+                            val aEntry = aIterator.next()
+                            val bEntry = bIterator.next()
+                            if (aEntry.key != bEntry.key) return@FluoriteFunction FluoriteBoolean.FALSE
+                            if (!aEntry.value.fluoriteEquals(bEntry.value).value) return@FluoriteFunction FluoriteBoolean.FALSE
+                        }
+                        FluoriteBoolean.TRUE
+>>>>>>> Stashed changes
                     },
                     "TO_JSON" to FluoriteFunction {
                         val sb = StringBuilder()
@@ -214,7 +269,17 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
 
 class FluoriteFunction(val function: suspend FluoriteFunction.(List<FluoriteValue>) -> FluoriteValue) : FluoriteValue {
     companion object {
-        val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+        val fluoriteClass by lazy {
+            FluoriteObject(
+                FluoriteValue.fluoriteClass, mutableMapOf(
+                    "EQUALS" to FluoriteFunction {
+                        val a = it[0] as FluoriteFunction
+                        val b = it[1] as? FluoriteFunction ?: return@FluoriteFunction FluoriteBoolean.FALSE
+                        (a.function == b.function).toFluoriteBoolean()
+                    },
+                )
+            )
+        }
     }
 
     override val parent get() = fluoriteClass
@@ -228,6 +293,14 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "EQUALS" to FluoriteFunction {
+
+                        if (it[0] is)
+
+                        val a = it[0] as FluoriteFunction
+                        val b = it[1] as? FluoriteFunction ?: return@FluoriteFunction FluoriteBoolean.FALSE
+                        (a.function == b.function).toFluoriteBoolean()
+                    },
                     "TO_BOOLEAN" to FluoriteFunction { arguments ->
                         flow {
                             (arguments[0] as FluoriteStream).collect {

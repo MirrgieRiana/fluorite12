@@ -1,5 +1,8 @@
 package mirrg.fluorite12
 
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.take
+
 fun FluoriteValue.instanceOf(clazz: FluoriteValue): Boolean {
     var currentObject: FluoriteValue? = this
     while (true) {
@@ -126,4 +129,28 @@ suspend fun Formatter.format(value: FluoriteValue): String {
             " ".repeat(fillers) + sign + string
         }
     }
+}
+
+suspend fun FluoriteValue.fluoriteEquals(env: Environment, value: FluoriteValue): FluoriteBoolean {
+    if (this is FluoriteStream) {
+        if (value is FluoriteStream) {
+            val thisIterable = flow(this.flowProvider)
+            val valueIterable = flow(value.flowProvider)
+            thisIterable.take(1)
+
+        } else {
+            return this.fluoriteEquals(env, FluoriteStream(value))
+        }
+    } else {
+        if (value is FluoriteStream) {
+
+        } else {
+
+        }
+    }
+    return this.callMethod(env, "EQUALS", value) as FluoriteBoolean
+}
+
+suspend fun FluoriteValue.fluoriteEquals(value: FluoriteValue): FluoriteBoolean {
+    return this.callMethod("EQUALS", value) as FluoriteBoolean
 }

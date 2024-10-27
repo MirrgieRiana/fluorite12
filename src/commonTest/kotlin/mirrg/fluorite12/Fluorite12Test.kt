@@ -483,6 +483,49 @@ class Fluorite12Test {
     }
 
     @Test
+    fun equalsTest() = runTest {
+        val o = true
+        val x = false
+
+        // == != は「右辺の」EQUALSメソッドを呼び出す
+        assertEquals(true, run("{x: 10; y: 1} == {EQUALS: a, b -> a.x == b.x; x: 10; y: 2}").boolean)
+        assertEquals(false, run("{x: 10; y: 1} == {EQUALS: a, b -> a.x == b.x; x: 20; y: 2}").boolean)
+        assertEquals(false, run("{x: 10; y: 1} == {EQUALS: a, b -> a.x != b.x; x: 10; y: 2}").boolean)
+        assertEquals(true, run("{x: 10; y: 1} == {EQUALS: a, b -> a.x != b.x; x: 20; y: 2}").boolean)
+
+        suspend infix fun String.a(entries: List<Pair<String, Int>>) {
+            entries.forEach { entry ->
+                assertEquals(entry.second != 0, run("(${entry.first}) == ($this)").boolean)
+            }
+        }
+
+        // 共通型不一致テスト
+        "NULL  " a listOf("NULL" to 1, "VOID" to 0, "1" to 0, "2.0" to 0, "TRUE" to 0, "'a'" to 0, "{a: 1}" to 0, "[1]" to 0, "a -> 1" to 0, "1 .. 3" to 0)
+        "VOID  " a listOf("NULL" to 0, "VOID" to 1, "1" to 0, "2.0" to 0, "TRUE" to 0, "'a'" to 0, "{a: 1}" to 0, "[1]" to 0, "a -> 1" to 0, "1 .. 3" to 0)
+        "1     " a listOf("NULL" to 0, "VOID" to 0, "1" to 1, "2.0" to 0, "TRUE" to 0, "'a'" to 0, "{a: 1}" to 0, "[1]" to 0, "a -> 1" to 0, "1 .. 3" to 0)
+        "2.0   " a listOf("NULL" to 0, "VOID" to 0, "1" to 0, "2.0" to 1, "TRUE" to 0, "'a'" to 0, "{a: 1}" to 0, "[1]" to 0, "a -> 1" to 0, "1 .. 3" to 0)
+        "TRUE  " a listOf("NULL" to 0, "VOID" to 0, "1" to 0, "2.0" to 0, "TRUE" to 1, "'a'" to 0, "{a: 1}" to 0, "[1]" to 0, "a -> 1" to 0, "1 .. 3" to 0)
+        "'a'   " a listOf("NULL" to 0, "VOID" to 0, "1" to 0, "2.0" to 0, "TRUE" to 0, "'a'" to 1, "{a: 1}" to 0, "[1]" to 0, "a -> 1" to 0, "1 .. 3" to 0)
+        "{a: 1}" a listOf("NULL" to 0, "VOID" to 0, "1" to 0, "2.0" to 0, "TRUE" to 0, "'a'" to 0, "{a: 1}" to 1, "[1]" to 0, "a -> 1" to 0, "1 .. 3" to 0)
+        "[1]   " a listOf("NULL" to 0, "VOID" to 0, "1" to 0, "2.0" to 0, "TRUE" to 0, "'a'" to 0, "{a: 1}" to 0, "[1]" to 1, "a -> 1" to 0, "1 .. 3" to 0)
+        "a -> 1" a listOf("NULL" to 0, "VOID" to 0, "1" to 0, "2.0" to 0, "TRUE" to 0, "'a'" to 0, "{a: 1}" to 0, "[1]" to 0, "a -> 1" to 0, "1 .. 3" to 0) // 関数は中身が同じでも一致しない
+
+        // ストリーム
+        assertEquals(o, run("1 .. 3, 4, 5    == 1, 2, 3 .. 5").boolean) // 同じ要素が同じ順序で登場するので一致
+        assertEquals(x, run("1 .. 3, 4, 6    == 1, 2, 3 .. 5").boolean) // 要素が異なるので不一致
+        assertEquals(x, run("1 .. 3, 4, 5, 6 == 1, 2, 3 .. 5").boolean) // 長さが違うので不一致
+        assertEquals(x, run("1 .. 3, 4       == 1, 2, 3 .. 5").boolean) // 長さが違うので不一致
+        assertEquals(x, run("1 .. 3, 5, 4    == 1, 2, 3 .. 5").boolean) // 順序が違うので不一致
+
+        // 片方がストリームだった場合、両方をストリームにした後、各要素同士の一致を計算
+        assertEquals(o, run("(1,) ?= STREAM_CLASS").boolean) // これがストリームであることを確認
+        assertEquals(o, run("1 == (1,)").boolean) // 右辺がストリームなので左辺もストリームに変換される
+        assertEquals(x, run("1 == (2,)").boolean) // 右辺がストリームなので左辺もストリームに変換されるが、要素が違う
+        assertEquals(o, run("(1,) == 1").boolean) // 左辺がストリームなので右辺もストリームに変換される
+        assertEquals(x, run("(2,) == 1").boolean) // 左辺がストリームなので右辺もストリームに変換されるが、要素が違う
+    }
+
+    @Test
     fun compareTest() = runTest {
         fun String.f() = this.replace(" ", "")
 
