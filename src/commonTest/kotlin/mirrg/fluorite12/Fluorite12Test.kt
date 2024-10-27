@@ -378,10 +378,12 @@ class Fluorite12Test {
     @Test
     fun accessTest() = runTest {
         assertEquals("b", run(" 'abc'.1 ").string) // 文字列に数値アクセスするとそのインデックスの文字を得る
+        assertEquals("c", run(" 'abc'.(-1) ").string) // 負のインデックスは後ろから数える
         assertEquals(FluoriteNull, run(" 'abc'.3 ")) // 文字列の範囲外にアクセスすると NULL が返る
         assertEquals("c", run(" 'abc'.(1 + 1) ").string) // キーを ( ) で囲むと式で参照できる
 
         assertEquals(20, run(" [10, 20, 30].1 ").int) // 配列に数値アクセスするとそのインデックスの要素を得る
+        assertEquals(30, run(" [10, 20, 30].(-1) ").int) // 負のインデックスは後ろから数える
         assertEquals(FluoriteNull, run(" [10, 20, 30].3 ")) // 配列の範囲外にアクセスすると NULL が返る
         assertEquals(30, run(" [10, 20, 30].(1 + 1) ").int) // キーを ( ) で囲むと式で参照できる
 
