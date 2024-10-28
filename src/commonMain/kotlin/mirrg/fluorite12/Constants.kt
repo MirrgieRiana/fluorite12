@@ -80,6 +80,22 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
             usage("OBJECT(stream: STREAM<ARRAY<STRING; VALUE>>): OBJECT")
         }
     }),
+    defineConstant("REVERSE", FluoriteFunction { arguments ->
+        if (arguments.size == 1) {
+            val stream = arguments[0]
+            if (stream is FluoriteStream) {
+                val values = mutableListOf<FluoriteValue>()
+                stream.collect { value ->
+                    values.add(value)
+                }
+                FluoriteStream(values.reversed())
+            } else {
+                stream
+            }
+        } else {
+            usage("REVERSE(stream: STREAM<VALUE>): STREAM<VALUE>")
+        }
+    }),
     defineConstant("JOIN", FluoriteFunction { arguments ->
         if (arguments.size == 2) {
             val separator = arguments[0].toFluoriteString().value

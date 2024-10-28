@@ -1550,6 +1550,19 @@ $ flc 'SQRT(100.0)'
 
 ## ストリーム系関数
 
+### `REVERSE` ストリームを逆順にする
+
+`REVERSE(stream: STREAM<VALUE>): STREAM<VALUE>`
+
+第1引数のストリームの要素を逆順にしたストリームを返します。
+
+```shell
+$ flc 'REVERSE(1 .. 3)'
+# 3
+# 2
+# 1
+```
+
 ### `JOIN` ストリームを文字列に連結
 
 `JOIN(separator: VALUE; stream: VALUE): STRING`

@@ -781,6 +781,12 @@ class Fluorite12Test {
         assertEquals(1, run("SUM(1)").int) // 引数が1つの場合はそのまま
         assertEquals(3, run("SUM(1, 2)").int) // 引数が2つ以上の場合は合計
     }
+
+    @Test
+    fun reverseTest() = runTest {
+        assertEquals("3,2,1", run("REVERSE(1, 2, 3)").stream()) // REVERSE でストリームを逆順にする
+        assertEquals("3:2:1", run(" '1-2-3' >> SPLIT['-'] >> REVERSE >> JOIN[':'] ").string) // REVERSE はパイプと組み合わせて使うと便利
+    }
 }
 
 private fun parse(src: String): String {
