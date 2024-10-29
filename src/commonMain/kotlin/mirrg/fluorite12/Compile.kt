@@ -319,15 +319,15 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
         }
 
         ">>" -> {
-            val streamGetter = compileToGetter(left)
+            val valueGetter = compileToGetter(left)
             val functionGetter = compileToGetter(right)
-            FunctionInvocationGetter(functionGetter, listOf(streamGetter))
+            FunctionInvocationGetter(functionGetter, listOf(valueGetter))
         }
 
         "<<" -> {
-            val streamGetter = compileToGetter(right)
+            val valueGetter = compileToGetter(right)
             val functionGetter = compileToGetter(left)
-            FunctionInvocationGetter(functionGetter, listOf(streamGetter))
+            FunctionInvocationGetter(functionGetter, listOf(valueGetter))
         }
 
         else -> throw IllegalArgumentException("Unknown operator: A $text B")
