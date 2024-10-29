@@ -601,10 +601,13 @@ class Fluorite12Test {
         assertEquals("1:2:3", run(""" 1, 2, 3 >> JOIN[":"] """).string) // >> で右辺の関数に左辺を適用する
         assertEquals(10.0, run("100 >> SQRT").double, 0.001) // 右辺は非ストリーム用の関数でもよい
         assertEquals(20, run("10 >> x -> x * 2").int) // 右辺はラムダでもよい
-        assertEquals("1:2:3", run(""" JOIN[":"] << 1, 2, 3 """).string) // << は左右が逆になっただけ
+
+        // 左実行パイプ
+        assertEquals("1:2:3", run(""" JOIN[":"] << 1, 2, 3 """).string) // << は左右が逆になっただけだが、結合優先度が代入と同等
+        assertEquals(2.0, run(""" SQRT << SQRT << 16 """).double, 0.001) // << を並べると、右から左に実行される
 
         // パイプの連結
-        assertEquals("11;33;55", run(""" SPLIT[":"] << "1:2:3:4:5" !| +_ %% 2 | _ & _ >> JOIN[";"] """).string)
+        assertEquals("55:33:11", run(""" JOIN[":"] << 1 .. 5 !| _ %% 2 | _ & _ >> REVERSE """).string)
 
         // パイプと代入系演算子は相互に右優先結合だが、パイプ同士の連結部分だけは左優先結合になる
         assertEquals("1-21-2", run("x := 0; f := s -> s >> SPLIT[','] >> JOIN['-'] | x = _ | _ * 2; f('1,2'); x").string)
