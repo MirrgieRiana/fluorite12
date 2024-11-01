@@ -290,34 +290,6 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             PipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
         }
 
-        "?|" -> {
-            val streamGetter = compileToGetter(left)
-            val (variable, contentNode) = if (right is InfixNode && right.operator.text == "=>") {
-                require(right.left is IdentifierNode)
-                Pair(right.left.string, right.right)
-            } else {
-                Pair("_", right)
-            }
-            val newFrame = Frame(this)
-            val argumentVariableIndex = newFrame.defineVariable(variable)
-            val contentGetter = newFrame.compileToGetter(contentNode)
-            FilterPipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
-        }
-
-        "!|" -> {
-            val streamGetter = compileToGetter(left)
-            val (variable, contentNode) = if (right is InfixNode && right.operator.text == "=>") {
-                require(right.left is IdentifierNode)
-                Pair(right.left.string, right.right)
-            } else {
-                Pair("_", right)
-            }
-            val newFrame = Frame(this)
-            val argumentVariableIndex = newFrame.defineVariable(variable)
-            val contentGetter = newFrame.compileToGetter(contentNode)
-            NotFilterPipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
-        }
-
         ">>" -> {
             val valueGetter = compileToGetter(left)
             val functionGetter = compileToGetter(right)

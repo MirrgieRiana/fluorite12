@@ -1389,24 +1389,6 @@ $ flc '
 # 55
 ```
 
-## フィルターパイプ（パイプ系） `stream ?| predicate`
-
-フィルターパイプはパイプと似通っていますが、右辺の真偽値を評価し、真のもののみを返します。
-
-```shell
-$ flc '[1 .. 5 ?| _ %% 2]'
-# [2;4]
-```
-
-## 否定フィルターパイプ（パイプ系） `stream !| predicate`
-
-否定フィルターパイプはフィルターパイプの否定バージョンです。
-
-```shell
-$ flc '[1 .. 5 !| _ %% 2]'
-# [1;3;5]
-```
-
 ## 右実行パイプ（パイプ系） `value >> function`
 
 右実行パイプは、左辺の値を右辺の関数の第1引数に指定して呼び出します。
@@ -1824,9 +1806,9 @@ $ flc '
 $ flc '
   quicksort := list -> $#list < 2 ? list : (
     pivot  := list.0
-    high   := [list[] ?| _ >  pivot]
-    middle := [list[] ?| _ == pivot]
-    low    := [list[] ?| _ <  pivot]
+    high   := [list[] | _ >  pivot ? _ : (,)]
+    middle := [list[] | _ == pivot ? _ : (,)]
+    low    := [list[] | _ <  pivot ? _ : (,)]
     quicksort(low) + middle + quicksort(high)
   )
   quicksort([3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5])

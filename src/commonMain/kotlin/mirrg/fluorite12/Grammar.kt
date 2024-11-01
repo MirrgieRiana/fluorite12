@@ -307,8 +307,6 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val streamOperator: Parser<List<TokenMatch>> by OrCombinator(
         +pipe, // |
-        +(question * pipe), // ?|
-        +(exclamation * pipe), // !|
         +(greater * greater), // >>
     )
     val arguments: Parser<Node> by OrCombinator(

@@ -589,14 +589,6 @@ class Fluorite12Test {
         assertEquals(10, run("1 | _ * 10").int) // 左辺が非ストリームなら、出力をストリームで梱包しない
         assertEquals("", run("(,) | _ * 10").stream()) // 左辺が空ストリームなら、出力も空ストリームになる
 
-        // フィルターパイプ
-        assertEquals("2,4", run("1 .. 5 ?| _ %% 2").stream()) // 左辺のストリームをフィルタする
-        assertEquals("1,3,5", run("1 .. 5 !| _ %% 2").stream()) // 否定フィルタパイプ
-        assertEquals("5", run("1 .. 5 ?| _ %% 5").stream()) // 1件しかマッチしない場合でもストリームを返す
-        assertEquals("", run("1 .. 5 ?| _ %% 7").stream()) // 何もマッチしない場合は空ストリームを返す
-        assertEquals(5, run("5 ?| _ %% 5").int) // 左辺が非ストリームの場合、マッチした場合はそれをそのまま返す
-        assertEquals("", run("5 ?| _ %% 7").stream()) // 左辺が非ストリームの場合でも、マッチしなかった場合は空ストリームを返す
-
         // 実行パイプ
         assertEquals("1:2:3", run(""" 1, 2, 3 >> JOIN[":"] """).string) // >> で右辺の関数に左辺を適用する
         assertEquals(10.0, run("100 >> SQRT").double, 0.001) // 右辺は非ストリーム用の関数でもよい
@@ -607,7 +599,7 @@ class Fluorite12Test {
         assertEquals(2.0, run(""" SQRT << SQRT << 16 """).double, 0.001) // << を並べると、右から左に実行される
 
         // パイプの連結
-        assertEquals("55:33:11", run(""" JOIN[":"] << 1 .. 5 !| _ %% 2 | _ & _ >> REVERSE """).string)
+        assertEquals("55:33:11", run(""" JOIN[":"] << 1 .. 5 | _ %% 2 ? (,) : _ | _ & _ >> REVERSE """).string) // TODO FILTER [_ %% 2]
 
         // パイプと代入系演算子は相互に右優先結合だが、パイプ同士の連結部分だけは左優先結合になる
         assertEquals("1-21-2", run("x := 0; f := s -> s >> SPLIT[','] >> JOIN['-'] | x = _ | _ * 2; f('1,2'); x").string)
