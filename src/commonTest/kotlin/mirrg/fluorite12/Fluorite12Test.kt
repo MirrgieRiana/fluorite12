@@ -606,6 +606,13 @@ class Fluorite12Test {
 
         // パイプと引数指定演算子との組み合わせ
         assertEquals("10-20-30", run(""" 1 .. 3 | x => x * 10 >> JOIN["-"] """).string)
+
+        // パイプを多段にしても前の段の引数が見える
+        assertEquals("14,15,16,24,25,26,34,35,36", run("1 .. 3 | x => 4 .. 6 | y => x & y").stream())
+
+        // パイプと実行パイプの組み合わせ
+        assertEquals(4, run("1 | _ + 2 | _ * 3 >> SQRT | _ + 5 | _ + 8 >> SQRT >> FLOOR").int)
+        assertEquals("18:19:28:29", run("f := () -> '1-2' >> SPLIT['-'] | x => 8, 9 | y => x & y >> a -> JOIN(':'; a); f()").string)
     }
 
     @Test
