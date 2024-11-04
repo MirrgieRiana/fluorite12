@@ -249,6 +249,11 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
                     AssignmentGetter(frameIndex, variableIndex, compileToGetter(right))
                 }
 
+                is RightBracketNode -> when (left.left.text) {
+                    "[" -> ArrayItemAssignmentGetter(compileToGetter(left.main), compileToGetter(left.argument), compileToGetter(right))
+                    else -> throw IllegalArgumentException("Illegal assignation: ${left::class} = ${right::class}")
+                }
+
                 else -> throw IllegalArgumentException("Illegal assignation: ${left::class} = ${right::class}")
             }
         }
@@ -313,6 +318,11 @@ private fun Frame.compileToRunner(node: Node): Runner {
                 val name = node.left.string
                 val (frameIndex, variableIndex) = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
                 AssignmentRunner(frameIndex, variableIndex, compileToGetter(node.right))
+            }
+
+            node.left is RightBracketNode -> when (node.left.left.text) {
+                "[" -> ArrayItemAssignmentRunner(compileToGetter(node.left.main), compileToGetter(node.left.argument), compileToGetter(node.right))
+                else -> throw IllegalArgumentException("Illegal assignation: ${node.left::class} = ${node.right::class}")
             }
 
             else -> throw IllegalArgumentException("Illegal assignation: ${node.left::class} = ${node.right::class}")

@@ -229,6 +229,11 @@ class Fluorite12Test {
     }
 
     @Test
+    fun arrayAssignmentTest() = runTest {
+        assertEquals("[10;99;30]", run("array := [10, 20, 30]; array[1] = 99; array").array) // 配列の要素に代入できる
+    }
+
+    @Test
     fun objectTest() = runTest {
         assertEquals("{a:1}", run(""" {"a": 1} """).obj) // { } でオブジェクトを作れる
         assertEquals("{a:1}", run("{a: 1}").obj) // キーの " は省略できる

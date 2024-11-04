@@ -662,6 +662,19 @@ class AssignmentGetter(private val frameIndex: Int, private val variableIndex: I
     override val code get() = "Assignment[$frameIndex;$variableIndex;${getter.code}]"
 }
 
+class ArrayItemAssignmentGetter(private val arrayGetter: Getter, private val indexGetter: Getter, private val valueGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val array = arrayGetter.evaluate(env) as FluoriteArray
+        val index = (indexGetter.evaluate(env) as FluoriteInt).value
+        val value = valueGetter.evaluate(env)
+        if (value is FluoriteStream) throw IllegalArgumentException("Stream assignment is not supported")
+        array.values[index] = value
+        return value
+    }
+
+    override val code get() = "ArrayItemAssignment[${arrayGetter.code};${indexGetter.code};${valueGetter.code}]"
+}
+
 class CatchGetter(private val leftGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return try {
@@ -792,4 +805,16 @@ class AssignmentRunner(private val frameIndex: Int, private val variableIndex: I
     }
 
     override val code get() = "Assignment[$frameIndex;$variableIndex;${getter.code}]"
+}
+
+class ArrayItemAssignmentRunner(private val arrayGetter: Getter, private val indexGetter: Getter, private val valueGetter: Getter) : Runner {
+    override suspend fun evaluate(env: Environment) {
+        val array = arrayGetter.evaluate(env) as FluoriteArray
+        val index = (indexGetter.evaluate(env) as FluoriteInt).value
+        val value = valueGetter.evaluate(env)
+        if (value is FluoriteStream) throw IllegalArgumentException("Stream assignment is not supported")
+        array.values[index] = value
+    }
+
+    override val code get() = "ArrayItemAssignment[${arrayGetter.code};${indexGetter.code};${valueGetter.code}]"
 }
