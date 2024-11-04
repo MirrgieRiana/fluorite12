@@ -157,7 +157,7 @@ class FunctionBindGetter(private val functionGetter: Getter, private val argumen
                 0 -> {
                     FluoriteStream {
                         value.map.entries.forEach {
-                            emit(FluoriteArray(listOf(it.key.toFluoriteString(), it.value)))
+                            emit(FluoriteArray(mutableListOf(it.key.toFluoriteString(), it.value)))
                         }
                     }
                 }
@@ -254,7 +254,7 @@ class FromJsonGetter(private val getter: Getter) : Getter {
         val data = Json.decodeFromString<JsonElement>((value as FluoriteString).value)
         fun f(data: JsonElement): FluoriteValue = when (data) {
             is JsonObject -> FluoriteObject(FluoriteObject.fluoriteClass, data.mapValues { (_, it) -> f(it) }.toMutableMap())
-            is JsonArray -> FluoriteArray(data.map { f(it) })
+            is JsonArray -> FluoriteArray(data.map { f(it) }.toMutableList())
             is JsonNull -> FluoriteNull
             is JsonPrimitive -> when {
                 data.isString -> data.content.toFluoriteString()
@@ -336,7 +336,12 @@ class PlusGetter(private val leftGetter: Getter, private val rightGetter: Getter
                 else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
             }
 
-            is FluoriteArray -> FluoriteArray(left.values + (right as FluoriteArray).values)
+            is FluoriteArray -> {
+                val list = mutableListOf<FluoriteValue>()
+                list += left.values
+                list += (right as FluoriteArray).values
+                FluoriteArray(list)
+            }
 
             else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
         }
@@ -389,7 +394,15 @@ class TimesGetter(private val leftGetter: Getter, private val rightGetter: Gette
             }
 
             is FluoriteString -> left.value.repeat((right as FluoriteNumber).value.toInt()).toFluoriteString()
-            is FluoriteArray -> FluoriteArray((0 until (right as FluoriteNumber).value.toInt()).flatMap { left.values })
+
+            is FluoriteArray -> {
+                val list = mutableListOf<FluoriteValue>()
+                repeat((right as FluoriteNumber).value.toInt()) {
+                    list += left.values
+                }
+                FluoriteArray(list)
+            }
+
             else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
         }
     }
@@ -549,7 +562,7 @@ class ExclusiveRangeGetter(private val leftGetter: Getter, private val rightGett
 }
 
 class EntryGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = FluoriteArray(listOf(leftGetter.evaluate(env), rightGetter.evaluate(env)))
+    override suspend fun evaluate(env: Environment) = FluoriteArray(mutableListOf(leftGetter.evaluate(env), rightGetter.evaluate(env)))
     override val code get() = "Entry[${leftGetter.code};${rightGetter.code}]"
 }
 
@@ -557,7 +570,7 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return FluoriteFunction { arguments ->
             val newEnv = Environment(env, 1 + variableIndices.size)
-            newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = FluoriteArray(arguments)
+            newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = FluoriteArray(arguments.toMutableList())
             variableIndices.forEachIndexed { i, variableIndex ->
                 newEnv.variableTable[newFrameIndex][variableIndex] = arguments.getOrNull(i) ?: FluoriteNull
             }

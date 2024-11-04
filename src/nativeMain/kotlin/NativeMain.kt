@@ -19,7 +19,7 @@ fun main(args: Array<String>) = runBlocking {
     val frame = Frame()
     val runners = listOf(
         *frame.defineCommonBuiltinConstants().toTypedArray(),
-        frame.defineConstant("ARGS", FluoriteArray(args.drop(1).map { it.toFluoriteString() })),
+        frame.defineConstant("ARGS", FluoriteArray(args.drop(1).map { it.toFluoriteString() }.toMutableList())),
         frame.defineConstant("IN", FluoriteStream {
             while (true) {
                 val line = readlnOrNull() ?: break

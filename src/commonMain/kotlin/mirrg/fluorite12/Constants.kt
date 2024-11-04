@@ -53,7 +53,7 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
                 }
                 values
             } else {
-                listOf(stream)
+                mutableListOf(stream)
             }
             FluoriteArray(list)
         } else {

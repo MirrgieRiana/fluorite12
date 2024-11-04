@@ -135,7 +135,7 @@ class FluoriteString(val value: String) : FluoriteValue {
 fun String.toFluoriteString() = FluoriteString(this)
 
 
-class FluoriteArray(val values: List<FluoriteValue>) : FluoriteValue {
+class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
     companion object {
         val fluoriteClass by lazy {
             FluoriteObject(
