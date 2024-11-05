@@ -53,6 +53,9 @@
     <script src="fluorite12.js"></script>
     <script>
         async function run() {
+
+            updateUrl();
+
             const src = window.input.state.doc.toString();
             try {
                 const result = fluorite12.parse(src);
@@ -72,6 +75,15 @@
                 console.log(e);
             }
         }
+        function updateUrl() {
+            const src = window.input.state.doc.toString();
+            const utf8Src = new TextEncoder().encode(src);
+            const deflateUtf8Src = deflate(utf8Src);
+            const base64DeflateUtf8Src = btoa([...deflateUtf8Src].map(n => String.fromCharCode(n)).join(""));
+            const url = new URL(location.href);
+            url.searchParams.set("s", base64DeflateUtf8Src);
+            history.replaceState(null, "", url.toString());
+        }
         function highlight(element) {
             element.className = "box";
             window.requestAnimationFrame(function (time) {
@@ -90,6 +102,7 @@
     <tr style="height: 0%;">
         <td style="padding: 0.1em;">
             <input type="button" value="Run (F9, Ctrl+Enter)" onclick="run();">
+            <input type="button" value="🔗" title="Update URL" onclick="updateUrl();">
         </td>
         <td style="padding: 0.1em; text-align: right;">
             <a href="https://github.com/MirrgieRiana/fluorite12" target="_blank">About fluorite12</a>
