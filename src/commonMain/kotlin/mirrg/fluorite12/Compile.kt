@@ -39,6 +39,7 @@ import mirrg.fluorite12.operations.PlusGetter
 import mirrg.fluorite12.operations.PowerGetter
 import mirrg.fluorite12.operations.RangeGetter
 import mirrg.fluorite12.operations.Runner
+import mirrg.fluorite12.operations.Setter
 import mirrg.fluorite12.operations.StreamConcatenationGetter
 import mirrg.fluorite12.operations.StringConcatenationGetter
 import mirrg.fluorite12.operations.ThrowGetter
@@ -292,20 +293,9 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
         }
 
         "=" -> {
-            when (left) {
-                is IdentifierNode -> {
-                    val name = left.string
-                    val (frameIndex, variableIndex) = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
-                    AssignmentGetter(VariableSetter(frameIndex, variableIndex), compileToGetter(right))
-                }
-
-                is RightBracketNode -> when (left.left.text) {
-                    "[" -> AssignmentGetter(ArrayItemSetter(compileToGetter(left.main), compileToGetter(left.argument)), compileToGetter(right))
-                    else -> throw IllegalArgumentException("Illegal assignation: ${left::class} = ${right::class}")
-                }
-
-                else -> throw IllegalArgumentException("Illegal assignation: ${left::class} = ${right::class}")
-            }
+            val setter = compileToSetter(left)
+            val getter = compileToGetter(right)
+            AssignmentGetter(setter, getter)
         }
 
         "->" -> {
@@ -363,19 +353,10 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
 
 private fun Frame.compileToRunner(node: Node): Runner {
     return when {
-        node is InfixNode && node.operator.text == "=" -> when { // 代入文
-            node.left is IdentifierNode -> {
-                val name = node.left.string
-                val (frameIndex, variableIndex) = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
-                AssignmentRunner(VariableSetter(frameIndex, variableIndex), compileToGetter(node.right))
-            }
-
-            node.left is RightBracketNode -> when (node.left.left.text) {
-                "[" -> AssignmentRunner(ArrayItemSetter(compileToGetter(node.left.main), compileToGetter(node.left.argument)), compileToGetter(node.right))
-                else -> throw IllegalArgumentException("Illegal assignation: ${node.left::class} = ${node.right::class}")
-            }
-
-            else -> throw IllegalArgumentException("Illegal assignation: ${node.left::class} = ${node.right::class}")
+        node is InfixNode && node.operator.text == "=" -> { // 代入文
+            val setter = compileToSetter(node.left)
+            val getter = compileToGetter(node.right)
+            AssignmentRunner(setter, getter)
         }
 
         node is InfixNode && node.operator.text == ":=" -> when { // 宣言文
@@ -389,5 +370,22 @@ private fun Frame.compileToRunner(node: Node): Runner {
         }
 
         else -> GetterRunner(compileToGetter(node)) // 式文
+    }
+}
+
+private fun Frame.compileToSetter(node: Node): Setter {
+    return when (node) {
+        is IdentifierNode -> {
+            val name = node.string
+            val (frameIndex, variableIndex) = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
+            VariableSetter(frameIndex, variableIndex)
+        }
+
+        is RightBracketNode -> when (node.left.text) {
+            "[" -> ArrayItemSetter(compileToGetter(node.main), compileToGetter(node.argument))
+            else -> throw IllegalArgumentException("Illegal setter: ${node::class}")
+        }
+
+        else -> throw IllegalArgumentException("Illegal setter: ${node::class}")
     }
 }
