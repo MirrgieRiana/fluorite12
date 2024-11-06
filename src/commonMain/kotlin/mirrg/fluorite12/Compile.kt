@@ -208,12 +208,7 @@ fun Frame.compileToGetter(node: Node): Getter {
         is CommaNode -> StreamConcatenationGetter(node.nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
 
         is SemicolonNode -> {
-            val runners = node.nodes.dropLast(1).mapNotNull {
-                when (it) {
-                    is EmptyNode -> null
-                    else -> compileToRunner(it)
-                }
-            }
+            val runners = node.nodes.dropLast(1).flatMap { compileToRunner(it) }
             val getter = compileToGetter(node.nodes.last())
             if (runners.isEmpty()) return getter
             return LinesGetter(runners, getter)
@@ -342,25 +337,27 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
     }
 }
 
-private fun Frame.compileToRunner(node: Node): Runner {
+private fun Frame.compileToRunner(node: Node): List<Runner> {
     return when {
+        node is EmptyNode -> listOf()
+
         node is InfixNode && node.operator.text == "=" -> { // 代入文
             val setter = compileToSetter(node.left)
             val getter = compileToGetter(node.right)
-            AssignmentRunner(setter, getter)
+            listOf(AssignmentRunner(setter, getter))
         }
 
         node is InfixNode && node.operator.text == ":=" -> when { // 宣言文
             node.left is IdentifierNode -> {
                 val name = node.left.string
                 val variableIndex = defineVariable(name)
-                AssignmentRunner(VariableSetter(frameIndex, variableIndex), compileToGetter(node.right))
+                listOf(AssignmentRunner(VariableSetter(frameIndex, variableIndex), compileToGetter(node.right)))
             }
 
             else -> throw IllegalArgumentException("Illegal definition: ${node.left::class} := ${node.right::class}")
         }
 
-        else -> GetterRunner(compileToGetter(node)) // 式文
+        else -> listOf(GetterRunner(compileToGetter(node))) // 式文
     }
 }
 
