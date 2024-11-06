@@ -53,7 +53,7 @@ import mirrg.fluorite12.operations.VariableSetter
 
 fun Frame.compileToGetter(node: Node): Getter {
     return when (node) {
-        is EmptyNode -> throw IllegalArgumentException("Unexpected empty")
+        is EmptyNode -> NullGetter
 
         is IdentifierNode -> {
             val name = node.string
@@ -87,7 +87,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 
                     is NodeStringContent -> {
                         val frame = Frame(this)
-                        val newNode = frame.compileRootNodeToGetter(it.main)
+                        val newNode = frame.compileToGetter(it.main)
                         ConversionStringGetter(NewEnvironmentGetter(frame.nextVariableIndex, newNode))
                     }
 
@@ -100,7 +100,7 @@ fun Frame.compileToGetter(node: Node): Getter {
         is BracketNode -> when (node.left.text) {
             "(" -> {
                 val frame = Frame(this)
-                val newNode = frame.compileRootNodeToGetter(node.main)
+                val newNode = frame.compileToGetter(node.main)
                 NewEnvironmentGetter(frame.nextVariableIndex, newNode)
             }
 
@@ -207,29 +207,20 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is CommaNode -> StreamConcatenationGetter(node.nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
 
-        is SemicolonNode -> throw IllegalArgumentException("Unexpected semicolon")
-
-        is RootNode -> compileRootNodeToGetter(node.main)
-    }
-}
-
-private fun Frame.compileRootNodeToGetter(node: Node): Getter {
-    val nodes = when (node) {
-        is SemicolonNode -> node.nodes
-        else -> listOf(node)
-    }
-    val runners = nodes.dropLast(1).mapNotNull {
-        when (it) {
-            is EmptyNode -> null
-            else -> compileToRunner(it)
+        is SemicolonNode -> {
+            val runners = node.nodes.dropLast(1).mapNotNull {
+                when (it) {
+                    is EmptyNode -> null
+                    else -> compileToRunner(it)
+                }
+            }
+            val getter = compileToGetter(node.nodes.last())
+            if (runners.isEmpty()) return getter
+            return LinesGetter(runners, getter)
         }
+
+        is RootNode -> compileToGetter(node.main)
     }
-    val getter = when (val getterNode = nodes.last()) {
-        is EmptyNode -> NullGetter
-        else -> compileToGetter(getterNode)
-    }
-    if (runners.isEmpty()) return getter
-    return LinesGetter(runners, getter)
 }
 
 private fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter {
