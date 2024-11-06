@@ -6,6 +6,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail

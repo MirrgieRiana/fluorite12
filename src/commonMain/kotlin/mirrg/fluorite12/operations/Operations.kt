@@ -1,4 +1,4 @@
-package mirrg.fluorite12
+package mirrg.fluorite12.operations
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -7,6 +7,27 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import mirrg.fluorite12.Environment
+import mirrg.fluorite12.FluoriteArray
+import mirrg.fluorite12.FluoriteBoolean
+import mirrg.fluorite12.FluoriteDouble
+import mirrg.fluorite12.FluoriteFunction
+import mirrg.fluorite12.FluoriteInt
+import mirrg.fluorite12.FluoriteNull
+import mirrg.fluorite12.FluoriteNumber
+import mirrg.fluorite12.FluoriteObject
+import mirrg.fluorite12.FluoriteStream
+import mirrg.fluorite12.FluoriteString
+import mirrg.fluorite12.FluoriteValue
+import mirrg.fluorite12.Formatter
+import mirrg.fluorite12.call
+import mirrg.fluorite12.callMethod
+import mirrg.fluorite12.collect
+import mirrg.fluorite12.escapeJsonString
+import mirrg.fluorite12.format
+import mirrg.fluorite12.toBoolean
+import mirrg.fluorite12.toFluoriteBoolean
+import mirrg.fluorite12.toFluoriteString
 import kotlin.math.pow
 
 interface Operation {

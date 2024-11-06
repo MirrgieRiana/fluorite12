@@ -1,5 +1,55 @@
 package mirrg.fluorite12
 
+import mirrg.fluorite12.operations.AndGetter
+import mirrg.fluorite12.operations.ArrayCreationGetter
+import mirrg.fluorite12.operations.ArrayItemAssignmentGetter
+import mirrg.fluorite12.operations.ArrayItemAssignmentRunner
+import mirrg.fluorite12.operations.AssignmentGetter
+import mirrg.fluorite12.operations.AssignmentRunner
+import mirrg.fluorite12.operations.CatchGetter
+import mirrg.fluorite12.operations.ComparisonChainGetter
+import mirrg.fluorite12.operations.ConversionStringGetter
+import mirrg.fluorite12.operations.DivGetter
+import mirrg.fluorite12.operations.DivisibleGetter
+import mirrg.fluorite12.operations.ElvisGetter
+import mirrg.fluorite12.operations.EntryGetter
+import mirrg.fluorite12.operations.ExclusiveRangeGetter
+import mirrg.fluorite12.operations.FormattedStringGetter
+import mirrg.fluorite12.operations.FromJsonGetter
+import mirrg.fluorite12.operations.FunctionBindGetter
+import mirrg.fluorite12.operations.FunctionGetter
+import mirrg.fluorite12.operations.FunctionInvocationGetter
+import mirrg.fluorite12.operations.GetLengthGetter
+import mirrg.fluorite12.operations.Getter
+import mirrg.fluorite12.operations.GetterRunner
+import mirrg.fluorite12.operations.IfGetter
+import mirrg.fluorite12.operations.ItemAccessGetter
+import mirrg.fluorite12.operations.LinesGetter
+import mirrg.fluorite12.operations.LiteralGetter
+import mirrg.fluorite12.operations.LiteralStringGetter
+import mirrg.fluorite12.operations.MethodBindGetter
+import mirrg.fluorite12.operations.MethodInvocationGetter
+import mirrg.fluorite12.operations.MinusGetter
+import mirrg.fluorite12.operations.ModGetter
+import mirrg.fluorite12.operations.NewEnvironmentGetter
+import mirrg.fluorite12.operations.NullGetter
+import mirrg.fluorite12.operations.ObjectCreationGetter
+import mirrg.fluorite12.operations.OrGetter
+import mirrg.fluorite12.operations.PipeGetter
+import mirrg.fluorite12.operations.PlusGetter
+import mirrg.fluorite12.operations.PowerGetter
+import mirrg.fluorite12.operations.RangeGetter
+import mirrg.fluorite12.operations.Runner
+import mirrg.fluorite12.operations.StreamConcatenationGetter
+import mirrg.fluorite12.operations.StringConcatenationGetter
+import mirrg.fluorite12.operations.ThrowGetter
+import mirrg.fluorite12.operations.TimesGetter
+import mirrg.fluorite12.operations.ToBooleanGetter
+import mirrg.fluorite12.operations.ToNegativeBooleanGetter
+import mirrg.fluorite12.operations.ToNegativeNumberGetter
+import mirrg.fluorite12.operations.ToNumberGetter
+import mirrg.fluorite12.operations.VariableGetter
+
 fun Frame.compileToGetter(node: Node): Getter {
     return when (node) {
         is EmptyNode -> throw IllegalArgumentException("Unexpected empty")

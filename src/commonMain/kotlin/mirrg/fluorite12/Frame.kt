@@ -1,5 +1,9 @@
 package mirrg.fluorite12
 
+import mirrg.fluorite12.operations.AssignmentRunner
+import mirrg.fluorite12.operations.LiteralGetter
+import mirrg.fluorite12.operations.Runner
+
 
 class Frame(val parent: Frame? = null) {
     val frameIndex: Int = parent?.let { it.frameIndex + 1 } ?: 0
