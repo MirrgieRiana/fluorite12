@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 
 
-interface FluoriteValue {
+sealed interface FluoriteValue {
     companion object {
         // fluoriteクラスはlazyにしなければJSで初期か順序によるエラーが出る
         // https://youtrack.jetbrains.com/issue/KT-25796
