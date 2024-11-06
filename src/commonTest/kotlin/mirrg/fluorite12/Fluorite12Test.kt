@@ -30,6 +30,31 @@ class Fluorite12Test {
     }
 
     @Test
+    fun commentTest() = runTest {
+
+        // 行コメントが書ける
+        """
+            [
+                1
+                2 # comment
+                3
+            ]
+        """.let { assertEquals("[1;2;3]", run(it).array) }
+
+        // 行コメントの次の行に中置演算子としても解釈可能な前置演算子があったとしても、その行を結合しない
+        """
+            [
+                1
+                2 # comment
+                -3
+            ]
+        """.let { assertEquals("[1;2;-3]", run(it).array) }
+
+        assertEquals(1, run("1 # comment").int) // 行コメントの後に改行が無くてもよい
+
+    }
+
+    @Test
     fun builtInConstantTest() = runTest {
         assertEquals(FluoriteNull, run("NULL"))
         assertEquals(true, run("TRUE").boolean)

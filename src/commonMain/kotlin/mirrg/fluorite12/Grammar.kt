@@ -135,8 +135,11 @@ class Fluorite12Grammar : Grammar<Node>() {
     val other by regexToken(""".""".toRegex()) // \r\n\t以外の制御文字、DEL、すべての2バイト文字、サロゲートペアの片方
 
 
-    val s by zeroOrMore(space or tab)
-    val b by zeroOrMore(space or tab) * zeroOrMore(br * zeroOrMore(space or tab))
+    val lineComment by sharp * zeroOrMore(-NotParser(br) * AnyParser)
+
+
+    val s by zeroOrMore(space or tab or lineComment)
+    val b by zeroOrMore(space or tab or lineComment) * zeroOrMore(br * zeroOrMore(space or tab or lineComment))
     val uAlphabet by uA or uB or uC or uD or uE or uF or uG or uH or uI or uJ or uK or uL or uM or uN or uO or uP or uQ or uR or uS or uT or uU or uV or uW or uX or uY or uZ
     val lAlphabet by lA or lB or lC or lD or lE or lF or lG or lH or lI or lJ or lK or lL or lM or lN or lO or lP or lQ or lR or lS or lT or lU or lV or lW or lX or lY or lZ
     val number by zero or nonZero
