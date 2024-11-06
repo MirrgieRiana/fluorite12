@@ -3,6 +3,7 @@ package mirrg.fluorite12
 import mirrg.fluorite12.operations.AssignmentRunner
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.Runner
+import mirrg.fluorite12.operations.VariableSetter
 
 
 class Frame(val parent: Frame? = null) {
@@ -55,5 +56,5 @@ fun Environment.getOverride(signature: Signature): FluoriteValue? {
 fun Frame.defineConstant(name: String, value: FluoriteValue): Runner {
     val variableIndex = defineVariable(name)
     val getter = LiteralGetter(value)
-    return AssignmentRunner(frameIndex, variableIndex, getter)
+    return AssignmentRunner(VariableSetter(frameIndex, variableIndex), getter)
 }

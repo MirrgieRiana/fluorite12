@@ -660,27 +660,15 @@ class StreamConcatenationGetter(private val getters: List<Getter>) : Getter {
     override val code get() = "StreamConcatenation[${getters.code}]"
 }
 
-class AssignmentGetter(private val frameIndex: Int, private val variableIndex: Int, private val getter: Getter) : Getter {
+class AssignmentGetter(private val setter: Setter, private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        val value = getter.evaluate(env)
-        env.variableTable[frameIndex][variableIndex] = value
-        return value
+        val left = setter.evaluate(env)
+        val right = getter.evaluate(env)
+        left.invoke(right)
+        return right
     }
 
-    override val code get() = "Assignment[$frameIndex;$variableIndex;${getter.code}]"
-}
-
-class ArrayItemAssignmentGetter(private val arrayGetter: Getter, private val indexGetter: Getter, private val valueGetter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment): FluoriteValue {
-        val array = arrayGetter.evaluate(env) as FluoriteArray
-        val index = (indexGetter.evaluate(env) as FluoriteInt).value
-        val value = valueGetter.evaluate(env)
-        if (value is FluoriteStream) throw IllegalArgumentException("Stream assignment is not supported")
-        array.values[index] = value
-        return value
-    }
-
-    override val code get() = "ArrayItemAssignment[${arrayGetter.code};${indexGetter.code};${valueGetter.code}]"
+    override val code get() = "Assignment[${setter.code};${getter.code}]"
 }
 
 class CatchGetter(private val leftGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightGetter: Getter) : Getter {
