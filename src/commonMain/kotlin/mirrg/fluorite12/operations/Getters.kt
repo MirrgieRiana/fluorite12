@@ -27,6 +27,7 @@ import mirrg.fluorite12.toBoolean
 import mirrg.fluorite12.toFluoriteBoolean
 import mirrg.fluorite12.toFluoriteNumber
 import mirrg.fluorite12.toFluoriteString
+import mirrg.fluorite12.toJson
 import kotlin.math.pow
 
 object NullGetter : Getter {
@@ -191,6 +192,11 @@ class ToNegativeNumberGetter(private val getter: Getter) : Getter {
     override val code get() = "ToNegativeNumber[${getter.code}]"
 }
 
+class ToStringGetter(private val getter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteString()
+    override val code get() = "ToString[${getter.code}]"
+}
+
 class ToBooleanGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteBoolean()
     override val code get() = "ToBoolean[${getter.code}]"
@@ -211,6 +217,11 @@ class GetLengthGetter(private val getter: Getter) : Getter {
     }
 
     override val code get() = "GetLength[${getter.code}]"
+}
+
+class ToJsonGetter(private val getter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toJson()
+    override val code get() = "ToJson[${getter.code}]"
 }
 
 class FromJsonGetter(private val getter: Getter) : Getter {

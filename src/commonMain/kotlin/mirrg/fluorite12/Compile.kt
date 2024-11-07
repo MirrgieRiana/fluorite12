@@ -45,9 +45,11 @@ import mirrg.fluorite12.operations.StringConcatenationGetter
 import mirrg.fluorite12.operations.ThrowGetter
 import mirrg.fluorite12.operations.TimesGetter
 import mirrg.fluorite12.operations.ToBooleanGetter
+import mirrg.fluorite12.operations.ToJsonGetter
 import mirrg.fluorite12.operations.ToNegativeBooleanGetter
 import mirrg.fluorite12.operations.ToNegativeNumberGetter
 import mirrg.fluorite12.operations.ToNumberGetter
+import mirrg.fluorite12.operations.ToStringGetter
 import mirrg.fluorite12.operations.VariableGetter
 import mirrg.fluorite12.operations.VariableSetter
 
@@ -220,9 +222,9 @@ private fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter
         "-" -> ToNegativeNumberGetter(compileToGetter(main))
         "?" -> ToBooleanGetter(compileToGetter(main))
         "!" -> ToNegativeBooleanGetter(compileToGetter(main))
-        "&" -> MethodInvocationGetter(compileToGetter(main), "TO_STRING", listOf())
+        "&" -> ToStringGetter(compileToGetter(main))
         "$#" -> GetLengthGetter(compileToGetter(main))
-        "$&" -> MethodInvocationGetter(compileToGetter(main), "TO_JSON", listOf())
+        "$&" -> ToJsonGetter(compileToGetter(main))
         "$*" -> FromJsonGetter(compileToGetter(main))
         "!!" -> ThrowGetter(compileToGetter(main))
         else -> throw IllegalArgumentException("Unknown operator: Unary $text")
