@@ -105,12 +105,12 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
 
             BracketsType.SQUARE -> {
-                val nodes = if (node.main is SemicolonNode) node.main.nodes else listOf(node.main)
+                val nodes = if (node.main is SemicolonsNode) node.main.nodes else listOf(node.main)
                 ArrayCreationGetter(nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
             }
 
             BracketsType.CURLY -> {
-                val contentNodes = if (node.main is SemicolonNode) node.main.nodes else listOf(node.main)
+                val contentNodes = if (node.main is SemicolonsNode) node.main.nodes else listOf(node.main)
                 ObjectCreationGetter(null, contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
             }
         }
@@ -128,7 +128,7 @@ fun Frame.compileToGetter(node: Node): Getter {
                     val name = node.main.right.string
                     val argumentNodes = when (node.argument) {
                         is EmptyNode -> listOf()
-                        is SemicolonNode -> node.argument.nodes
+                        is SemicolonsNode -> node.argument.nodes
                         else -> listOf(node.argument)
                     }
                     val argumentGetters = argumentNodes.map { compileToGetter(it) }
@@ -137,7 +137,7 @@ fun Frame.compileToGetter(node: Node): Getter {
                     val functionGetter = compileToGetter(node.main)
                     val argumentNodes = when (node.argument) {
                         is EmptyNode -> listOf()
-                        is SemicolonNode -> node.argument.nodes
+                        is SemicolonsNode -> node.argument.nodes
                         else -> listOf(node.argument)
                     }
                     val argumentGetters = argumentNodes.map { compileToGetter(it) }
@@ -152,7 +152,7 @@ fun Frame.compileToGetter(node: Node): Getter {
                     val name = node.main.right.string
                     val argumentNodes = when (node.argument) {
                         is EmptyNode -> listOf()
-                        is SemicolonNode -> node.argument.nodes
+                        is SemicolonsNode -> node.argument.nodes
                         else -> listOf(node.argument)
                     }
                     val argumentGetters = argumentNodes.map { compileToGetter(it) }
@@ -161,7 +161,7 @@ fun Frame.compileToGetter(node: Node): Getter {
                     val functionGetter = compileToGetter(node.main)
                     val argumentNodes = when (node.argument) {
                         is EmptyNode -> listOf()
-                        is SemicolonNode -> node.argument.nodes
+                        is SemicolonsNode -> node.argument.nodes
                         else -> listOf(node.argument)
                     }
                     val argumentGetters = argumentNodes.map { compileToGetter(it) }
@@ -171,7 +171,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 
             BracketsType.CURLY -> {
                 val parentGetter = compileToGetter(node.main)
-                val contentNodes = if (node.argument is SemicolonNode) node.argument.nodes else listOf(node.argument)
+                val contentNodes = if (node.argument is SemicolonsNode) node.argument.nodes else listOf(node.argument)
                 val contentGetters = contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) }
                 ObjectCreationGetter(parentGetter, contentGetters)
             }
@@ -181,7 +181,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is InfixNode -> compileInfixOperatorToGetter(node.operator.text, node.left, node.right)
 
-        is ComparisonNode -> {
+        is ComparisonsNode -> {
             val termGetters = node.nodes.map { compileToGetter(it) }
             val operators: List<suspend (FluoriteValue, FluoriteValue) -> Boolean> = node.operators.map {
                 when (it.text) {
@@ -201,9 +201,9 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is ConditionNode -> IfGetter(compileToGetter(node.condition), compileToGetter(node.ok), compileToGetter(node.ng))
 
-        is CommaNode -> StreamConcatenationGetter(node.nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
+        is CommasNode -> StreamConcatenationGetter(node.nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
 
-        is SemicolonNode -> {
+        is SemicolonsNode -> {
             val runners = node.nodes.dropLast(1).flatMap { compileToRunner(it) }
             val getter = compileToGetter(node.nodes.last())
             if (runners.isEmpty()) return getter
@@ -288,8 +288,8 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             }
             val identifierNodes = when (commasNode) {
                 is EmptyNode -> listOf()
-                is CommaNode -> commasNode.nodes
-                is SemicolonNode -> commasNode.nodes
+                is CommasNode -> commasNode.nodes
+                is SemicolonsNode -> commasNode.nodes
                 else -> listOf(commasNode)
             }
             val variables = identifierNodes.map {

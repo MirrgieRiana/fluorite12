@@ -17,10 +17,10 @@ class RightBracketsNode(val type: BracketsType, val main: Node, val left: TokenM
 class RightNode(val left: Node, val right: List<TokenMatch>) : Node()
 class LeftNode(val left: List<TokenMatch>, val right: Node) : Node()
 class InfixNode(val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
-class ComparisonNode(val nodes: List<Node>, val operators: List<List<TokenMatch>>) : Node()
+class ComparisonsNode(val nodes: List<Node>, val operators: List<List<TokenMatch>>) : Node()
 class ConditionNode(val condition: Node, val question: TokenMatch, val ok: Node, val colon: TokenMatch, val ng: Node) : Node()
-class CommaNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
-class SemicolonNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
+class CommasNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
+class SemicolonsNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
 class RootNode(val main: Node) : Node()
 
 enum class BracketsType {

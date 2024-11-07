@@ -281,7 +281,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val comparison: Parser<Node> by range * zeroOrMore(-s * comparisonOperator * -b * range) map {
         if (it.t2.isNotEmpty()) {
-            ComparisonNode(listOf(it.t1, *it.t2.map { t -> t.t2 }.toTypedArray()), it.t2.map { t -> t.t1 })
+            ComparisonsNode(listOf(it.t1, *it.t2.map { t -> t.t2 }.toTypedArray()), it.t2.map { t -> t.t1 })
         } else {
             it.t1
         }
@@ -298,7 +298,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         (condition * -b or (EmptyParser map { EmptyNode })) * comma * (-b * cachedParser { commasPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
         condition map { Pair(listOf(it), listOf()) },
     )
-    val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommaNode(it.first, it.second) }
+    val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommasNode(it.first, it.second) }
 
     val pipeOperator: Parser<List<TokenMatch>> by OrCombinator(
         +pipe, // |
@@ -345,7 +345,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         (stream * -s or (EmptyParser map { EmptyNode })) * semicolon * (-b * cachedParser { semicolonsPart } or (EmptyParser map { Pair(listOf(EmptyNode), listOf()) })) map { Pair(listOf(it.t1) + it.t3.first, listOf(it.t2) + it.t3.second) },
         stream map { Pair(listOf(it), listOf()) },
     )
-    val semicolons: Parser<Node> by semicolonsPart map { if (it.first.size == 1) it.first.first() else SemicolonNode(it.first, it.second) }
+    val semicolons: Parser<Node> by semicolonsPart map { if (it.first.size == 1) it.first.first() else SemicolonsNode(it.first, it.second) }
     val expression: Parser<Node> by semicolons
 
     override val rootParser: Parser<Node> by -b * optional(expression * -b) map { RootNode(it ?: EmptyNode) }
