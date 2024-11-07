@@ -150,6 +150,7 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                         sb.append(']')
                         sb.toString().toFluoriteString()
                     },
+                    "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.TRUE },
                     "TO_JSON" to FluoriteFunction {
                         val sb = StringBuilder()
                         sb.append('[')
@@ -188,6 +189,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                         sb.append('}')
                         sb.toString().toFluoriteString()
                     },
+                    "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.TRUE },
                     "TO_JSON" to FluoriteFunction {
                         val sb = StringBuilder()
                         sb.append('{')

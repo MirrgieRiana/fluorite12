@@ -24,7 +24,7 @@ fun FluoriteValue.getMethod(name: String): FluoriteValue? {
 suspend fun FluoriteValue.callMethod(name: String, arguments: Array<FluoriteValue> = arrayOf()) = (this.getMethod(name) as FluoriteFunction).call(arrayOf(this, *arguments))
 suspend fun FluoriteValue.toJson() = this.callMethod("TO_JSON")
 suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod("TO_STRING").let { if (it is FluoriteString) it else it.toFluoriteString() }
-suspend fun FluoriteValue.toFluoriteBoolean() = (if (this is FluoriteBoolean) this else this.callMethod("TO_BOOLEAN") as FluoriteBoolean)
+suspend fun FluoriteValue.toFluoriteBoolean(): FluoriteBoolean = this.callMethod("TO_BOOLEAN").let { if (it is FluoriteBoolean) it else it.toFluoriteBoolean() }
 suspend fun FluoriteValue.toBoolean() = this.toFluoriteBoolean().value
 
 suspend fun Formatter.format(value: FluoriteValue): String {
