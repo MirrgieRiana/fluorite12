@@ -27,6 +27,7 @@ object FluoriteNull : FluoriteValue {
     val fluoriteClass by lazy {
         FluoriteObject(
             FluoriteValue.fluoriteClass, mutableMapOf(
+                "TO_NUMBER" to FluoriteFunction { FluoriteInt.ZERO },
                 "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.FALSE },
                 "TO_JSON" to FluoriteFunction { "null".toFluoriteString() },
             )
@@ -48,11 +49,14 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_NUMBER" to FluoriteFunction { it[0] as FluoriteInt },
                     "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteInt).value != 0).toFluoriteBoolean() },
                     "TO_JSON" to FluoriteFunction { "${(it[0] as FluoriteInt).value}".toFluoriteString() },
                 )
             )
         }
+        val ZERO = FluoriteInt(0)
+        val ONE = FluoriteInt(1)
     }
 
     override fun toString() = value.toString()
@@ -68,11 +72,13 @@ class FluoriteDouble(override val value: Double) : FluoriteNumber {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_NUMBER" to FluoriteFunction { it[0] as FluoriteDouble },
                     "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteDouble).value != 0.0).toFluoriteBoolean() },
                     "TO_JSON" to FluoriteFunction { "${(it[0] as FluoriteDouble).value}".toFluoriteString() },
                 )
             )
         }
+        val ZERO = FluoriteDouble(0.0)
     }
 
     override fun toString() = value.toString()
@@ -92,6 +98,7 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_NUMBER" to FluoriteFunction { if ((it[0] as FluoriteBoolean).value) FluoriteInt.ONE else FluoriteInt.ZERO },
                     "TO_BOOLEAN" to FluoriteFunction { it[0] as FluoriteBoolean },
                     "TO_JSON" to FluoriteFunction { (if ((it[0] as FluoriteBoolean).value) "true" else "false").toFluoriteString() },
                 )
@@ -114,6 +121,21 @@ class FluoriteString(val value: String) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_NUMBER" to FluoriteFunction {
+                        val string = (it[0] as FluoriteString).value
+                        if (string.all { c -> c in '0'..'9' }) {
+                            when (val int = string.toInt()) {
+                                0 -> FluoriteInt.ZERO
+                                1 -> FluoriteInt.ONE
+                                else -> FluoriteInt(int)
+                            }
+                        } else {
+                            when (val double = string.toDouble()) {
+                                0.0 -> FluoriteDouble.ZERO
+                                else -> FluoriteDouble(double)
+                            }
+                        }
+                    },
                     "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
                     "TO_STRING" to FluoriteFunction { it[0] as FluoriteString },
                     "TO_JSON" to FluoriteFunction {
@@ -230,6 +252,17 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "TO_NUMBER" to FluoriteFunction { arguments ->
+                        var intSum = 0
+                        var doubleSum = 0.0
+                        (arguments[0] as FluoriteStream).collect { item ->
+                            when (val number = item.toFluoriteNumber()) {
+                                is FluoriteInt -> intSum += number.value
+                                is FluoriteDouble -> doubleSum += number.value
+                            }
+                        }
+                        if (doubleSum == 0.0) FluoriteInt(intSum) else FluoriteDouble(intSum + doubleSum)
+                    },
                     "TO_BOOLEAN" to FluoriteFunction { arguments ->
                         flow {
                             (arguments[0] as FluoriteStream).collect {

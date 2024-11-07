@@ -25,6 +25,7 @@ import mirrg.fluorite12.collect
 import mirrg.fluorite12.escapeJsonString
 import mirrg.fluorite12.toBoolean
 import mirrg.fluorite12.toFluoriteBoolean
+import mirrg.fluorite12.toFluoriteNumber
 import mirrg.fluorite12.toFluoriteString
 import kotlin.math.pow
 
@@ -180,57 +181,13 @@ class FunctionBindGetter(private val functionGetter: Getter, private val argumen
     override val code get() = "FunctionBind[${functionGetter.code};${argumentGetters.code}]"
 }
 
-// TODO to method
 class ToNumberGetter(private val getter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = when (val value = getter.evaluate(env)) {
-        is FluoriteNull -> FluoriteInt(0)
-        is FluoriteInt -> value
-        is FluoriteDouble -> value
-        is FluoriteString -> if ("." in value.value) FluoriteDouble(value.value.toDouble()) else FluoriteInt(value.value.toInt())
-        is FluoriteBoolean -> FluoriteInt(if (value.value) 1 else 0)
-
-        is FluoriteStream -> {
-            var v = 0.0
-            value.collect { item ->
-                v += (item as FluoriteNumber).value.toDouble()
-            }
-            if (v.toInt().toDouble() == v) {
-                FluoriteInt(v.toInt())
-            } else {
-                FluoriteDouble(v)
-            }
-        }
-
-        else -> throw IllegalArgumentException("Can not convert to number: $value")
-    }
-
+    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteNumber()
     override val code get() = "ToNumber[${getter.code}]"
 }
 
-// TODO to method
 class ToNegativeNumberGetter(private val getter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = when (val value = getter.evaluate(env)) {
-        is FluoriteNull -> FluoriteInt(0)
-        is FluoriteInt -> value
-        is FluoriteDouble -> value
-        is FluoriteString -> if ("." in value.value) FluoriteDouble(value.value.toDouble()) else FluoriteInt(value.value.toInt())
-        is FluoriteBoolean -> FluoriteInt(if (value.value) 1 else 0)
-
-        is FluoriteStream -> {
-            var v = 0.0
-            value.collect { item ->
-                v += (item as FluoriteNumber).value.toDouble()
-            }
-            if (v.toInt().toDouble() == v) {
-                FluoriteInt(v.toInt())
-            } else {
-                FluoriteDouble(v)
-            }
-        }
-
-        else -> throw IllegalArgumentException("Can not convert to number: $value")
-    }.negate()
-
+    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteNumber().negate()
     override val code get() = "ToNegativeNumber[${getter.code}]"
 }
 
