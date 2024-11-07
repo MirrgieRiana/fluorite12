@@ -9,6 +9,7 @@ import com.github.h0tk3y.betterParse.parser.ParseResult
 import com.github.h0tk3y.betterParse.parser.Parsed
 import com.github.h0tk3y.betterParse.parser.Parser
 
+@Deprecated("removing") // TODO remove
 val List<TokenMatch>.text get() = this.joinToString("") { it.text }
 
 fun <T> OrCombinator(vararg parsers: Parser<T>) = OrCombinator(parsers.toList())
