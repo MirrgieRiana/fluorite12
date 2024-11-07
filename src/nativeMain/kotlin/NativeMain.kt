@@ -5,6 +5,7 @@ import mirrg.fluorite12.Environment
 import mirrg.fluorite12.Fluorite12Grammar
 import mirrg.fluorite12.FluoriteArray
 import mirrg.fluorite12.FluoriteFunction
+import mirrg.fluorite12.FluoriteNull
 import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.collect
@@ -36,7 +37,7 @@ fun main(args: Array<String>) = runBlocking {
                     println(it.toFluoriteString().value)
                 }
             }
-            this
+            FluoriteNull
         }),
     )
     val getter = frame.compileToGetter(parseResult.value)
