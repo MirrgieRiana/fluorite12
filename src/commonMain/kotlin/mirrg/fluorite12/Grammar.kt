@@ -266,9 +266,9 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val left: Parser<Node> by zeroOrMore(leftOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
-    val mul: Parser<Node> by leftAssociative(left, -s * (+asterisk or +slash or +(percent * percent) or +percent) * -b, ::infixNode)
-    val add: Parser<Node> by leftAssociative(mul, -s * (+plus or +(minus * -NotParser(greater)) or +(ampersand * -NotParser(ampersand))) * -b, ::infixNode)
-    val range: Parser<Node> by leftAssociative(add, -s * (+(period * period) or +tilde) * -b, ::infixNode)
+    val mul: Parser<Node> by leftAssociative(left, -s * (+asterisk or +slash or +(percent * percent) or +percent) * -b) { left, operator, right -> InfixNode(left, operator, right) }
+    val add: Parser<Node> by leftAssociative(mul, -s * (+plus or +(minus * -NotParser(greater)) or +(ampersand * -NotParser(ampersand))) * -b) { left, operator, right -> InfixNode(left, operator, right) }
+    val range: Parser<Node> by leftAssociative(add, -s * (+(period * period) or +tilde) * -b) { left, operator, right -> InfixNode(left, operator, right) }
     val comparisonOperator: Parser<List<TokenMatch>> by OrCombinator(
         +(equal * equal), // ==
         +(exclamation * equal), // !=
@@ -286,8 +286,8 @@ class Fluorite12Grammar : Grammar<Node>() {
             it.t1
         }
     }
-    val and: Parser<Node> by leftAssociative(comparison, -s * +(ampersand * ampersand) * -b, ::infixNode)
-    val or: Parser<Node> by leftAssociative(and, -s * +(pipe * pipe) * -b, ::infixNode)
+    val and: Parser<Node> by leftAssociative(comparison, -s * +(ampersand * ampersand) * -b) { left, operator, right -> InfixNode(left, operator, right) }
+    val or: Parser<Node> by leftAssociative(and, -s * +(pipe * pipe) * -b) { left, operator, right -> InfixNode(left, operator, right) }
     val condition: Parser<Node> by OrCombinator(
         or * -s * question * -b * cachedParser { condition } * -s * (colon * -NotParser(colon)) * -b * cachedParser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
         or * -s * +(question * colon) * -b * cachedParser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
@@ -359,5 +359,3 @@ private operator fun Parser<Tuple2<TokenMatch, TokenMatch>>.unaryPlus() = this m
 
 @JvmName("unaryPlus3")
 private operator fun Parser<Tuple3<TokenMatch, TokenMatch, TokenMatch>>.unaryPlus() = this map { listOf(it.t1, it.t2, it.t3) }
-
-private fun infixNode(left: Node, operator: List<TokenMatch>, right: Node) = InfixNode(left, operator, right)
