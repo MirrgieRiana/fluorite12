@@ -192,7 +192,7 @@ fun Frame.compileToGetter(node: Node): Getter {
                     ">=" -> ({ a, b -> (a as FluoriteNumber).value.toDouble() >= (b as FluoriteNumber).value.toDouble() })
                     "<=" -> ({ a, b -> (a as FluoriteNumber).value.toDouble() <= (b as FluoriteNumber).value.toDouble() })
                     "?=" -> ({ a, b -> a.instanceOf(b) })
-                    "@" -> ({ a, b -> (b.callMethod("CONTAINS", a) as FluoriteBoolean).value })
+                    "@" -> ({ a, b -> (b.callMethod("CONTAINS", arrayOf(a)) as FluoriteBoolean).value })
                     else -> throw IllegalArgumentException("Unknown operator: A ${it.text} B")
                 }
             }

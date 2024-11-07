@@ -117,8 +117,8 @@ class ObjectCreationGetter(private val parentGetter: Getter?, private val conten
 class MethodInvocationGetter(private val receiverGetter: Getter, private val name: String, private val argumentGetters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val receiver = receiverGetter.evaluate(env)
-        val arguments = argumentGetters.map { it.evaluate(env) }
-        return receiver.callMethod(name, *arguments.toTypedArray())
+        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
+        return receiver.callMethod(name, arguments)
     }
 
     override val code get() = "MethodInvocation[${receiverGetter.code};${name.escapeJsonString()};${argumentGetters.code}]"
@@ -127,7 +127,7 @@ class MethodInvocationGetter(private val receiverGetter: Getter, private val nam
 class FunctionInvocationGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val function = functionGetter.evaluate(env) as FluoriteFunction
-        val arguments = argumentGetters.map { it.evaluate(env) }
+        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
         return function.call(arguments)
     }
 
@@ -137,9 +137,9 @@ class FunctionInvocationGetter(private val functionGetter: Getter, private val a
 class MethodBindGetter(private val receiverGetter: Getter, private val name: String, private val argumentGetters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val receiver = receiverGetter.evaluate(env)
-        val arguments = argumentGetters.map { it.evaluate(env) }
+        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
         return FluoriteFunction { arguments2 ->
-            receiver.callMethod(name, *arguments.toTypedArray(), *arguments2.toTypedArray())
+            receiver.callMethod(name, arguments + arguments2)
         }
     }
 
@@ -150,7 +150,7 @@ class FunctionBindGetter(private val functionGetter: Getter, private val argumen
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return when (val value = functionGetter.evaluate(env)) {
             is FluoriteFunction -> {
-                val arguments = argumentGetters.map { it.evaluate(env) }
+                val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
                 return FluoriteFunction { arguments2 ->
                     value.call(arguments + arguments2)
                 }
