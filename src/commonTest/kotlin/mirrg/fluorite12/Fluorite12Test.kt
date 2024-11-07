@@ -293,6 +293,9 @@ class Fluorite12Test {
         assertEquals(1.0, run("+1.0").double, 0.001) // 小数もそのまま
 
         assertEquals(55, run("+(1 .. 10)").int) // ストリームは各要素の合計
+
+
+        assertEquals(123, run("+{TO_NUMBER: this -> 123}{}").int) // オブジェクトの数値化はTO_NUMBERメソッドでオーバーライドできる
     }
 
     @Test
