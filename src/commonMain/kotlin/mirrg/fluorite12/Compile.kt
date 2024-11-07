@@ -97,19 +97,19 @@ fun Frame.compileToGetter(node: Node): Getter {
             StringConcatenationGetter(getters)
         }
 
-        is BracketNode -> when (node.type) {
-            BracketType.ROUND -> {
+        is BracketsNode -> when (node.type) {
+            BracketsType.ROUND -> {
                 val frame = Frame(this)
                 val newNode = frame.compileToGetter(node.main)
                 NewEnvironmentGetter(frame.nextVariableIndex, newNode)
             }
 
-            BracketType.SQUARE -> {
+            BracketsType.SQUARE -> {
                 val nodes = if (node.main is SemicolonNode) node.main.nodes else listOf(node.main)
                 ArrayCreationGetter(nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
             }
 
-            BracketType.CURLY -> {
+            BracketsType.CURLY -> {
                 val contentNodes = if (node.main is SemicolonNode) node.main.nodes else listOf(node.main)
                 ObjectCreationGetter(null, contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
             }
@@ -120,8 +120,8 @@ fun Frame.compileToGetter(node: Node): Getter {
             else -> throw IllegalArgumentException("Unknown operator: A ${node.right.text}")
         }
 
-        is RightBracketNode -> when (node.type) {
-            BracketType.ROUND -> {
+        is RightBracketsNode -> when (node.type) {
+            BracketsType.ROUND -> {
                 if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
                     val receiverGetter = compileToGetter(node.main.left)
@@ -145,7 +145,7 @@ fun Frame.compileToGetter(node: Node): Getter {
                 }
             }
 
-            BracketType.SQUARE -> {
+            BracketsType.SQUARE -> {
                 if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
                     val receiverGetter = compileToGetter(node.main.left)
@@ -169,7 +169,7 @@ fun Frame.compileToGetter(node: Node): Getter {
                 }
             }
 
-            BracketType.CURLY -> {
+            BracketsType.CURLY -> {
                 val parentGetter = compileToGetter(node.main)
                 val contentNodes = if (node.argument is SemicolonNode) node.argument.nodes else listOf(node.argument)
                 val contentGetters = contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) }
@@ -281,7 +281,7 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
         }
 
         "->" -> {
-            val commasNode = if (left is BracketNode && left.type == BracketType.ROUND) {
+            val commasNode = if (left is BracketsNode && left.type == BracketsType.ROUND) {
                 left.main
             } else {
                 left
@@ -365,8 +365,8 @@ private fun Frame.compileToSetter(node: Node): Setter {
             VariableSetter(frameIndex, variableIndex)
         }
 
-        is RightBracketNode -> when (node.type) {
-            BracketType.SQUARE -> ArrayItemSetter(compileToGetter(node.main), compileToGetter(node.argument))
+        is RightBracketsNode -> when (node.type) {
+            BracketsType.SQUARE -> ArrayItemSetter(compileToGetter(node.main), compileToGetter(node.argument))
             else -> throw IllegalArgumentException("Illegal setter: ${node::class}")
         }
 

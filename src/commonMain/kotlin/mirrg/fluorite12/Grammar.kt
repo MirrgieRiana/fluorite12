@@ -221,15 +221,15 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val embeddedString by percent * greater * zeroOrMore(embeddedStringContent) * less * percent map { EmbeddedStringNode(listOf(it.t1, it.t2), it.t3, listOf(it.t4, it.t5)) } // %>string<%
 
-    val round: Parser<Node> by lRound * -b * optional(cachedParser { expression } * -b) * rRound map { BracketNode(BracketType.ROUND, it.t1, it.t2 ?: EmptyNode, it.t3) }
-    val square: Parser<Node> by lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketNode(BracketType.SQUARE, it.t1, it.t2 ?: EmptyNode, it.t3) }
-    val curly: Parser<Node> by lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketNode(BracketType.CURLY, it.t1, it.t2 ?: EmptyNode, it.t3) }
+    val round: Parser<Node> by lRound * -b * optional(cachedParser { expression } * -b) * rRound map { BracketsNode(BracketsType.ROUND, it.t1, it.t2 ?: EmptyNode, it.t3) }
+    val square: Parser<Node> by lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsNode(BracketsType.SQUARE, it.t1, it.t2 ?: EmptyNode, it.t3) }
+    val curly: Parser<Node> by lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsNode(BracketsType.CURLY, it.t1, it.t2 ?: EmptyNode, it.t3) }
     val factor: Parser<Node> by hexadecimal or identifier or float or integer or rawString or templateString or embeddedString or round or square or curly
 
     val rightOperator: Parser<(Node) -> Node> by OrCombinator(
-        -s * lRound * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> RightBracketNode(BracketType.ROUND, main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
-        -s * lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> RightBracketNode(BracketType.SQUARE, main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
-        -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> RightBracketNode(BracketType.CURLY, main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lRound * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> RightBracketsNode(BracketsType.ROUND, main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> RightBracketsNode(BracketsType.SQUARE, main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> RightBracketsNode(BracketsType.CURLY, main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
 
         -b * +period * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
         -b * +(colon * colon) * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },

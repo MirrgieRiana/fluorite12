@@ -236,7 +236,7 @@ class Fluorite12Test {
     }
 
     @Test
-    fun bracketTest() = runTest {
+    fun bracketsTest() = runTest {
         assertEquals(1, run("(1)").int) // ( ) で囲うと中身をそのまま得られる
         assertEquals(FluoriteNull, run("()")) // () でNULLになる
         assertEquals("", run("(,)").stream()) // (,) で空ストリームになる
@@ -425,7 +425,7 @@ class Fluorite12Test {
     }
 
     @Test
-    fun bracketAccessTest() = runTest {
+    fun bracketsAccessTest() = runTest {
         assertEquals("1,2,3", run("[1; 2; 3][]").stream()) // array[] でストリームにする
         assertEquals("[a;1],[b;2],[c;3]", run("{a: 1; b: 2; c: 3}[]").stream()) // object[] でエントリーのストリームにする
     }

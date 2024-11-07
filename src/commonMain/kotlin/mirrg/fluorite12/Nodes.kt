@@ -12,8 +12,8 @@ class FloatNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens, s
 class RawStringNode(val left: TokenMatch, val node: LiteralStringContent, val right: TokenMatch) : Node()
 class TemplateStringNode(val left: TokenMatch, val stringContents: List<StringContent>, val right: TokenMatch) : Node()
 class EmbeddedStringNode(val left: List<TokenMatch>, val stringContents: List<StringContent>, val right: List<TokenMatch>) : Node()
-class BracketNode(val type: BracketType, val left: TokenMatch, val main: Node, val right: TokenMatch) : Node()
-class RightBracketNode(val type: BracketType, val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()
+class BracketsNode(val type: BracketsType, val left: TokenMatch, val main: Node, val right: TokenMatch) : Node()
+class RightBracketsNode(val type: BracketsType, val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()
 class RightNode(val left: Node, val right: List<TokenMatch>) : Node()
 class LeftNode(val left: List<TokenMatch>, val right: Node) : Node()
 class InfixNode(val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
@@ -23,7 +23,7 @@ class CommaNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
 class SemicolonNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
 class RootNode(val main: Node) : Node()
 
-enum class BracketType {
+enum class BracketsType {
     ROUND,
     SQUARE,
     CURLY,
