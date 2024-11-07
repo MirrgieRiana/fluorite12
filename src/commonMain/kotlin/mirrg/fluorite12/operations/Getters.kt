@@ -118,7 +118,7 @@ class MethodInvocationGetter(private val receiverGetter: Getter, private val nam
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val receiver = receiverGetter.evaluate(env)
         val arguments = argumentGetters.map { it.evaluate(env) }
-        return receiver.callMethod(env, name, *arguments.toTypedArray())
+        return receiver.callMethod(name, *arguments.toTypedArray())
     }
 
     override val code get() = "MethodInvocation[${receiverGetter.code};${name.escapeJsonString()};${argumentGetters.code}]"
@@ -139,7 +139,7 @@ class MethodBindGetter(private val receiverGetter: Getter, private val name: Str
         val receiver = receiverGetter.evaluate(env)
         val arguments = argumentGetters.map { it.evaluate(env) }
         return FluoriteFunction { arguments2 ->
-            receiver.callMethod(env, name, *arguments.toTypedArray(), *arguments2.toTypedArray())
+            receiver.callMethod(name, *arguments.toTypedArray(), *arguments2.toTypedArray())
         }
     }
 
@@ -614,7 +614,7 @@ class ComparisonChainGetter(private val termGetters: List<Getter>, private val o
 class AndGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val left = leftGetter.evaluate(env)
-        return if (!left.toBoolean(env)) left else rightGetter.evaluate(env)
+        return if (!left.toBoolean()) left else rightGetter.evaluate(env)
     }
 
     override val code get() = "And[${leftGetter.code};${rightGetter.code}]"
@@ -623,7 +623,7 @@ class AndGetter(private val leftGetter: Getter, private val rightGetter: Getter)
 class OrGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val left = leftGetter.evaluate(env)
-        return if (left.toBoolean(env)) left else rightGetter.evaluate(env)
+        return if (left.toBoolean()) left else rightGetter.evaluate(env)
     }
 
     override val code get() = "Or[${leftGetter.code};${rightGetter.code}]"

@@ -12,7 +12,7 @@ class LiteralStringGetter(private val string: String) : StringGetter {
 }
 
 class ConversionStringGetter(private val getter: Getter) : StringGetter {
-    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteString(env).value
+    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteString().value
     override val code get() = "Conversion[${getter.code}]"
 }
 

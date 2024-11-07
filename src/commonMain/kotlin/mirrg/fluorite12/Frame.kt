@@ -18,13 +18,6 @@ class Environment(val parent: Environment?, variableCount: Int) {
     } else {
         arrayOf(Array(variableCount) { FluoriteNull })
     }
-    val overrides = mutableMapOf<Signature, FluoriteValue>()
-}
-
-class Signature(val fluoriteClass: FluoriteObject, val name: String) {
-    override fun toString() = "Signature[$fluoriteClass.$name]"
-    override fun equals(other: Any?) = other is Signature && other.fluoriteClass === this.fluoriteClass && other.name == this.name
-    override fun hashCode() = 31 * fluoriteClass.hashCode() + name.hashCode()
 }
 
 
@@ -41,15 +34,6 @@ fun Frame.getVariable(name: String): Pair<Int, Int>? {
         val variableIndex = currentFrame.variableIndexTable[name]
         if (variableIndex != null) return Pair(currentFrame.frameIndex, variableIndex)
         currentFrame = currentFrame.parent ?: return null
-    }
-}
-
-fun Environment.getOverride(signature: Signature): FluoriteValue? {
-    var currentEnvironment = this
-    while (true) {
-        val override = currentEnvironment.overrides[signature]
-        if (override != null) return override
-        currentEnvironment = currentEnvironment.parent ?: return null
     }
 }
 
