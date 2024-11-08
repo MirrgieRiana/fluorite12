@@ -1169,6 +1169,32 @@ $ flc '[3 ~ 1]'
 # []
 ```
 
+# 条件演算子
+
+## 条件演算子 `condition ? then : else`
+
+条件演算子は、条件によって2つの値のうちどちらかを返します。
+
+```shell
+$ flc 'TRUE ? "Yes" : "No"'
+# Yes
+
+$ flc 'FALSE ? "Yes" : "No"'
+# No
+```
+
+## エルビス演算子 `value ?: default`
+
+エルビス演算子は、 `value` がNULLである場合に `default` を返す演算子です。
+
+```shell
+$ flc '"Orange" ?: "Apple"'
+# Orange
+
+$ flc 'NULL ?: "Apple"'
+# Apple
+```
+
 # ストリーム結合系演算子
 
 ## ストリームの結合 `items, ...`
