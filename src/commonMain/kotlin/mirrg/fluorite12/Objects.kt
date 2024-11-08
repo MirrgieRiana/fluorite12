@@ -3,6 +3,7 @@ package mirrg.fluorite12
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlin.math.roundToInt
 
 
 sealed interface FluoriteValue {
@@ -41,6 +42,7 @@ object FluoriteNull : FluoriteValue {
 interface FluoriteNumber : FluoriteValue {
     val value: Number
     fun negate(): FluoriteNumber
+    fun roundToInt(): Int
 }
 
 
@@ -64,6 +66,7 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
     override fun hashCode() = value
     override val parent get() = fluoriteClass
     override fun negate() = FluoriteInt(-value)
+    override fun roundToInt() = value
 }
 
 
@@ -86,6 +89,7 @@ class FluoriteDouble(override val value: Double) : FluoriteNumber {
     override fun hashCode() = value.hashCode()
     override val parent get() = fluoriteClass
     override fun negate() = FluoriteDouble(-value)
+    override fun roundToInt() = value.roundToInt()
 }
 
 
@@ -166,7 +170,23 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                         val array = arguments[0] as FluoriteArray
                         when (arguments.size) {
                             1 -> FluoriteStream(array.values)
-                            else -> throw IllegalArgumentException("Element access is not supported") // TODO
+
+                            2 -> {
+                                suspend fun get(index: FluoriteValue) = array.values.getOrNull(index.toFluoriteNumber().roundToInt()) ?: FluoriteNull
+
+                                val argument = arguments[1]
+                                if (argument is FluoriteStream) {
+                                    FluoriteStream {
+                                        argument.collect { index ->
+                                            emit(get(index))
+                                        }
+                                    }
+                                } else {
+                                    get(argument)
+                                }
+                            }
+
+                            else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
                     "TO_STRING" to FluoriteFunction { arguments ->
@@ -217,7 +237,22 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                                 }
                             }
 
-                            else -> throw IllegalArgumentException("Element access is not supported") // TODO
+                            2 -> {
+                                suspend fun get(key: FluoriteValue) = obj.map[key.toFluoriteString().value] ?: FluoriteNull
+
+                                val argument = arguments[1]
+                                if (argument is FluoriteStream) {
+                                    FluoriteStream {
+                                        argument.collect { key ->
+                                            emit(get(key))
+                                        }
+                                    }
+                                } else {
+                                    get(argument)
+                                }
+                            }
+
+                            else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
                     "TO_STRING" to FluoriteFunction { arguments ->
