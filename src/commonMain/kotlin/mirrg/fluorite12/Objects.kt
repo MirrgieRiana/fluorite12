@@ -162,6 +162,12 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "INVOKE" to FluoriteFunction { arguments ->
+                        when (arguments.size) {
+                            1 -> FluoriteStream((arguments[0] as FluoriteArray).values)
+                            else -> throw IllegalArgumentException("Element access is not supported") // TODO
+                        }
+                    },
                     "TO_STRING" to FluoriteFunction {
                         val sb = StringBuilder()
                         sb.append('[')
@@ -199,6 +205,19 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "INVOKE" to FluoriteFunction { arguments ->
+                        when (arguments.size) {
+                            1 -> {
+                                FluoriteStream {
+                                    (arguments[0] as FluoriteObject).map.entries.forEach {
+                                        emit(FluoriteArray(mutableListOf(it.key.toFluoriteString(), it.value)))
+                                    }
+                                }
+                            }
+
+                            else -> throw IllegalArgumentException("Element access is not supported") // TODO
+                        }
+                    },
                     "TO_STRING" to FluoriteFunction {
                         val sb = StringBuilder()
                         sb.append('{')
@@ -238,13 +257,19 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
 
 class FluoriteFunction(val function: suspend (Array<FluoriteValue>) -> FluoriteValue) : FluoriteValue {
     companion object {
-        val fluoriteClass by lazy { FluoriteObject(FluoriteValue.fluoriteClass, mutableMapOf()) }
+        val fluoriteClass by lazy {
+            FluoriteObject(
+                FluoriteValue.fluoriteClass, mutableMapOf(
+                    "INVOKE" to FluoriteFunction {
+                        (it[0] as FluoriteFunction).function(it.sliceArray(1 until it.size))
+                    },
+                )
+            )
+        }
     }
 
     override val parent get() = fluoriteClass
 }
-
-suspend fun FluoriteFunction.call(arguments: Array<FluoriteValue>) = this.function(arguments)
 
 
 class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -> Unit) : FluoriteValue {

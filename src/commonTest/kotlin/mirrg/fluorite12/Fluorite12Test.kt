@@ -440,6 +440,14 @@ class Fluorite12Test {
     }
 
     @Test
+    fun invokeTest() = runTest {
+        assertEquals(123, run("(a -> a + 23)(100)").int) // function() で関数を呼び出せる
+        assertEquals(123, run("(a -> a + 23)::INVOKE(100)").int) // INVOKEメソッドでも関数を呼び出せる
+        assertEquals(123, run("{INVOKE: this, a, b -> a + b + 3}{}(100; 20)").int) // INVOKEメソッドを定義したオブジェクトも関数として呼び出せる
+        assertEquals(123, run("{INVOKE: this, a, b -> a + b + 3}{}[100](20)").int) // INVOKEメソッドを定義したオブジェクトも部分適用できる
+    }
+
+    @Test
     fun powTest() = runTest {
         assertEquals(16.0, run("4 ^ 2").double, 0.00001) // ^ でべき乗ができる、べき乗すると常に浮動小数点数になる
 

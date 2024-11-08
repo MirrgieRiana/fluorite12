@@ -21,7 +21,13 @@ fun FluoriteValue.getMethod(name: String): FluoriteValue? {
     }
 }
 
-suspend fun FluoriteValue.callMethod(name: String, arguments: Array<FluoriteValue> = arrayOf()) = (this.getMethod(name) as FluoriteFunction).call(arrayOf(this, *arguments))
+suspend fun FluoriteValue.callMethod(name: String, arguments: Array<FluoriteValue> = arrayOf()): FluoriteValue {
+    val method = this.getMethod(name) ?: throw RuntimeException("Method not found: $this::$name")
+    if (method !is FluoriteFunction) throw RuntimeException("Not a function: $method of $this::$name")
+    return method.function(arrayOf(this, *arguments))
+}
+
+suspend fun FluoriteValue.invoke(arguments: Array<FluoriteValue>) = this.callMethod("INVOKE", arguments)
 suspend fun FluoriteValue.toJson() = this.callMethod("TO_JSON")
 suspend fun FluoriteValue.toFluoriteNumber(): FluoriteNumber = this.callMethod("TO_NUMBER").let { if (it is FluoriteNumber) it else it.toFluoriteNumber() }
 suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod("TO_STRING").let { if (it is FluoriteString) it else it.toFluoriteString() }

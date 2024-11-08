@@ -19,10 +19,10 @@ import mirrg.fluorite12.FluoriteObject
 import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.FluoriteString
 import mirrg.fluorite12.FluoriteValue
-import mirrg.fluorite12.call
 import mirrg.fluorite12.callMethod
 import mirrg.fluorite12.collect
 import mirrg.fluorite12.escapeJsonString
+import mirrg.fluorite12.invoke
 import mirrg.fluorite12.toBoolean
 import mirrg.fluorite12.toFluoriteBoolean
 import mirrg.fluorite12.toFluoriteNumber
@@ -128,31 +128,9 @@ class MethodInvocationGetter(private val receiverGetter: Getter, private val nam
 
 class FunctionInvocationGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        return when (val value = functionGetter.evaluate(env)) {
-            is FluoriteFunction -> {
-                val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
-                return value.call(arguments)
-            }
-
-            is FluoriteArray -> when (argumentGetters.size) {
-                0 -> FluoriteStream(value.values)
-                else -> throw IllegalArgumentException("Element access is not supported") // TODO
-            }
-
-            is FluoriteObject -> when (argumentGetters.size) {
-                0 -> {
-                    FluoriteStream {
-                        value.map.entries.forEach {
-                            emit(FluoriteArray(mutableListOf(it.key.toFluoriteString(), it.value)))
-                        }
-                    }
-                }
-
-                else -> throw IllegalArgumentException("Element access is not supported") // TODO
-            }
-
-            else -> throw IllegalArgumentException("This value does not support element access: $value")
-        }
+        val function = functionGetter.evaluate(env)
+        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
+        return function.invoke(arguments)
     }
 
     override val code get() = "FunctionInvocation[${functionGetter.code};${argumentGetters.code}]"
@@ -172,10 +150,10 @@ class MethodBindGetter(private val receiverGetter: Getter, private val name: Str
 
 class FunctionBindGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        val function = functionGetter.evaluate(env) as FluoriteFunction
+        val function = functionGetter.evaluate(env)
         val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
         return FluoriteFunction { arguments2 ->
-            function.call(arguments + arguments2)
+            function.invoke(arguments + arguments2)
         }
     }
 
