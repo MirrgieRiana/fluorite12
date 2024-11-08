@@ -618,10 +618,9 @@ $ flc '"b", "a", "c" >> {a: 1; b: 2; c: 3}'
 
 ```shell
 $ flc '
-  Adder := {
+  adder := {
     INVOKE: this, a, b -> a + b
-  }
-  adder := Adder{}
+  }{}
   adder(10; 20)
 '
 # 30
