@@ -163,8 +163,9 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     "INVOKE" to FluoriteFunction { arguments ->
+                        val array = arguments[0] as FluoriteArray
                         when (arguments.size) {
-                            1 -> FluoriteStream((arguments[0] as FluoriteArray).values)
+                            1 -> FluoriteStream(array.values)
                             else -> throw IllegalArgumentException("Element access is not supported") // TODO
                         }
                     },
@@ -206,10 +207,11 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     "INVOKE" to FluoriteFunction { arguments ->
+                        val obj = arguments[0] as FluoriteObject
                         when (arguments.size) {
                             1 -> {
                                 FluoriteStream {
-                                    (arguments[0] as FluoriteObject).map.entries.forEach {
+                                    obj.map.entries.forEach {
                                         emit(FluoriteArray(mutableListOf(it.key.toFluoriteString(), it.value)))
                                     }
                                 }
