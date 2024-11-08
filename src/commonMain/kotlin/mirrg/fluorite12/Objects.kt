@@ -125,6 +125,35 @@ class FluoriteString(val value: String) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "INVOKE" to FluoriteFunction { arguments ->
+                        val string = (arguments[0] as FluoriteString).value
+                        when (arguments.size) {
+                            1 -> {
+                                FluoriteStream {
+                                    string.forEach {
+                                        emit(it.toString().toFluoriteString())
+                                    }
+                                }
+                            }
+
+                            2 -> {
+                                suspend fun get(index: FluoriteValue) = string.getOrNull(index.toFluoriteNumber().roundToInt()).toString().toFluoriteString() ?: FluoriteNull
+
+                                val argument = arguments[1]
+                                if (argument is FluoriteStream) {
+                                    FluoriteStream {
+                                        argument.collect { index ->
+                                            emit(get(index))
+                                        }
+                                    }
+                                } else {
+                                    get(argument)
+                                }
+                            }
+
+                            else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+                        }
+                    },
                     "TO_NUMBER" to FluoriteFunction { arguments ->
                         val string = (arguments[0] as FluoriteString).value
                         if (string.all { c -> c in '0'..'9' }) {
