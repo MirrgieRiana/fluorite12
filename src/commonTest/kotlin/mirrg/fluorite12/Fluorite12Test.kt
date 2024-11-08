@@ -436,12 +436,14 @@ class Fluorite12Test {
     @Test
     fun bracketsAccessTest() = runTest {
         assertEquals("1,2,3", run("[1; 2; 3]()").stream()) // array() でストリームにする
-        assertEquals("[a;1],[b;2],[c;3]", run("{a: 1; b: 2; c: 3}()").stream()) // object() でエントリーのストリームにする
-        assertEquals("a,b,c", run("'abc'()").stream()) // string() で文字のストリームにする
         assertEquals(2, run("[1; 2; 3](1)").int) // array(index) で要素を得る
         assertEquals("3,3,1,2", run("[1; 2; 3](2, 2, 0, 1)").stream()) // array(indices) で要素のストリームを得る
+
+        assertEquals("[a;1],[b;2],[c;3]", run("{a: 1; b: 2; c: 3}()").stream()) // object() でエントリーのストリームにする
         assertEquals(2, run("{a: 1; b: 2; c: 3}('b')").int) // object(key) で要素を得る
         assertEquals("3,3,1,2", run("{a: 1; b: 2; c: 3}('c', 'c', 'a', 'b')").stream()) // object(keys) で要素のストリームを得る
+
+        assertEquals("a,b,c", run("'abc'()").stream()) // string() で文字のストリームにする
         assertEquals("b", run("'abc'(1)").string) // string(index) で文字を得る
         assertEquals("c,c,a,b", run("'abc'(2, 2, 0, 1)").stream()) // string(indices) で文字のストリームを得る
     }
