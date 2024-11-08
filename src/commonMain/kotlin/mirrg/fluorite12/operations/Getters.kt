@@ -239,32 +239,9 @@ class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter
         val receiver = receiverGetter.evaluate(env)
         val key = keyGetter.evaluate(env)
         return when (receiver) {
-            is FluoriteString -> when (key) {
-                is FluoriteInt -> {
-                    if (key.value >= 0) {
-                        receiver.value.getOrNull(key.value)?.let { FluoriteString(it.toString()) } ?: FluoriteNull
-                    } else {
-                        receiver.value.getOrNull(receiver.value.length + key.value)?.let { FluoriteString(it.toString()) } ?: FluoriteNull
-                    }
-                }
-
-                else -> throw IllegalArgumentException("Unknown operator: ${receiver::class} . ${key::class}")
-            }
-
-            is FluoriteArray -> when (key) {
-                is FluoriteInt -> {
-                    if (key.value >= 0) {
-                        receiver.values.getOrNull(key.value) ?: FluoriteNull
-                    } else {
-                        receiver.values.getOrNull(receiver.values.size + key.value) ?: FluoriteNull
-                    }
-                }
-
-                else -> throw IllegalArgumentException("Unknown operator: ${receiver::class} . ${key::class}")
-            }
-
-            is FluoriteObject -> receiver.map[key.toString()] ?: FluoriteNull
-
+            is FluoriteString -> receiver.value.getOrNull(key.toFluoriteNumber().roundToInt())?.toString()?.toFluoriteString() ?: FluoriteNull
+            is FluoriteArray -> receiver.values.getOrNull(key.toFluoriteNumber().roundToInt()) ?: FluoriteNull
+            is FluoriteObject -> receiver.map[key.toFluoriteString().value] ?: FluoriteNull
             else -> throw IllegalArgumentException("Unknown operator: ${receiver::class} . ${key::class}")
         }
     }
