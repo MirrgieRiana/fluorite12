@@ -368,7 +368,7 @@ private fun Frame.compileToSetter(node: Node): Setter {
         }
 
         is RightBracketsNode -> when (node.type) {
-            BracketsType.SQUARE -> ArrayItemSetter(compileToGetter(node.main), compileToGetter(node.argument))
+            BracketsType.ROUND -> ArrayItemSetter(compileToGetter(node.main), compileToGetter(node.argument))
             else -> throw IllegalArgumentException("Illegal setter: ${node::class}")
         }
 

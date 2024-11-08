@@ -1514,7 +1514,7 @@ $ flc '
 # 456
 ```
 
-## 配列の要素への代入（代入系） `array[index] = value`
+## 配列の要素への代入（代入系） `array(index) = value`
 
 左辺が配列の要素の参照であった場合、その要素に右辺の値を代入します。
 
@@ -1522,7 +1522,7 @@ $ flc '
 $ flc '
   array := [1, 2, 3]
   OUT(array)
-  array[1] = 4
+  array(1) = 4
   OUT(array)
   ; ,
 '

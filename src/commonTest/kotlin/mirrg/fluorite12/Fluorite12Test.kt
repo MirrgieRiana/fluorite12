@@ -256,7 +256,7 @@ class Fluorite12Test {
 
     @Test
     fun arrayAssignmentTest() = runTest {
-        assertEquals("[10;99;30]", run("array := [10, 20, 30]; array[1] = 99; array").array) // 配列の要素に代入できる
+        assertEquals("[10;99;30]", run("array := [10, 20, 30]; array(1) = 99; array").array) // 配列の要素に代入できる
     }
 
     @Test
