@@ -1183,6 +1183,32 @@ $ flc 'FALSE ? "Yes" : "No"'
 # No
 ```
 
+---
+
+条件演算子は入れ子にしたり、演算子の前で改行することができます。
+
+```shell
+$ flc '
+  get_name := is_parent, is_man ->
+    is_parent
+      ? is_man
+        ? "King"
+        : "Queen"
+      : is_man
+        ? "Prince"
+        : "Princess"
+
+  get_name(TRUE; TRUE),
+  get_name(TRUE; FALSE),
+  get_name(FALSE; TRUE),
+  get_name(FALSE; FALSE),
+'
+# King
+# Queen
+# Prince
+# Princess
+```
+
 ## エルビス演算子 `value ?: default`
 
 エルビス演算子は、 `value` がNULLである場合に `default` を返す演算子です。

@@ -289,8 +289,8 @@ class Fluorite12Grammar : Grammar<Node>() {
     val and: Parser<Node> by leftAssociative(comparison, -s * +(ampersand * ampersand) * -b) { left, operator, right -> InfixNode(left, operator, right) }
     val or: Parser<Node> by leftAssociative(and, -s * +(pipe * pipe) * -b) { left, operator, right -> InfixNode(left, operator, right) }
     val condition: Parser<Node> by OrCombinator(
-        or * -s * question * -b * cachedParser { condition } * -s * (colon * -NotParser(colon)) * -b * cachedParser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
-        or * -s * +(question * colon) * -b * cachedParser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
+        or * -b * question * -b * cachedParser { condition } * -b * (colon * -NotParser(colon)) * -b * cachedParser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
+        or * -b * +(question * colon) * -b * cachedParser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
         or,
     )
 
