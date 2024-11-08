@@ -842,6 +842,14 @@ class Fluorite12Test {
         assertEquals("3,2,1", run("REVERSE(1, 2, 3)").stream()) // REVERSE でストリームを逆順にする
         assertEquals("3:2:1", run(" '1-2-3' >> SPLIT['-'] >> REVERSE >> JOIN[':'] ").string) // REVERSE はパイプと組み合わせて使うと便利
     }
+
+    @Test
+    fun minMaxTest() = runTest {
+        assertEquals(1.0, run("MIN(1.0, 2.0, 3.0)").double) // MIN で最小値を得る
+        assertEquals(FluoriteNull, run("MIN(,)")) // 空ストリームの場合、NULL
+        assertEquals(3.0, run("MAX(1.0, 2.0, 3.0)").double) // MAX で最大値を得る
+        assertEquals(FluoriteNull, run("MAX(,)")) // 空ストリームの場合、NULL
+    }
 }
 
 private fun parse(src: String): String {

@@ -1967,6 +1967,38 @@ $ flc 'SUM(1 .. 3)'
 # 6
 ```
 
+### `MIN` ストリームの最小値
+
+`MIN(numbers: STREAM<NUMBER>): NUMBER`
+
+第1引数のストリームの最小値を返します。
+
+ストリームが空の場合は `NULL` を返します。
+
+```shell
+$ flc 'MIN(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5)'
+# 1
+
+$ flc 'MIN(,)'
+# NULL
+```
+
+### `MAX` ストリームの最大値
+
+`MAX(numbers: STREAM<NUMBER>): NUMBER`
+
+第1引数のストリームの最大値を返します。
+
+ストリームが空の場合は `NULL` を返します。
+
+```shell
+$ flc 'MAX(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5)'
+# 9
+
+$ flc 'MAX(,)'
+# NULL
+```
+
 ### `ARRAY` ストリームを配列に変換
 
 `ARRAY(stream: STREAM<VALUE>): ARRAY<VALUE>`

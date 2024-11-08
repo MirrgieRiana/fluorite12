@@ -176,4 +176,42 @@ fun Frame.defineCommonBuiltinConstants() = listOf(
             usage("SUM(numbers: STREAM<NUMBER>): NUMBER")
         }
     }),
+    defineConstant("MIN", FluoriteFunction { arguments ->
+        if (arguments.size == 1) {
+            val stream = arguments[0]
+            if (stream is FluoriteStream) {
+                var result: FluoriteValue? = null
+                stream.collect { item ->
+                    val result2 = result
+                    if (result2 == null || item.toFluoriteNumber().value.toDouble() < result2.toFluoriteNumber().value.toDouble()) { // TODO
+                        result = item
+                    }
+                }
+                result ?: FluoriteNull
+            } else {
+                stream
+            }
+        } else {
+            usage("MIN(numbers: STREAM<NUMBER>): NUMBER")
+        }
+    }),
+    defineConstant("MAX", FluoriteFunction { arguments ->
+        if (arguments.size == 1) {
+            val stream = arguments[0]
+            if (stream is FluoriteStream) {
+                var result: FluoriteValue? = null
+                stream.collect { item ->
+                    val result2 = result
+                    if (result2 == null || item.toFluoriteNumber().value.toDouble() > result2.toFluoriteNumber().value.toDouble()) { // TODO
+                        result = item
+                    }
+                }
+                result ?: FluoriteNull
+            } else {
+                stream
+            }
+        } else {
+            usage("MAX(numbers: STREAM<NUMBER>): NUMBER")
+        }
+    }),
 )
