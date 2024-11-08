@@ -435,8 +435,8 @@ class Fluorite12Test {
 
     @Test
     fun bracketsAccessTest() = runTest {
-        assertEquals("1,2,3", run("[1; 2; 3][]").stream()) // array[] でストリームにする
-        assertEquals("[a;1],[b;2],[c;3]", run("{a: 1; b: 2; c: 3}[]").stream()) // object[] でエントリーのストリームにする
+        assertEquals("1,2,3", run("[1; 2; 3]()").stream()) // array() でストリームにする
+        assertEquals("[a;1],[b;2],[c;3]", run("{a: 1; b: 2; c: 3}()").stream()) // object() でエントリーのストリームにする
     }
 
     @Test

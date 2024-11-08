@@ -128,34 +128,10 @@ class MethodInvocationGetter(private val receiverGetter: Getter, private val nam
 
 class FunctionInvocationGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        val function = functionGetter.evaluate(env) as FluoriteFunction
-        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
-        return function.call(arguments)
-    }
-
-    override val code get() = "FunctionInvocation[${functionGetter.code};${argumentGetters.code}]"
-}
-
-class MethodBindGetter(private val receiverGetter: Getter, private val name: String, private val argumentGetters: List<Getter>) : Getter {
-    override suspend fun evaluate(env: Environment): FluoriteValue {
-        val receiver = receiverGetter.evaluate(env)
-        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
-        return FluoriteFunction { arguments2 ->
-            receiver.callMethod(name, arguments + arguments2)
-        }
-    }
-
-    override val code get() = "MethodBind[${receiverGetter.code};${name.escapeJsonString()};${argumentGetters.code}]"
-}
-
-class FunctionBindGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
-    override suspend fun evaluate(env: Environment): FluoriteValue {
         return when (val value = functionGetter.evaluate(env)) {
             is FluoriteFunction -> {
                 val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
-                return FluoriteFunction { arguments2 ->
-                    value.call(arguments + arguments2)
-                }
+                return value.call(arguments)
             }
 
             is FluoriteArray -> when (argumentGetters.size) {
@@ -176,6 +152,30 @@ class FunctionBindGetter(private val functionGetter: Getter, private val argumen
             }
 
             else -> throw IllegalArgumentException("This value does not support element access: $value")
+        }
+    }
+
+    override val code get() = "FunctionInvocation[${functionGetter.code};${argumentGetters.code}]"
+}
+
+class MethodBindGetter(private val receiverGetter: Getter, private val name: String, private val argumentGetters: List<Getter>) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val receiver = receiverGetter.evaluate(env)
+        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
+        return FluoriteFunction { arguments2 ->
+            receiver.callMethod(name, arguments + arguments2)
+        }
+    }
+
+    override val code get() = "MethodBind[${receiverGetter.code};${name.escapeJsonString()};${argumentGetters.code}]"
+}
+
+class FunctionBindGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val function = functionGetter.evaluate(env) as FluoriteFunction
+        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
+        return FluoriteFunction { arguments2 ->
+            function.call(arguments + arguments2)
         }
     }
 
