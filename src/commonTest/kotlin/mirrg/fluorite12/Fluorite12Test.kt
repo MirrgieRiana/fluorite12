@@ -437,6 +437,7 @@ class Fluorite12Test {
     fun bracketsAccessTest() = runTest {
         assertEquals("1,2,3", run("[1; 2; 3]()").stream()) // array() でストリームにする
         assertEquals(2, run("[1; 2; 3](1)").int) // array(index) で要素を得る
+        assertEquals(3, run("[1; 2; 3](-1)").int) // 負のインデックスは後ろから数える
         assertEquals("3,3,1,2", run("[1; 2; 3](2, 2, 0, 1)").stream()) // array(indices) で要素のストリームを得る
 
         assertEquals("[a;1],[b;2],[c;3]", run("{a: 1; b: 2; c: 3}()").stream()) // object() でエントリーのストリームにする
@@ -445,6 +446,7 @@ class Fluorite12Test {
 
         assertEquals("a,b,c", run("'abc'()").stream()) // string() で文字のストリームにする
         assertEquals("b", run("'abc'(1)").string) // string(index) で文字を得る
+        assertEquals("c", run("'abc'(-1)").string) // 負のインデックスは後ろから数える
         assertEquals("c,c,a,b", run("'abc'(2, 2, 0, 1)").stream()) // string(indices) で文字のストリームを得る
     }
 

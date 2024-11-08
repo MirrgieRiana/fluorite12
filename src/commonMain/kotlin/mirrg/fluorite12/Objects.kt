@@ -137,7 +137,10 @@ class FluoriteString(val value: String) : FluoriteValue {
                             }
 
                             2 -> {
-                                suspend fun get(index: FluoriteValue) = string.getOrNull(index.toFluoriteNumber().roundToInt()).toString().toFluoriteString() ?: FluoriteNull
+                                suspend fun get(index: FluoriteValue): FluoriteValue {
+                                    val index2 = index.toFluoriteNumber().roundToInt()
+                                    return string.getOrNull(if (index2 >= 0) index2 else index2 + string.length)?.toString()?.toFluoriteString() ?: FluoriteNull
+                                }
 
                                 val argument = arguments[1]
                                 if (argument is FluoriteStream) {
@@ -201,7 +204,10 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                             1 -> FluoriteStream(array.values)
 
                             2 -> {
-                                suspend fun get(index: FluoriteValue) = array.values.getOrNull(index.toFluoriteNumber().roundToInt()) ?: FluoriteNull
+                                suspend fun get(index: FluoriteValue): FluoriteValue {
+                                    val index2 = index.toFluoriteNumber().roundToInt()
+                                    return array.values.getOrNull(if (index2 >= 0) index2 else index2 + array.values.size) ?: FluoriteNull
+                                }
 
                                 val argument = arguments[1]
                                 if (argument is FluoriteStream) {
