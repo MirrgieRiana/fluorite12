@@ -449,6 +449,7 @@ class Fluorite12Test {
         assertEquals(123, run("(a -> a + 23)::INVOKE(100)").int) // INVOKEメソッドでも関数を呼び出せる
         assertEquals(123, run("{INVOKE: this, a, b -> a + b + 3}{}(100; 20)").int) // INVOKEメソッドを定義したオブジェクトも関数として呼び出せる
         assertEquals(123, run("{INVOKE: this, a, b -> a + b + 3}{}[100](20)").int) // INVOKEメソッドを定義したオブジェクトも部分適用できる
+        assertEquals(123, run("{INVOKE: {INVOKE: this2, this1, a, b -> a + b}{}}{}(100; 23)").int) // INVOKEの多重追跡
     }
 
     @Test

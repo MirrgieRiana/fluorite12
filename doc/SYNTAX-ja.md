@@ -624,6 +624,16 @@ $ flc '
   adder(10; 20)
 '
 # 30
+
+$ flc '
+  adder := {
+    INVOKE: {
+      INVOKE: this2, this1, a, b -> a + b
+    }{}
+  }{}
+  adder(10; 20)
+'
+# 30
 ```
 
 ## 関数の部分適用 `function[argument; ...]`
