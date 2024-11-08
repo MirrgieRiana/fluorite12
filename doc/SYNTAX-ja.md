@@ -2218,3 +2218,32 @@ $ flc '
 '
 # [1;1;2;3;3;4;5;5;5;6;9]
 ```
+
+## 編集距離
+
+```shell
+$ flc '
+  edit_distance := a, b -> (
+    dp := [0 .. $#a + 1 | [0 .. $#b + 1 | 0]]
+    0 .. $#a | i => 0 .. $#b | j => (
+      dp(i + 1)(j + 1) = a(i) == b(j)
+        ? dp(i)(j)
+        : 1 + MIN(
+          dp(i    )(j    ),
+          dp(i + 1)(j    ),
+          dp(i    )(j + 1),
+        )
+    )
+
+    # Output Table
+    [
+      ["", "", b()]
+      0 ~ $#dp | i => [a.(i - 1) ?: "", dp(i)()]
+    ]() | OUT << _() | "$%2s(_)" >> JOIN[""]
+
+    dp(-1)(-1)
+  )
+  edit_distance("kitten"; "sitting")
+'
+# 3
+```
