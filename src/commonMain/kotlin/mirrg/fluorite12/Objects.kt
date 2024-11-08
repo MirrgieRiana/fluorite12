@@ -121,8 +121,8 @@ class FluoriteString(val value: String) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "TO_NUMBER" to FluoriteFunction {
-                        val string = (it[0] as FluoriteString).value
+                    "TO_NUMBER" to FluoriteFunction { arguments ->
+                        val string = (arguments[0] as FluoriteString).value
                         if (string.all { c -> c in '0'..'9' }) {
                             when (val int = string.toInt()) {
                                 0 -> FluoriteInt.ZERO
@@ -138,8 +138,8 @@ class FluoriteString(val value: String) : FluoriteValue {
                     },
                     "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
                     "TO_STRING" to FluoriteFunction { it[0] as FluoriteString },
-                    "TO_JSON" to FluoriteFunction {
-                        val escaped = (it[0] as FluoriteString).value.escapeJsonString()
+                    "TO_JSON" to FluoriteFunction { arguments ->
+                        val escaped = (arguments[0] as FluoriteString).value.escapeJsonString()
                         "\"$escaped\"".toFluoriteString()
                     },
                     "CONTAINS" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
@@ -168,10 +168,10 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                             else -> throw IllegalArgumentException("Element access is not supported") // TODO
                         }
                     },
-                    "TO_STRING" to FluoriteFunction {
+                    "TO_STRING" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('[')
-                        (it[0] as FluoriteArray).values.forEachIndexed { i, value ->
+                        (arguments[0] as FluoriteArray).values.forEachIndexed { i, value ->
                             if (i != 0) sb.append(';')
                             sb.append(value.toFluoriteString().value)
                         }
@@ -179,10 +179,10 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                         sb.toString().toFluoriteString()
                     },
                     "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.TRUE },
-                    "TO_JSON" to FluoriteFunction {
+                    "TO_JSON" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('[')
-                        (it[0] as FluoriteArray).values.forEachIndexed { i, value ->
+                        (arguments[0] as FluoriteArray).values.forEachIndexed { i, value ->
                             if (i != 0) sb.append(',')
                             sb.append((value.toJson() as FluoriteString).value)
                         }
@@ -218,10 +218,10 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                             else -> throw IllegalArgumentException("Element access is not supported") // TODO
                         }
                     },
-                    "TO_STRING" to FluoriteFunction {
+                    "TO_STRING" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('{')
-                        (it[0] as FluoriteObject).map.entries.forEachIndexed { i, (key, value) ->
+                        (arguments[0] as FluoriteObject).map.entries.forEachIndexed { i, (key, value) ->
                             if (i != 0) sb.append(';')
                             sb.append(key)
                             sb.append(':')
@@ -231,10 +231,10 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                         sb.toString().toFluoriteString()
                     },
                     "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.TRUE },
-                    "TO_JSON" to FluoriteFunction {
+                    "TO_JSON" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('{')
-                        (it[0] as FluoriteObject).map.entries.forEachIndexed { i, (key, value) ->
+                        (arguments[0] as FluoriteObject).map.entries.forEachIndexed { i, (key, value) ->
                             if (i != 0) sb.append(',')
                             sb.append('"')
                             sb.append(key.escapeJsonString())
@@ -260,8 +260,8 @@ class FluoriteFunction(val function: suspend (Array<FluoriteValue>) -> FluoriteV
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "INVOKE" to FluoriteFunction {
-                        (it[0] as FluoriteFunction).function(it.sliceArray(1 until it.size))
+                    "INVOKE" to FluoriteFunction { arguments ->
+                        (arguments[0] as FluoriteFunction).function(arguments.sliceArray(1 until arguments.size))
                     },
                 )
             )
@@ -296,8 +296,8 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
                             emit(FluoriteBoolean.FALSE)
                         }.first()
                     },
-                    "TO_STRING" to FluoriteFunction {
-                        val stream = it[0] as FluoriteStream
+                    "TO_STRING" to FluoriteFunction { arguments ->
+                        val stream = arguments[0] as FluoriteStream
                         val sb = StringBuilder()
                         stream.collect { item ->
                             sb.append(item.toFluoriteString().value)
