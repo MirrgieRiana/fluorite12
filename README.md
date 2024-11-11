@@ -55,4 +55,4 @@ Download the `flc` binary to the `./fluorite12`, and register it in `/usr/local/
 
 # DOCUMENTATION
 
-- [Japanese](doc/DOCUMENTATION-ja.md)
+- [Japanese](doc/INDEX-ja)
