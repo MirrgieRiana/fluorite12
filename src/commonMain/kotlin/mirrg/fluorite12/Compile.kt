@@ -5,7 +5,7 @@ import mirrg.fluorite12.operations.ArrayCreationGetter
 import mirrg.fluorite12.operations.ArrayItemSetter
 import mirrg.fluorite12.operations.AssignmentGetter
 import mirrg.fluorite12.operations.AssignmentRunner
-import mirrg.fluorite12.operations.CatchGetter
+import mirrg.fluorite12.operations.TryCatchGetter
 import mirrg.fluorite12.operations.ComparisonChainGetter
 import mirrg.fluorite12.operations.ConversionStringGetter
 import mirrg.fluorite12.operations.DivGetter
@@ -265,7 +265,7 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             }
             val newFrame = Frame(this)
             val argumentVariableIndex = newFrame.defineVariable(name)
-            CatchGetter(compileToGetter(left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
+            TryCatchGetter(compileToGetter(left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
         }
 
         ":" -> {
