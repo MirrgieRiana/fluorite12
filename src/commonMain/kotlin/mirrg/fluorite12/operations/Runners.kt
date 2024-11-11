@@ -26,3 +26,21 @@ class AssignmentRunner(private val setter: Setter, private val getter: Getter) :
 
     override val code get() = "Assignment[${setter.code};${getter.code}]"
 }
+
+class TryCatchRunner(private val leftRunners: List<Runner>, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightRunners: List<Runner>) : Runner {
+    override suspend fun evaluate(env: Environment) {
+        try {
+            leftRunners.forEach {
+                it.evaluate(env)
+            }
+        } catch (e: FluoriteException) {
+            val newEnv = Environment(env, 1)
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = e.value
+            rightRunners.forEach {
+                it.evaluate(newEnv)
+            }
+        }
+    }
+
+    override val code get() = "TryCatch[${leftRunners.code};$newFrameIndex;$argumentVariableIndex;${rightRunners.code}]"
+}

@@ -857,6 +857,11 @@ class Fluorite12Test {
         assertEquals(3.0, run("MAX(1.0, 2.0, 3.0)").double) // MAX で最大値を得る
         assertEquals(FluoriteNull, run("MAX(,)")) // 空ストリームの場合、NULL
     }
+
+    @Test
+    fun tryRunnerTest() = runTest {
+        assertEquals("end", run("(1 .. 3 | !!'error') !? 'ignore'; 'end'").string) // パイプRunnerの中でエラーが発生してもキャッチできる
+    }
 }
 
 private fun parse(src: String): String {

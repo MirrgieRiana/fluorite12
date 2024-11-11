@@ -5,7 +5,6 @@ import mirrg.fluorite12.operations.ArrayCreationGetter
 import mirrg.fluorite12.operations.ArrayItemSetter
 import mirrg.fluorite12.operations.AssignmentGetter
 import mirrg.fluorite12.operations.AssignmentRunner
-import mirrg.fluorite12.operations.TryCatchGetter
 import mirrg.fluorite12.operations.ComparisonChainGetter
 import mirrg.fluorite12.operations.ConversionStringGetter
 import mirrg.fluorite12.operations.DivGetter
@@ -50,6 +49,8 @@ import mirrg.fluorite12.operations.ToNegativeBooleanGetter
 import mirrg.fluorite12.operations.ToNegativeNumberGetter
 import mirrg.fluorite12.operations.ToNumberGetter
 import mirrg.fluorite12.operations.ToStringGetter
+import mirrg.fluorite12.operations.TryCatchGetter
+import mirrg.fluorite12.operations.TryCatchRunner
 import mirrg.fluorite12.operations.VariableGetter
 import mirrg.fluorite12.operations.VariableSetter
 
@@ -353,6 +354,18 @@ private fun Frame.compileToRunner(node: Node): List<Runner> {
             }
 
             else -> throw IllegalArgumentException("Illegal definition: ${node.left::class} := ${node.right::class}")
+        }
+
+        node is InfixNode && node.operator.text == "!?" -> {
+            val (name, rightNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
+                require(node.right.left is IdentifierNode)
+                Pair(node.right.left.string, node.right.right)
+            } else {
+                Pair("_", node.right)
+            }
+            val newFrame = Frame(this)
+            val argumentVariableIndex = newFrame.defineVariable(name)
+            listOf(TryCatchRunner(compileToRunner(node.left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToRunner(rightNode)))
         }
 
         else -> listOf(GetterRunner(compileToGetter(node))) // 式文
