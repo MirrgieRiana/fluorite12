@@ -9,6 +9,7 @@ import kotlin.test.fail
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class Fluorite12Test {
+
     @Test
     fun cacheTest() = runTest {
         // メモ化が行われているか
@@ -858,4 +859,5 @@ class Fluorite12Test {
     fun tryRunnerTest() = runTest {
         assertEquals("end", run("(1 .. 3 | !!'error') !? 'ignore'; 'end'").string) // パイプRunnerの中でエラーが発生してもキャッチできる
     }
+
 }
