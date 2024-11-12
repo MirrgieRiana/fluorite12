@@ -1,10 +1,6 @@
 package mirrg.fluorite12
 
-import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
-import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
@@ -863,31 +859,3 @@ class Fluorite12Test {
         assertEquals("end", run("(1 .. 3 | !!'error') !? 'ignore'; 'end'").string) // パイプRunnerの中でエラーが発生してもキャッチできる
     }
 }
-
-private fun parse(src: String): String {
-    val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
-    val frame = Frame()
-    frame.defineCommonBuiltinConstants()
-    val getter = frame.compileToGetter(parseResult.value)
-    return getter.code
-}
-
-private suspend fun run(src: String): FluoriteValue {
-    val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
-    val frame = Frame()
-    val runners = frame.defineCommonBuiltinConstants()
-    val getter = frame.compileToGetter(parseResult.value)
-    val env = Environment(null, frame.nextVariableIndex)
-    runners.forEach {
-        it.evaluate(env)
-    }
-    return getter.evaluate(env)
-}
-
-private val FluoriteValue.int get() = (this as FluoriteInt).value
-private val FluoriteValue.double get() = (this as FluoriteDouble).value
-private val FluoriteValue.boolean get() = (this as FluoriteBoolean).value
-private val FluoriteValue.string get() = (this as FluoriteString).value
-private val FluoriteValue.obj get() = (this as FluoriteObject).toString()
-private val FluoriteValue.array get() = (this as FluoriteArray).toString()
-private suspend fun FluoriteValue.stream() = flow { (this@stream as FluoriteStream).flowProvider(this) }.toList(mutableListOf()).joinToString(",") { "$it" }
