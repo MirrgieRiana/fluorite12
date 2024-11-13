@@ -102,3 +102,24 @@ $ flc '
 '
 # 30
 ```
+
+## オブジェクト要素への代入
+
+`object.key = value` でオブジェクトの要素に値を代入できます。
+
+```shell
+$ flc '
+  object := {
+    a: "one"
+    b: "two"
+    c: "three"
+  }
+
+  object.b = 99999
+
+  object
+'
+# {a:one;b:99999;c:three}
+```
+
+キーがそのオブジェクトにまだ存在しない場合は新たに追加されます。

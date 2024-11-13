@@ -832,4 +832,10 @@ class Fluorite12Test {
         assertEquals("end", run("(1 .. 3 | !!'error') !? 'ignore'; 'end'").string) // パイプRunnerの中でエラーが発生してもキャッチできる
     }
 
+    @Test
+    fun objectAssignmentTest() = runTest {
+        assertEquals("{a:1;b:9}", run("o := {a: 1; b: 2}; o.b = 9; o").obj) // オブジェクトのフィールドに代入できる
+        assertEquals("{a:1;b:2;c:9}", run("o := {a: 1; b: 2}; o.c = 9; o").obj) // 存在しないフィールドに代入すると新規追加される
+    }
+
 }

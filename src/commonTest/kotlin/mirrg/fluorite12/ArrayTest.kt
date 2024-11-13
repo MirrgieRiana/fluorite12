@@ -30,6 +30,13 @@ class ArrayTest {
            array
         """.let { assertEquals("[1;9;3]", run(it).array()) }
 
+        // プロパティアクセスによるストリームの代入
+        """
+           array := [1; 2; 3]
+           array.1 = 4 .. 6
+           array
+        """.let { assertEquals("[1;456;3]", run(it).array()) }
+
     }
 
     @Test
