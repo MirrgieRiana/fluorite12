@@ -31,5 +31,5 @@ val FluoriteValue.double get() = (this as FluoriteDouble).value
 val FluoriteValue.boolean get() = (this as FluoriteBoolean).value
 val FluoriteValue.string get() = (this as FluoriteString).value
 val FluoriteValue.obj get() = (this as FluoriteObject).toString()
-val FluoriteValue.array get() = (this as FluoriteArray).toString()
+suspend fun FluoriteValue.array() = (this as FluoriteArray).toFluoriteString().value
 suspend fun FluoriteValue.stream() = flow { (this@stream as FluoriteStream).flowProvider(this) }.toList(mutableListOf()).joinToString(",") { "$it" }

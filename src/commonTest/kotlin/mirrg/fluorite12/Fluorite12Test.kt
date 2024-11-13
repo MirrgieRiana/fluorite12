@@ -36,7 +36,7 @@ class Fluorite12Test {
                 2 # comment
                 3
             ]
-        """.let { assertEquals("[1;2;3]", run(it).array) }
+        """.let { assertEquals("[1;2;3]", run(it).array()) }
 
         // 行コメントの次の行に中置演算子としても解釈可能な前置演算子があったとしても、その行を結合しない
         """
@@ -45,7 +45,7 @@ class Fluorite12Test {
                 2 # comment
                 -3
             ]
-        """.let { assertEquals("[1;2;-3]", run(it).array) }
+        """.let { assertEquals("[1;2;-3]", run(it).array()) }
 
         assertEquals(1, run("1 # comment").int) // 行コメントの後に改行が無くてもよい
 
@@ -133,31 +133,31 @@ class Fluorite12Test {
         // 整数
         run {
             val s = """123456, 12345, 123, 0, -123, -1234, -12345, -123456"""
-            assertEquals("[123456;12345;123;0;-123;-1234;-12345;-123456]", run(""" [$s | "$%d(_)"] """).array) // %d で整数
-            assertEquals("[123456;12345;  123;    0; -123;-1234;-12345;-123456]", run(""" [$s | "$%5d(_)"] """).array) // 空白埋め
-            assertEquals("[123456;12345;00123;00000;-0123;-1234;-12345;-123456]", run(""" [$s | "$%05d(_)"] """).array) // 0埋め
-            assertEquals("[123456;12345;123  ;0    ;-123 ;-1234;-12345;-123456]", run(""" [$s | "$%-5d(_)"] """).array) // 左揃え空白埋め
-            assertEquals("[+123456;+12345;+123;+0;-123;-1234;-12345;-123456]", run(""" [$s | "$%+d(_)"] """).array) // 符号表示
-            assertEquals("[ 123456; 12345; 123; 0;-123;-1234;-12345;-123456]", run(""" [$s | "$% d(_)"] """).array) // 符号余白
-            assertEquals("[+123456;+12345; +123;   +0; -123;-1234;-12345;-123456]", run(""" [$s | "$%+5d(_)"] """).array) // 符号表示 空白埋め
-            assertEquals("[ 123456; 12345;  123;    0; -123;-1234;-12345;-123456]", run(""" [$s | "$% 5d(_)"] """).array) // 符号余白 空白埋め
-            assertEquals("[+123456;+12345;+0123;+0000;-0123;-1234;-12345;-123456]", run(""" [$s | "$%+05d(_)"] """).array) // 符号表示 0埋め
-            assertEquals("[ 123456; 12345; 0123; 0000;-0123;-1234;-12345;-123456]", run(""" [$s | "$% 05d(_)"] """).array) // 符号余白 0埋め
+            assertEquals("[123456;12345;123;0;-123;-1234;-12345;-123456]", run(""" [$s | "$%d(_)"] """).array()) // %d で整数
+            assertEquals("[123456;12345;  123;    0; -123;-1234;-12345;-123456]", run(""" [$s | "$%5d(_)"] """).array()) // 空白埋め
+            assertEquals("[123456;12345;00123;00000;-0123;-1234;-12345;-123456]", run(""" [$s | "$%05d(_)"] """).array()) // 0埋め
+            assertEquals("[123456;12345;123  ;0    ;-123 ;-1234;-12345;-123456]", run(""" [$s | "$%-5d(_)"] """).array()) // 左揃え空白埋め
+            assertEquals("[+123456;+12345;+123;+0;-123;-1234;-12345;-123456]", run(""" [$s | "$%+d(_)"] """).array()) // 符号表示
+            assertEquals("[ 123456; 12345; 123; 0;-123;-1234;-12345;-123456]", run(""" [$s | "$% d(_)"] """).array()) // 符号余白
+            assertEquals("[+123456;+12345; +123;   +0; -123;-1234;-12345;-123456]", run(""" [$s | "$%+5d(_)"] """).array()) // 符号表示 空白埋め
+            assertEquals("[ 123456; 12345;  123;    0; -123;-1234;-12345;-123456]", run(""" [$s | "$% 5d(_)"] """).array()) // 符号余白 空白埋め
+            assertEquals("[+123456;+12345;+0123;+0000;-0123;-1234;-12345;-123456]", run(""" [$s | "$%+05d(_)"] """).array()) // 符号表示 0埋め
+            assertEquals("[ 123456; 12345; 0123; 0000;-0123;-1234;-12345;-123456]", run(""" [$s | "$% 05d(_)"] """).array()) // 符号余白 0埋め
         }
 
         // 16進数
         run {
             val s = """H#abcdef, H#abcde, H#abc, H#0, -H#abc, -H#abcd, -H#abcde, -H#abcdef"""
-            assertEquals("[abcdef;abcde;abc;0;-abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%x(_)"] """).array) // %x で16進数
-            assertEquals("[abcdef;abcde;  abc;    0; -abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%5x(_)"] """).array) // 空白埋め
-            assertEquals("[abcdef;abcde;00abc;00000;-0abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%05x(_)"] """).array) // 0埋め
-            assertEquals("[abcdef;abcde;abc  ;0    ;-abc ;-abcd;-abcde;-abcdef]", run(""" [$s | "$%-5x(_)"] """).array) // 左揃え空白埋め
-            assertEquals("[+abcdef;+abcde;+abc;+0;-abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%+x(_)"] """).array) // 符号表示
-            assertEquals("[ abcdef; abcde; abc; 0;-abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$% x(_)"] """).array) // 符号余白
-            assertEquals("[+abcdef;+abcde; +abc;   +0; -abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%+5x(_)"] """).array) // 符号表示 空白埋め
-            assertEquals("[ abcdef; abcde;  abc;    0; -abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$% 5x(_)"] """).array) // 符号余白 空白埋め
-            assertEquals("[+abcdef;+abcde;+0abc;+0000;-0abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%+05x(_)"] """).array) // 符号表示 0埋め
-            assertEquals("[ abcdef; abcde; 0abc; 0000;-0abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$% 05x(_)"] """).array) // 符号余白 0埋め
+            assertEquals("[abcdef;abcde;abc;0;-abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%x(_)"] """).array()) // %x で16進数
+            assertEquals("[abcdef;abcde;  abc;    0; -abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%5x(_)"] """).array()) // 空白埋め
+            assertEquals("[abcdef;abcde;00abc;00000;-0abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%05x(_)"] """).array()) // 0埋め
+            assertEquals("[abcdef;abcde;abc  ;0    ;-abc ;-abcd;-abcde;-abcdef]", run(""" [$s | "$%-5x(_)"] """).array()) // 左揃え空白埋め
+            assertEquals("[+abcdef;+abcde;+abc;+0;-abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%+x(_)"] """).array()) // 符号表示
+            assertEquals("[ abcdef; abcde; abc; 0;-abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$% x(_)"] """).array()) // 符号余白
+            assertEquals("[+abcdef;+abcde; +abc;   +0; -abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%+5x(_)"] """).array()) // 符号表示 空白埋め
+            assertEquals("[ abcdef; abcde;  abc;    0; -abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$% 5x(_)"] """).array()) // 符号余白 空白埋め
+            assertEquals("[+abcdef;+abcde;+0abc;+0000;-0abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$%+05x(_)"] """).array()) // 符号表示 0埋め
+            assertEquals("[ abcdef; abcde; 0abc; 0000;-0abc;-abcd;-abcde;-abcdef]", run(""" [$s | "$% 05x(_)"] """).array()) // 符号余白 0埋め
         }
 
         // 小数
@@ -200,9 +200,9 @@ class Fluorite12Test {
         // 文字列
         run {
             val s = """ "", "abcd", "abcde", "abcdef" """
-            assertEquals("[;abcd;abcde;abcdef]", run(""" [$s | "$%s(_)"] """).array) // %s で文字列
-            assertEquals("[     ; abcd;abcde;abcdef]", run(""" [$s | "$%5s(_)"] """).array) // 空白埋め
-            assertEquals("[     ;abcd ;abcde;abcdef]", run(""" [$s | "$%-5s(_)"] """).array) // 左揃え空白埋め
+            assertEquals("[;abcd;abcde;abcdef]", run(""" [$s | "$%s(_)"] """).array()) // %s で文字列
+            assertEquals("[     ; abcd;abcde;abcdef]", run(""" [$s | "$%5s(_)"] """).array()) // 空白埋め
+            assertEquals("[     ;abcd ;abcde;abcdef]", run(""" [$s | "$%-5s(_)"] """).array()) // 左揃え空白埋め
         }
     }
 
@@ -467,7 +467,7 @@ class Fluorite12Test {
         assertEquals(6.0, run("2.0 * 3.0").double, 0.001)
 
         assertEquals("abcabcabc", run("'abc' * 3").string) // 文字列の乗算は繰り返す
-        assertEquals("[1;2;3;1;2;3;1;2;3]", run("[1; 2; 3] * 3").array) // 配列の乗算は繰り返す
+        assertEquals("[1;2;3;1;2;3;1;2;3]", run("[1; 2; 3] * 3").array()) // 配列の乗算は繰り返す
     }
 
     @Test
@@ -516,16 +516,16 @@ class Fluorite12Test {
         fun String.f() = this.replace(" ", "")
 
         // 比較ができる
-        assertEquals("[FALSE;FALSE;TRUE ]".f(), run("[0 >  1; 1 >  1; 2 >  1]").array)
-        assertEquals("[TRUE ;FALSE;FALSE]".f(), run("[0 <  1; 1 <  1; 2 <  1]").array)
-        assertEquals("[FALSE;TRUE ;TRUE ]".f(), run("[0 >= 1; 1 >= 1; 2 >= 1]").array)
-        assertEquals("[TRUE ;TRUE ;FALSE]".f(), run("[0 <= 1; 1 <= 1; 2 <= 1]").array)
+        assertEquals("[FALSE;FALSE;TRUE ]".f(), run("[0 >  1; 1 >  1; 2 >  1]").array())
+        assertEquals("[TRUE ;FALSE;FALSE]".f(), run("[0 <  1; 1 <  1; 2 <  1]").array())
+        assertEquals("[FALSE;TRUE ;TRUE ]".f(), run("[0 >= 1; 1 >= 1; 2 >= 1]").array())
+        assertEquals("[TRUE ;TRUE ;FALSE]".f(), run("[0 <= 1; 1 <= 1; 2 <= 1]").array())
 
         // 浮動小数でもよい
-        assertEquals("[FALSE;FALSE;FALSE]".f(), run("[1 >  1.0; 1.0 >  1; 1.0 >  1.0]").array)
-        assertEquals("[FALSE;FALSE;FALSE]".f(), run("[1 <  1.0; 1.0 <  1; 1.0 <  1.0]").array)
-        assertEquals("[TRUE ;TRUE ;TRUE ]".f(), run("[1 >= 1.0; 1.0 >= 1; 1.0 >= 1.0]").array)
-        assertEquals("[TRUE ;TRUE ;TRUE ]".f(), run("[1 <= 1.0; 1.0 <= 1; 1.0 <= 1.0]").array)
+        assertEquals("[FALSE;FALSE;FALSE]".f(), run("[1 >  1.0; 1.0 >  1; 1.0 >  1.0]").array())
+        assertEquals("[FALSE;FALSE;FALSE]".f(), run("[1 <  1.0; 1.0 <  1; 1.0 <  1.0]").array())
+        assertEquals("[TRUE ;TRUE ;TRUE ]".f(), run("[1 >= 1.0; 1.0 >= 1; 1.0 >= 1.0]").array())
+        assertEquals("[TRUE ;TRUE ;TRUE ]".f(), run("[1 <= 1.0; 1.0 <= 1; 1.0 <= 1.0]").array())
     }
 
     @Test
@@ -700,7 +700,7 @@ class Fluorite12Test {
         assertEquals(120, run("(f -> f(f))(f -> n -> n == 0 ? 1 : n * f(f)(n - 1))(5)").int) // 複雑なラムダ計算の例
 
         // 同じ関数を再帰的に2度呼び出した場合に、関数のフレームが分離されているかどうかのテスト
-        assertEquals("[2;1;2]", run("f := n -> n == 1 ? 1 : [n, f(1), n]; f(2)").array)
+        assertEquals("[2;1;2]", run("f := n -> n == 1 ? 1 : [n, f(1), n]; f(2)").array())
     }
 
     @Test
@@ -752,9 +752,9 @@ class Fluorite12Test {
 
     @Test
     fun arrayFunctionTest() = runTest {
-        assertEquals("[1;2;3]", run("ARRAY(1, 2, 3)").array) // ARRAY関数はストリームを配列にする
-        assertEquals("[100]", run("ARRAY(100)").array) // ストリームでなくてもよい
-        assertEquals("[10;20;30]", run("1 .. 3 | _ * 10 >> ARRAY").array) // ARRAY関数はパイプ演算子と組み合わせて使うと便利
+        assertEquals("[1;2;3]", run("ARRAY(1, 2, 3)").array()) // ARRAY関数はストリームを配列にする
+        assertEquals("[100]", run("ARRAY(100)").array()) // ストリームでなくてもよい
+        assertEquals("[10;20;30]", run("1 .. 3 | _ * 10 >> ARRAY").array()) // ARRAY関数はパイプ演算子と組み合わせて使うと便利
     }
 
     @Test
