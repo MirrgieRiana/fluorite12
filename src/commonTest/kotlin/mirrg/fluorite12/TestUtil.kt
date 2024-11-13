@@ -4,6 +4,7 @@ import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
+import mirrg.fluorite12.compile.compileToGetter
 
 fun parse(src: String): String {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()

@@ -9,7 +9,7 @@ import mirrg.fluorite12.FluoriteNull
 import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.collect
-import mirrg.fluorite12.compileToGetter
+import mirrg.fluorite12.compile.compileToGetter
 import mirrg.fluorite12.defineCommonBuiltinConstants
 import mirrg.fluorite12.defineConstant
 import mirrg.fluorite12.toFluoriteString

@@ -1,5 +1,38 @@
-package mirrg.fluorite12
+package mirrg.fluorite12.compile
 
+import mirrg.fluorite12.BracketsNode
+import mirrg.fluorite12.BracketsType
+import mirrg.fluorite12.CommasNode
+import mirrg.fluorite12.ComparisonsNode
+import mirrg.fluorite12.ConditionNode
+import mirrg.fluorite12.EmbeddedStringNode
+import mirrg.fluorite12.EmptyNode
+import mirrg.fluorite12.FloatNode
+import mirrg.fluorite12.FluoriteDouble
+import mirrg.fluorite12.FluoriteInt
+import mirrg.fluorite12.FluoriteNumber
+import mirrg.fluorite12.FluoriteString
+import mirrg.fluorite12.FluoriteValue
+import mirrg.fluorite12.FormattedStringContent
+import mirrg.fluorite12.Frame
+import mirrg.fluorite12.HexadecimalNode
+import mirrg.fluorite12.IdentifierNode
+import mirrg.fluorite12.InfixNode
+import mirrg.fluorite12.IntegerNode
+import mirrg.fluorite12.LeftNode
+import mirrg.fluorite12.LiteralStringContent
+import mirrg.fluorite12.Node
+import mirrg.fluorite12.NodeStringContent
+import mirrg.fluorite12.RawStringNode
+import mirrg.fluorite12.RightBracketsNode
+import mirrg.fluorite12.RightNode
+import mirrg.fluorite12.RootNode
+import mirrg.fluorite12.SemicolonsNode
+import mirrg.fluorite12.TemplateStringNode
+import mirrg.fluorite12.contains
+import mirrg.fluorite12.defineVariable
+import mirrg.fluorite12.getVariable
+import mirrg.fluorite12.instanceOf
 import mirrg.fluorite12.operations.AndGetter
 import mirrg.fluorite12.operations.ArrayCreationGetter
 import mirrg.fluorite12.operations.ArrayItemSetter
@@ -53,6 +86,7 @@ import mirrg.fluorite12.operations.TryCatchGetter
 import mirrg.fluorite12.operations.TryCatchRunner
 import mirrg.fluorite12.operations.VariableGetter
 import mirrg.fluorite12.operations.VariableSetter
+import mirrg.fluorite12.text
 
 fun Frame.compileToGetter(node: Node): Getter {
     return when (node) {
