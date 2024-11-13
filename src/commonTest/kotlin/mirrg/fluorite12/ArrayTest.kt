@@ -22,12 +22,14 @@ class ArrayTest {
 
     @Test
     fun assign() = runTest {
-        // 配列の要素への代入
+
+        // 配列呼び出しによる代入
         """
-           array := [10, 20, 30]
-           array(1) = 99
+           array := [1; 2; 3]
+           array(1) = 9
            array
-        """.let { assertEquals("[10;99;30]", run(it).array()) }
+        """.let { assertEquals("[1;9;3]", run(it).array()) }
+
     }
 
     @Test
