@@ -225,11 +225,29 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                         }
                     },
                     "BIND" to FluoriteFunction { arguments ->
-                        // TODO
                         val array = arguments[0] as FluoriteArray
-                        val arguments1 = arguments.sliceArray(1 until arguments.size)
-                        FluoriteFunction { arguments2 ->
-                            array.invoke(arguments1 + arguments2)
+                        when (arguments.size) {
+                            1 -> FluoriteArray(array.values.toMutableList())
+
+                            2 -> {
+                                suspend fun get(index: FluoriteValue): FluoriteValue {
+                                    val index2 = index.toFluoriteNumber().roundToInt()
+                                    return array.values.getOrNull(if (index2 >= 0) index2 else index2 + array.values.size) ?: FluoriteNull
+                                }
+
+                                val argument = arguments[1]
+                                if (argument is FluoriteStream) {
+                                    val items = mutableListOf<FluoriteValue>()
+                                    argument.collect { index ->
+                                        items += get(index)
+                                    }
+                                    FluoriteArray(items)
+                                } else {
+                                    FluoriteArray(mutableListOf(get(argument)))
+                                }
+                            }
+
+                            else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
                     "TO_STRING" to FluoriteFunction { arguments ->

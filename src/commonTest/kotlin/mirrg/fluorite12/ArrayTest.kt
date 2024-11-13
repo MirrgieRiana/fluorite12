@@ -31,6 +31,25 @@ class ArrayTest {
     }
 
     @Test
+    fun subArray() = runTest {
+        assertEquals("[1;2;3]", run("[1; 2; 3][]").array) // 配列のコピー
+        assertEquals("[2]", run("[1; 2; 3][1]").array) // 単一要素による部分配列の取得
+        assertEquals("[2]", run("[1; 2; 3]['0.95']").array) // インデックスは数値化し、四捨五入される
+        assertEquals("[NULL]", run("[1; 2; 3][3]").array) // 範囲外のインデックスは NULL が返る
+        assertEquals("[3]", run("[1; 2; 3][-1]").array) // 負のインデックスは後ろから数える
+        assertEquals("[3;3;1;2]", run("[1; 2; 3][2, 2, 0, 1]").array) // インデックスのストリームは要素のストリームを返す
+
+        assertEquals("[2;3;4]", run("[1; 2; 3; 4; 5][1 .. 3]").array) // 範囲指定による部分配列の取得
+
+        // 配列のコピーは別のインスタンスを返す
+        """
+            array1 := [1; 2; 3]
+            array2 := array1[]
+            array2(1) = 99
+            [array1, array2]
+        """.let { assertEquals("[[1;2;3];[1;99;3]]", run(it).array) }
+    }
+
     @Test
     fun invoke() = runTest {
         assertEquals("1,2,3", run("[1; 2; 3]()").stream()) // ストリーム化
