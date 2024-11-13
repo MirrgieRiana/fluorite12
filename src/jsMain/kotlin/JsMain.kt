@@ -8,7 +8,7 @@ import mirrg.fluorite12.FluoriteValue
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.collect
-import mirrg.fluorite12.compile.compileToGetter
+import mirrg.fluorite12.compilers.compileToGetter
 import mirrg.fluorite12.defineCommonBuiltinConstants
 import kotlin.js.Promise
 

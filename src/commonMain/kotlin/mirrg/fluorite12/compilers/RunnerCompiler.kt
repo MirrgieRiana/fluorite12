@@ -1,4 +1,4 @@
-package mirrg.fluorite12.compile
+package mirrg.fluorite12.compilers
 
 import mirrg.fluorite12.EmptyNode
 import mirrg.fluorite12.Frame
