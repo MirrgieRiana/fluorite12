@@ -35,9 +35,7 @@ import mirrg.fluorite12.getVariable
 import mirrg.fluorite12.instanceOf
 import mirrg.fluorite12.operations.AndGetter
 import mirrg.fluorite12.operations.ArrayCreationGetter
-import mirrg.fluorite12.operations.ArrayItemSetter
 import mirrg.fluorite12.operations.AssignmentGetter
-import mirrg.fluorite12.operations.AssignmentRunner
 import mirrg.fluorite12.operations.ComparisonChainGetter
 import mirrg.fluorite12.operations.ConversionStringGetter
 import mirrg.fluorite12.operations.DivGetter
@@ -52,7 +50,6 @@ import mirrg.fluorite12.operations.FunctionGetter
 import mirrg.fluorite12.operations.FunctionInvocationGetter
 import mirrg.fluorite12.operations.GetLengthGetter
 import mirrg.fluorite12.operations.Getter
-import mirrg.fluorite12.operations.GetterRunner
 import mirrg.fluorite12.operations.IfGetter
 import mirrg.fluorite12.operations.ItemAccessGetter
 import mirrg.fluorite12.operations.LinesGetter
@@ -70,8 +67,6 @@ import mirrg.fluorite12.operations.PipeGetter
 import mirrg.fluorite12.operations.PlusGetter
 import mirrg.fluorite12.operations.PowerGetter
 import mirrg.fluorite12.operations.RangeGetter
-import mirrg.fluorite12.operations.Runner
-import mirrg.fluorite12.operations.Setter
 import mirrg.fluorite12.operations.StreamConcatenationGetter
 import mirrg.fluorite12.operations.StringConcatenationGetter
 import mirrg.fluorite12.operations.ThrowGetter
@@ -83,9 +78,7 @@ import mirrg.fluorite12.operations.ToNegativeNumberGetter
 import mirrg.fluorite12.operations.ToNumberGetter
 import mirrg.fluorite12.operations.ToStringGetter
 import mirrg.fluorite12.operations.TryCatchGetter
-import mirrg.fluorite12.operations.TryCatchRunner
 import mirrg.fluorite12.operations.VariableGetter
-import mirrg.fluorite12.operations.VariableSetter
 import mirrg.fluorite12.text
 
 fun Frame.compileToGetter(node: Node): Getter {
@@ -367,58 +360,5 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
         }
 
         else -> throw IllegalArgumentException("Unknown operator: A $text B")
-    }
-}
-
-private fun Frame.compileToRunner(node: Node): List<Runner> {
-    return when {
-        node is EmptyNode -> listOf()
-
-        node is InfixNode && node.operator.text == "=" -> { // 代入文
-            val setter = compileToSetter(node.left)
-            val getter = compileToGetter(node.right)
-            listOf(AssignmentRunner(setter, getter))
-        }
-
-        node is InfixNode && node.operator.text == ":=" -> when { // 宣言文
-            node.left is IdentifierNode -> {
-                val name = node.left.string
-                val variableIndex = defineVariable(name)
-                listOf(AssignmentRunner(VariableSetter(frameIndex, variableIndex), compileToGetter(node.right)))
-            }
-
-            else -> throw IllegalArgumentException("Illegal definition: ${node.left::class} := ${node.right::class}")
-        }
-
-        node is InfixNode && node.operator.text == "!?" -> {
-            val (name, rightNode) = if (node.right is InfixNode && node.right.operator.text == "=>") {
-                require(node.right.left is IdentifierNode)
-                Pair(node.right.left.string, node.right.right)
-            } else {
-                Pair("_", node.right)
-            }
-            val newFrame = Frame(this)
-            val argumentVariableIndex = newFrame.defineVariable(name)
-            listOf(TryCatchRunner(compileToRunner(node.left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToRunner(rightNode)))
-        }
-
-        else -> listOf(GetterRunner(compileToGetter(node))) // 式文
-    }
-}
-
-private fun Frame.compileToSetter(node: Node): Setter {
-    return when (node) {
-        is IdentifierNode -> {
-            val name = node.string
-            val (frameIndex, variableIndex) = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
-            VariableSetter(frameIndex, variableIndex)
-        }
-
-        is RightBracketsNode -> when (node.type) {
-            BracketsType.ROUND -> ArrayItemSetter(compileToGetter(node.main), compileToGetter(node.argument))
-            else -> throw IllegalArgumentException("Illegal setter: ${node::class}")
-        }
-
-        else -> throw IllegalArgumentException("Illegal setter: ${node::class}")
     }
 }
