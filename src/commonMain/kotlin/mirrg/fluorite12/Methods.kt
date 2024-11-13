@@ -31,6 +31,7 @@ suspend fun FluoriteValue.callMethod(name: String, arguments: Array<FluoriteValu
 }
 
 suspend fun FluoriteValue.invoke(arguments: Array<FluoriteValue>) = this.callMethod("INVOKE", arguments)
+suspend fun FluoriteValue.bind(arguments: Array<FluoriteValue>) = this.callMethod("BIND", arguments)
 suspend fun FluoriteValue.toJson() = this.callMethod("TO_JSON")
 suspend fun FluoriteValue.toFluoriteNumber(): FluoriteNumber = this.callMethod("TO_NUMBER").let { if (it is FluoriteNumber) it else it.toFluoriteNumber() }
 suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod("TO_STRING").let { if (it is FluoriteString) it else it.toFluoriteString() }

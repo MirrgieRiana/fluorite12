@@ -224,6 +224,14 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
+                    "BIND" to FluoriteFunction { arguments ->
+                        // TODO
+                        val array = arguments[0] as FluoriteArray
+                        val arguments1 = arguments.sliceArray(1 until arguments.size)
+                        FluoriteFunction { arguments2 ->
+                            array.invoke(arguments1 + arguments2)
+                        }
+                    },
                     "TO_STRING" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('[')
@@ -290,6 +298,14 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
+                    "BIND" to FluoriteFunction { arguments ->
+                        // TODO
+                        val obj = arguments[0] as FluoriteObject
+                        val arguments1 = arguments.sliceArray(1 until arguments.size)
+                        FluoriteFunction { arguments2 ->
+                            obj.invoke(arguments1 + arguments2)
+                        }
+                    },
                     "TO_STRING" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('{')
@@ -334,6 +350,13 @@ class FluoriteFunction(val function: suspend (Array<FluoriteValue>) -> FluoriteV
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     "INVOKE" to FluoriteFunction { arguments ->
                         (arguments[0] as FluoriteFunction).function(arguments.sliceArray(1 until arguments.size))
+                    },
+                    "BIND" to FluoriteFunction { arguments ->
+                        val function = arguments[0] as FluoriteFunction
+                        val arguments1 = arguments.sliceArray(1 until arguments.size)
+                        FluoriteFunction { arguments2 ->
+                            function.function(arguments1 + arguments2)
+                        }
                     },
                 )
             )

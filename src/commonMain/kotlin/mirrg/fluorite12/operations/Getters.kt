@@ -19,6 +19,7 @@ import mirrg.fluorite12.FluoriteObject
 import mirrg.fluorite12.FluoriteStream
 import mirrg.fluorite12.FluoriteString
 import mirrg.fluorite12.FluoriteValue
+import mirrg.fluorite12.bind
 import mirrg.fluorite12.callMethod
 import mirrg.fluorite12.collect
 import mirrg.fluorite12.escapeJsonString
@@ -152,9 +153,7 @@ class FunctionBindGetter(private val functionGetter: Getter, private val argumen
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val function = functionGetter.evaluate(env)
         val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
-        return FluoriteFunction { arguments2 ->
-            function.invoke(arguments + arguments2)
-        }
+        return function.bind(arguments)
     }
 
     override val code get() = "FunctionBind[${functionGetter.code};${argumentGetters.code}]"
