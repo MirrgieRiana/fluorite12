@@ -1,12 +1,12 @@
 package mirrg.fluorite12.compilers
 
 import mirrg.fluorite12.BracketsType
-import mirrg.fluorite12.FluoriteString
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.IdentifierNode
 import mirrg.fluorite12.InfixNode
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.RightBracketsNode
+import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.getVariable
 import mirrg.fluorite12.operations.ArrayItemSetter
 import mirrg.fluorite12.operations.ItemAccessSetter

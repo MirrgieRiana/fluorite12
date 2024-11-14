@@ -2,6 +2,7 @@ package mirrg.fluorite12
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
 import kotlin.test.assertEquals

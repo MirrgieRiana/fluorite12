@@ -1,11 +1,11 @@
 package mirrg.fluorite12.operations
 
 import mirrg.fluorite12.Environment
-import mirrg.fluorite12.FluoriteArray
-import mirrg.fluorite12.FluoriteObject
-import mirrg.fluorite12.FluoriteStream
-import mirrg.fluorite12.FluoriteString
-import mirrg.fluorite12.FluoriteValue
+import mirrg.fluorite12.compilers.objects.FluoriteArray
+import mirrg.fluorite12.compilers.objects.FluoriteObject
+import mirrg.fluorite12.compilers.objects.FluoriteStream
+import mirrg.fluorite12.compilers.objects.FluoriteString
+import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.toFluoriteNumber
 import mirrg.fluorite12.toFluoriteString
 

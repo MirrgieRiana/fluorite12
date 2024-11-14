@@ -1,5 +1,11 @@
 package mirrg.fluorite12
 
+import mirrg.fluorite12.compilers.objects.FluoriteBoolean
+import mirrg.fluorite12.compilers.objects.FluoriteFunction
+import mirrg.fluorite12.compilers.objects.FluoriteNumber
+import mirrg.fluorite12.compilers.objects.FluoriteString
+import mirrg.fluorite12.compilers.objects.FluoriteValue
+
 fun FluoriteValue.instanceOf(clazz: FluoriteValue): Boolean {
     var currentObject: FluoriteValue? = this
     while (true) {

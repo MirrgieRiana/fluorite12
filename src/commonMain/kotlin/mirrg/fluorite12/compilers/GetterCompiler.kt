@@ -8,11 +8,6 @@ import mirrg.fluorite12.ConditionNode
 import mirrg.fluorite12.EmbeddedStringNode
 import mirrg.fluorite12.EmptyNode
 import mirrg.fluorite12.FloatNode
-import mirrg.fluorite12.FluoriteDouble
-import mirrg.fluorite12.FluoriteInt
-import mirrg.fluorite12.FluoriteNumber
-import mirrg.fluorite12.FluoriteString
-import mirrg.fluorite12.FluoriteValue
 import mirrg.fluorite12.FormattedStringContent
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.HexadecimalNode
@@ -29,6 +24,11 @@ import mirrg.fluorite12.RightNode
 import mirrg.fluorite12.RootNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
+import mirrg.fluorite12.compilers.objects.FluoriteDouble
+import mirrg.fluorite12.compilers.objects.FluoriteInt
+import mirrg.fluorite12.compilers.objects.FluoriteNumber
+import mirrg.fluorite12.compilers.objects.FluoriteString
+import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.contains
 import mirrg.fluorite12.defineVariable
 import mirrg.fluorite12.getVariable

@@ -1,8 +1,8 @@
 package mirrg.fluorite12.operations
 
 import mirrg.fluorite12.Environment
-import mirrg.fluorite12.FluoriteStream
-import mirrg.fluorite12.collect
+import mirrg.fluorite12.compilers.objects.FluoriteStream
+import mirrg.fluorite12.compilers.objects.collect
 
 class GetterRunner(private val getter: Getter) : Runner {
     override suspend fun evaluate(env: Environment) {

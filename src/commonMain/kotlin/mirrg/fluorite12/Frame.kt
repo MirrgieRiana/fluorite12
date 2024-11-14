@@ -1,5 +1,7 @@
 package mirrg.fluorite12
 
+import mirrg.fluorite12.compilers.objects.FluoriteNull
+import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.operations.AssignmentRunner
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.Runner

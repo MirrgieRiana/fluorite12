@@ -3,12 +3,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 import mirrg.fluorite12.Environment
 import mirrg.fluorite12.Fluorite12Grammar
-import mirrg.fluorite12.FluoriteStream
-import mirrg.fluorite12.FluoriteValue
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.Node
-import mirrg.fluorite12.collect
 import mirrg.fluorite12.compilers.compileToGetter
+import mirrg.fluorite12.compilers.objects.FluoriteStream
+import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.defineCommonBuiltinConstants
 import kotlin.js.Promise
 

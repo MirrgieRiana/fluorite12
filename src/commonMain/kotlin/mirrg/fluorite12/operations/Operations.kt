@@ -1,7 +1,7 @@
 package mirrg.fluorite12.operations
 
 import mirrg.fluorite12.Environment
-import mirrg.fluorite12.FluoriteValue
+import mirrg.fluorite12.compilers.objects.FluoriteValue
 
 interface Operation {
     val code: String

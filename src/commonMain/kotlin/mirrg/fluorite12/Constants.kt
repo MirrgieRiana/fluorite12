@@ -1,5 +1,18 @@
 package mirrg.fluorite12
 
+import mirrg.fluorite12.compilers.objects.FluoriteArray
+import mirrg.fluorite12.compilers.objects.FluoriteBoolean
+import mirrg.fluorite12.compilers.objects.FluoriteDouble
+import mirrg.fluorite12.compilers.objects.FluoriteFunction
+import mirrg.fluorite12.compilers.objects.FluoriteInt
+import mirrg.fluorite12.compilers.objects.FluoriteNull
+import mirrg.fluorite12.compilers.objects.FluoriteNumber
+import mirrg.fluorite12.compilers.objects.FluoriteObject
+import mirrg.fluorite12.compilers.objects.FluoriteStream
+import mirrg.fluorite12.compilers.objects.FluoriteString
+import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.toFluoriteString
 import kotlin.math.E
 import kotlin.math.PI
 import kotlin.math.floor

@@ -5,6 +5,14 @@ import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import mirrg.fluorite12.compilers.compileToGetter
+import mirrg.fluorite12.compilers.objects.FluoriteArray
+import mirrg.fluorite12.compilers.objects.FluoriteBoolean
+import mirrg.fluorite12.compilers.objects.FluoriteDouble
+import mirrg.fluorite12.compilers.objects.FluoriteInt
+import mirrg.fluorite12.compilers.objects.FluoriteObject
+import mirrg.fluorite12.compilers.objects.FluoriteStream
+import mirrg.fluorite12.compilers.objects.FluoriteString
+import mirrg.fluorite12.compilers.objects.FluoriteValue
 
 fun parse(src: String): String {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
