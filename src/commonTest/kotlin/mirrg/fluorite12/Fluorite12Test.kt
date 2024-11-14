@@ -312,9 +312,11 @@ class Fluorite12Test {
         assertEquals(true, run("!0").boolean) // ! も論理値に自動変換される
 
 
-        assertEquals(true, run("?[]").boolean) // 配列の論理値化は常にTRUE
-        assertEquals(true, run("?{}").boolean) // オブジェクトの論理値化は常にTRUE
-        assertEquals(false, run("?{TO_BOOLEAN: this -> FALSE}{}").boolean) // ただしTO_BOOLEANメソッドでオーバーライドできる
+        assertEquals(false, run("?[]").boolean) // 空配列の論理値化はFALSE
+        assertEquals(true, run("?[NULL]").boolean) // 要素がある配列の論理値化はTRUE
+        assertEquals(false, run("?{}").boolean) // 空オブジェクトの論理値化はFALSE
+        assertEquals(true, run("?{a: 1}").boolean) // 要素があるオブジェクトの論理値化はTRUE
+        assertEquals(true, run("?{TO_BOOLEAN: this -> TRUE}{}").boolean) // TO_BOOLEANメソッドでオーバーライドできる
         assertEquals(true, run("TRUE::TO_BOOLEAN()").boolean) // 論理値に対してもTO_BOOLEANが呼び出せる
     }
 
