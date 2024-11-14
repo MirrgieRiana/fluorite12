@@ -78,6 +78,7 @@ import mirrg.fluorite12.operations.ToNegativeNumberGetter
 import mirrg.fluorite12.operations.ToNumberGetter
 import mirrg.fluorite12.operations.ToStringGetter
 import mirrg.fluorite12.operations.TryCatchGetter
+import mirrg.fluorite12.operations.TryCatchWithVariableGetter
 import mirrg.fluorite12.operations.VariableGetter
 import mirrg.fluorite12.text
 
@@ -285,15 +286,23 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
         "?:" -> ElvisGetter(compileToGetter(left), compileToGetter(right))
 
         "!?" -> {
-            val (name, rightNode) = if (right is InfixNode && right.operator.text == "=>") {
-                require(right.left is IdentifierNode)
-                Pair(right.left.string, right.right)
+            val (name, rightNode) = if (right is BracketsNode && right.type == BracketsType.ROUND) {
+                if (right.main is InfixNode && right.main.operator.text == "=>") {
+                    require(right.main.left is IdentifierNode)
+                    Pair(right.main.left.string, right.main.right)
+                } else {
+                    Pair(null, right.main)
+                }
             } else {
-                Pair("_", right)
+                Pair(null, right)
             }
-            val newFrame = Frame(this)
-            val argumentVariableIndex = newFrame.defineVariable(name)
-            TryCatchGetter(compileToGetter(left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
+            if (name != null) {
+                val newFrame = Frame(this)
+                val argumentVariableIndex = newFrame.defineVariable(name)
+                TryCatchWithVariableGetter(compileToGetter(left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
+            } else {
+                TryCatchGetter(compileToGetter(left), compileToGetter(rightNode))
+            }
         }
 
         ":" -> {

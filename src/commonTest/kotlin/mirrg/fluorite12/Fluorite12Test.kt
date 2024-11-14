@@ -391,10 +391,8 @@ class Fluorite12Test {
 
         assertEquals("b", run("!!'a' !? 'b'").string) // !? で例外をキャッチできる
         assertEquals("b", run("1 + [2 + !!'a'] !? 'b'").string) // !! は深い階層にあってもよい
-        assertEquals("a", run("!!'a' !? _").string) // _ で例外オブジェクトを受け取れる
-        assertEquals("a", run("!!'a' !? e => e").string) // => で例外オブジェクトを受け取る変数を指定できる
-        assertEquals("a", run("t := () -> !!'a'; c := f -> f() !? e => () -> e; c(t)()").string) // ラムダ演算子と同じ結合優先度
-        assertEquals(1, run("a := 1; 1 !? a = 2; a").int) // !? の右辺は実行されなければ副作用が出ない
+        assertEquals("a", run("!!'a' !? (e => e)").string) // => でスローされた値を受け取れる
+        assertEquals(1, run("a := 1; 1 !? (a = 2); a").int) // !? の右辺は実行されなければ評価自体が行われない
     }
 
     @Test

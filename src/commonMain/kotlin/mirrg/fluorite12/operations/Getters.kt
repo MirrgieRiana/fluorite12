@@ -593,7 +593,7 @@ class AssignmentGetter(private val setter: Setter, private val getter: Getter) :
     override val code get() = "Assignment[${setter.code};${getter.code}]"
 }
 
-class TryCatchGetter(private val leftGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightGetter: Getter) : Getter {
+class TryCatchWithVariableGetter(private val leftGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return try {
             leftGetter.evaluate(env)
@@ -604,7 +604,19 @@ class TryCatchGetter(private val leftGetter: Getter, private val newFrameIndex: 
         }
     }
 
-    override val code get() = "TryCatch[${leftGetter.code};$newFrameIndex;$argumentVariableIndex;${rightGetter.code}]"
+    override val code get() = "TryCatchWithVariable[${leftGetter.code};$newFrameIndex;$argumentVariableIndex;${rightGetter.code}]"
+}
+
+class TryCatchGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        return try {
+            leftGetter.evaluate(env)
+        } catch (e: FluoriteException) {
+            rightGetter.evaluate(env)
+        }
+    }
+
+    override val code get() = "TryCatch[${leftGetter.code};${rightGetter.code}]"
 }
 
 class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {

@@ -291,6 +291,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val condition: Parser<Node> by OrCombinator(
         or * -b * question * -b * cachedParser { condition } * -b * (colon * -NotParser(colon)) * -b * cachedParser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
         or * -b * +(question * colon) * -b * cachedParser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
+        or * -b * +(exclamation * question) * -b * cachedParser { condition } map { InfixNode(it.t1, it.t2, it.t3) },
         or,
     )
 
@@ -315,7 +316,6 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(colon * equal), // :=
         +(less * less), // <<
         +(minus * greater), // ->
-        +(exclamation * question), // !?
     )
 
     val pipeOperatorPart: Parser<List<TokenMatch>> by -b * pipeOperator * -b or -s * argumentsOperator * -b
