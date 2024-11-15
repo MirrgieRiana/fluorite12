@@ -8,8 +8,6 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import mirrg.fluorite12.Environment
-import mirrg.fluorite12.bind
-import mirrg.fluorite12.callMethod
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
@@ -21,16 +19,16 @@ import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.bind
+import mirrg.fluorite12.compilers.objects.callMethod
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.invoke
+import mirrg.fluorite12.compilers.objects.toBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteBoolean
+import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteString
+import mirrg.fluorite12.compilers.objects.toJson
 import mirrg.fluorite12.escapeJsonString
-import mirrg.fluorite12.invoke
-import mirrg.fluorite12.toBoolean
-import mirrg.fluorite12.toFluoriteBoolean
-import mirrg.fluorite12.toFluoriteNumber
-import mirrg.fluorite12.toFluoriteString
-import mirrg.fluorite12.toJson
 import kotlin.math.pow
 
 object NullGetter : Getter {

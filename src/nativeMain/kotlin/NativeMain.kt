@@ -13,7 +13,6 @@ import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.defineCommonBuiltinConstants
 import mirrg.fluorite12.defineConstant
-import mirrg.fluorite12.toFluoriteString
 
 fun main(args: Array<String>) = runBlocking {
     val src = args[0]

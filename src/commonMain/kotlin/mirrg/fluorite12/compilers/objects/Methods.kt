@@ -1,10 +1,9 @@
-package mirrg.fluorite12
+package mirrg.fluorite12.compilers.objects
 
-import mirrg.fluorite12.compilers.objects.FluoriteBoolean
-import mirrg.fluorite12.compilers.objects.FluoriteFunction
-import mirrg.fluorite12.compilers.objects.FluoriteNumber
-import mirrg.fluorite12.compilers.objects.FluoriteString
-import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.Formatter
+import mirrg.fluorite12.FormatterConversion
+import mirrg.fluorite12.FormatterFlag
+import mirrg.fluorite12.removeExponent
 
 fun FluoriteValue.instanceOf(clazz: FluoriteValue): Boolean {
     var currentObject: FluoriteValue? = this

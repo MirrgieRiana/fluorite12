@@ -3,9 +3,6 @@ package mirrg.fluorite12.compilers.objects
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import mirrg.fluorite12.toBoolean
-import mirrg.fluorite12.toFluoriteNumber
-import mirrg.fluorite12.toFluoriteString
 
 class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -> Unit) : FluoriteValue {
     companion object {

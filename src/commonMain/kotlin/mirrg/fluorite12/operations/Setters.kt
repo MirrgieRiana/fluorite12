@@ -6,8 +6,8 @@ import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
-import mirrg.fluorite12.toFluoriteNumber
-import mirrg.fluorite12.toFluoriteString
+import mirrg.fluorite12.compilers.objects.toFluoriteNumber
+import mirrg.fluorite12.compilers.objects.toFluoriteString
 
 class VariableSetter(private val frameIndex: Int, private val variableIndex: Int) : Setter {
     override suspend fun evaluate(env: Environment): suspend (FluoriteValue) -> Unit {

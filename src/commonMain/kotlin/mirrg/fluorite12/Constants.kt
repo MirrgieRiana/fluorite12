@@ -12,6 +12,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import kotlin.math.E
 import kotlin.math.PI

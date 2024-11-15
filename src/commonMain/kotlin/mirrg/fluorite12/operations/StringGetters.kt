@@ -2,9 +2,9 @@ package mirrg.fluorite12.operations
 
 import mirrg.fluorite12.Environment
 import mirrg.fluorite12.Formatter
+import mirrg.fluorite12.compilers.objects.format
+import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.escapeJsonString
-import mirrg.fluorite12.format
-import mirrg.fluorite12.toFluoriteString
 
 class LiteralStringGetter(private val string: String) : StringGetter {
     override suspend fun evaluate(env: Environment) = string

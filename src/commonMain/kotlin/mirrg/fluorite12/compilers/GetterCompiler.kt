@@ -29,10 +29,10 @@ import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteNumber
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
-import mirrg.fluorite12.contains
+import mirrg.fluorite12.compilers.objects.contains
+import mirrg.fluorite12.compilers.objects.instanceOf
 import mirrg.fluorite12.defineVariable
 import mirrg.fluorite12.getVariable
-import mirrg.fluorite12.instanceOf
 import mirrg.fluorite12.operations.AndGetter
 import mirrg.fluorite12.operations.ArrayCreationGetter
 import mirrg.fluorite12.operations.AssignmentGetter

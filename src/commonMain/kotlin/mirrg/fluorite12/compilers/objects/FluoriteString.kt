@@ -1,8 +1,6 @@
 package mirrg.fluorite12.compilers.objects
 
 import mirrg.fluorite12.escapeJsonString
-import mirrg.fluorite12.toFluoriteNumber
-import mirrg.fluorite12.toFluoriteString
 
 class FluoriteString(val value: String) : FluoriteValue {
     companion object {

@@ -1,9 +1,5 @@
 package mirrg.fluorite12.compilers.objects
 
-import mirrg.fluorite12.toFluoriteNumber
-import mirrg.fluorite12.toFluoriteString
-import mirrg.fluorite12.toJson
-
 class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
     companion object {
         val fluoriteClass by lazy {

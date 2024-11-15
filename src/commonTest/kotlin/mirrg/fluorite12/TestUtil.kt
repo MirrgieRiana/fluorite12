@@ -13,6 +13,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.toFluoriteString
 
 fun parse(src: String): String {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()

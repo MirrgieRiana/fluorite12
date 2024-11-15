@@ -1,9 +1,6 @@
 package mirrg.fluorite12.compilers.objects
 
 import mirrg.fluorite12.escapeJsonString
-import mirrg.fluorite12.invoke
-import mirrg.fluorite12.toFluoriteString
-import mirrg.fluorite12.toJson
 
 class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<String, FluoriteValue>) : FluoriteValue {
     companion object {
