@@ -325,3 +325,12 @@ $ flc '&{TO_STRING: this -> "The value is $(this.value)"}{value: 100}'
 $ flc '"abc" & "def"'
 # abcdef
 ```
+
+# 部分文字列の取得
+
+`string[indices]` で部分文字列を取得できます。
+
+```shell
+$ flc '"abcde"[1..3]'
+# bcd
+```

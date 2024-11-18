@@ -839,4 +839,16 @@ class Fluorite12Test {
         assertEquals("{a:1;b:2;c:9}", run("o := {a: 1; b: 2}; o.c = 9; o").obj) // 存在しないフィールドに代入すると新規追加される
     }
 
+    @Test
+    fun subString() = runTest {
+        assertEquals("abc", run("'abc'[]").string) // 文字列そのものを返す
+        assertEquals("b", run("'abc'[1]").string) // 単一インデックスによる部分文字列の取得
+        assertEquals("b", run("'abc'['0.95']").string) // インデックスは数値化し、四捨五入される
+        assertEquals("NULL", run("'abc'[3]").string) // 範囲外のインデックスは NULL が返る
+        assertEquals("c", run("'abc'[-1]").string) // 負のインデックスは後ろから数える
+        assertEquals("ccab", run("'abc'[2, 2, 0, 1]").string) // インデックスのストリームは要素のストリームを返す
+
+        assertEquals("bcd", run("'abcde'[1 .. 3]").string) // 範囲指定による部分配列の取得
+    }
+
 }

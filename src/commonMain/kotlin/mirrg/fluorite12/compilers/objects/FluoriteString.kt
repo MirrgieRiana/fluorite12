@@ -39,6 +39,38 @@ class FluoriteString(val value: String) : FluoriteValue {
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
+                    "BIND" to FluoriteFunction { arguments ->
+                        val string = arguments[0] as FluoriteString
+                        when (arguments.size) {
+                            1 -> string
+
+                            2 -> {
+                                val kotlinString = string.value
+                                val sb = StringBuilder()
+                                suspend fun append(index: FluoriteValue) {
+                                    val index2 = index.toFluoriteNumber().roundToInt()
+                                    val index3 = if (index2 >= 0) index2 else index2 + kotlinString.length
+                                    if (index3 >= 0 && index3 < kotlinString.length) {
+                                        sb.append(kotlinString[index3])
+                                    } else {
+                                        sb.append("NULL")
+                                    }
+                                }
+
+                                val argument = arguments[1]
+                                if (argument is FluoriteStream) {
+                                    argument.collect { index ->
+                                        append(index)
+                                    }
+                                } else {
+                                    append(argument)
+                                }
+                                FluoriteString(sb.toString())
+                            }
+
+                            else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+                        }
+                    },
                     "TO_NUMBER" to FluoriteFunction { arguments ->
                         val string = (arguments[0] as FluoriteString).value
                         if (string.all { c -> c in '0'..'9' }) {
