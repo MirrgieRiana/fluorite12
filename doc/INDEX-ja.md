@@ -6,6 +6,7 @@
 - [変数](VARIABLE-ja.md)
 - [数値](NUMBER-ja.md)
 - [文字列](STRING-ja.md)
+- [比較](COMPARISON-ja.md)
 - [論理値・条件分岐](BOOLEAN-ja.md)
 - [配列](ARRAY-ja.md)
 - [オブジェクト](OBJECT-ja.md)
