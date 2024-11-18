@@ -4960,7 +4960,6 @@
        chrome_version: chrome ? +chrome[1] : 0,
        ios,
        android: /*@__PURE__*//Android\b/.test(nav.userAgent),
-       webkit,
        safari,
        webkit_version: webkit ? +(/*@__PURE__*//\bAppleWebKit\/(\d+)/.exec(nav.userAgent) || [0, 0])[1] : 0,
        tabSize: doc.documentElement.style.tabSize != null ? "tab-size" : "-moz-tab-size"
@@ -11370,6 +11369,9 @@
            // user action on some Android keyboards)
            this.pendingContextChange = null;
            this.handlers = Object.create(null);
+           // Kludge to work around the fact that EditContext does not respond
+           // well to having its content updated during a composition (see #1472)
+           this.composing = null;
            this.resetRange(view.state);
            let context = this.editContext = new window.EditContext({
                text: view.state.doc.sliceString(this.from, this.to),
@@ -11378,9 +11380,10 @@
            });
            this.handlers.textupdate = e => {
                let { anchor } = view.state.selection.main;
-               let change = { from: this.toEditorPos(e.updateRangeStart),
-                   to: this.toEditorPos(e.updateRangeEnd),
-                   insert: Text.of(e.text.split("\n")) };
+               let from = this.toEditorPos(e.updateRangeStart), to = this.toEditorPos(e.updateRangeEnd);
+               if (view.inputState.composing >= 0 && !this.composing)
+                   this.composing = { contextBase: e.updateRangeStart, editorBase: from, drifted: false };
+               let change = { from, to, insert: Text.of(e.text.split("\n")) };
                // If the window doesn't include the anchor, assume changes
                // adjacent to a side go up to the anchor.
                if (change.from == this.from && anchor < this.from)
@@ -11431,6 +11434,12 @@
            this.handlers.compositionend = () => {
                view.inputState.composing = -1;
                view.inputState.compositionFirstChange = null;
+               if (this.composing) {
+                   let { drifted } = this.composing;
+                   this.composing = null;
+                   if (drifted)
+                       this.reset(view.state);
+               }
            };
            for (let event in this.handlers)
                context.addEventListener(event, this.handlers[event]);
@@ -11481,11 +11490,13 @@
        }
        update(update) {
            let reverted = this.pendingContextChange;
-           if (!this.applyEdits(update) || !this.rangeIsValid(update.state)) {
+           if (this.composing && (this.composing.drifted || update.transactions.some(tr => !tr.isUserEvent("input.type") && tr.changes.touchesRange(this.from, this.to)))) {
+               this.composing.drifted = true;
+               this.composing.editorBase = update.changes.mapPos(this.composing.editorBase);
+           }
+           else if (!this.applyEdits(update) || !this.rangeIsValid(update.state)) {
                this.pendingContextChange = null;
-               this.resetRange(update.state);
-               this.editContext.updateText(0, this.editContext.text.length, update.state.doc.sliceString(this.from, this.to));
-               this.setSelection(update.state);
+               this.reset(update.state);
            }
            else if (update.docChanged || update.selectionSet || reverted) {
                this.setSelection(update.state);
@@ -11497,6 +11508,11 @@
            let { head } = state.selection.main;
            this.from = Math.max(0, head - 10000 /* CxVp.Margin */);
            this.to = Math.min(state.doc.length, head + 10000 /* CxVp.Margin */);
+       }
+       reset(state) {
+           this.resetRange(state);
+           this.editContext.updateText(0, this.editContext.text.length, state.doc.sliceString(this.from, this.to));
+           this.setSelection(state);
        }
        revertPending(state) {
            let pending = this.pendingContextChange;
@@ -11516,8 +11532,14 @@
                this.to < state.doc.length && this.to - head < 500 /* CxVp.MinMargin */ ||
                this.to - this.from > 10000 /* CxVp.Margin */ * 3);
        }
-       toEditorPos(contextPos) { return contextPos + this.from; }
-       toContextPos(editorPos) { return editorPos - this.from; }
+       toEditorPos(contextPos) {
+           let c = this.composing;
+           return c && c.drifted ? c.editorBase + (contextPos - c.contextBase) : contextPos + this.from;
+       }
+       toContextPos(editorPos) {
+           let c = this.composing;
+           return c && c.drifted ? c.contextBase + (editorPos - c.editorBase) : editorPos - this.from;
+       }
        destroy() {
            for (let event in this.handlers)
                this.editContext.removeEventListener(event, this.handlers[event]);
@@ -13994,7 +14016,6 @@
            clearTimeout(this.measureTimeout);
        }
        readMeasure() {
-           let editor = this.view.dom.getBoundingClientRect();
            let scaleX = 1, scaleY = 1, makeAbsolute = false;
            if (this.position == "fixed" && this.manager.tooltipViews.length) {
                let { dom } = this.manager.tooltipViews[0];
@@ -14023,9 +14044,13 @@
                    ({ scaleX, scaleY } = this.view.viewState);
                }
            }
+           let visible = this.view.scrollDOM.getBoundingClientRect(), margins = getScrollMargins(this.view);
            return {
-               editor,
-               parent: this.parent ? this.container.getBoundingClientRect() : editor,
+               visible: {
+                   left: visible.left + margins.left, top: visible.top + margins.top,
+                   right: visible.right - margins.right, bottom: visible.bottom - margins.bottom
+               },
+               parent: this.parent ? this.container.getBoundingClientRect() : this.view.dom.getBoundingClientRect(),
                pos: this.manager.tooltips.map((t, i) => {
                    let tv = this.manager.tooltipViews[i];
                    return tv.getCoords ? tv.getCoords(t.pos) : this.view.coordsAtPos(t.pos);
@@ -14043,16 +14068,16 @@
                for (let t of this.manager.tooltipViews)
                    t.dom.style.position = "absolute";
            }
-           let { editor, space, scaleX, scaleY } = measured;
+           let { visible, space, scaleX, scaleY } = measured;
            let others = [];
            for (let i = 0; i < this.manager.tooltips.length; i++) {
                let tooltip = this.manager.tooltips[i], tView = this.manager.tooltipViews[i], { dom } = tView;
                let pos = measured.pos[i], size = measured.size[i];
                // Hide tooltips that are outside of the editor.
-               if (!pos || pos.bottom <= Math.max(editor.top, space.top) ||
-                   pos.top >= Math.min(editor.bottom, space.bottom) ||
-                   pos.right < Math.max(editor.left, space.left) - .1 ||
-                   pos.left > Math.min(editor.right, space.right) + .1) {
+               if (!pos || pos.bottom <= Math.max(visible.top, space.top) ||
+                   pos.top >= Math.min(visible.bottom, space.bottom) ||
+                   pos.right < Math.max(visible.left, space.left) - .1 ||
+                   pos.left > Math.min(visible.right, space.right) + .1) {
                    dom.style.top = Outside;
                    continue;
                }
@@ -14066,8 +14091,8 @@
                        : Math.min(Math.max(space.left, pos.left - width + (arrow ? 14 /* Arrow.Offset */ : 0) - offset.x), space.right - width);
                let above = this.above[i];
                if (!tooltip.strictSide && (above
-                   ? pos.top - (size.bottom - size.top) - offset.y < space.top
-                   : pos.bottom + (size.bottom - size.top) + offset.y > space.bottom) &&
+                   ? pos.top - height - arrowHeight - offset.y < space.top
+                   : pos.bottom + height + arrowHeight + offset.y > space.bottom) &&
                    above == (space.bottom - pos.bottom > pos.top - space.top))
                    above = this.above[i] = !above;
                let spaceVert = (above ? pos.top - space.top : space.bottom - pos.bottom) - arrowHeight;
@@ -14127,7 +14152,7 @@
    });
    const baseTheme$4 = /*@__PURE__*/EditorView.baseTheme({
        ".cm-tooltip": {
-           zIndex: 100,
+           zIndex: 500,
            boxSizing: "border-box"
        },
        "&light .cm-tooltip": {
@@ -19373,9 +19398,7 @@
    }
    ({
        rtl: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "rtl" }, bidiIsolate: Direction.RTL }),
-       ltr: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "ltr" }, bidiIsolate: Direction.LTR }),
-       auto: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "auto" }, bidiIsolate: null })
-   });
+       ltr: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "ltr" }, bidiIsolate: Direction.LTR })});
 
    /**
    Comment or uncomment the current selection. Will use line comments
@@ -22819,11 +22842,11 @@
                : new CompletionDialog(this.options, makeAttrs(id, selected), this.tooltip, this.timestamp, selected, this.disabled);
        }
        static build(active, state, id, prev, conf, didSetActive) {
-           if (prev && !didSetActive && active.some(s => s.state == 1 /* State.Pending */))
+           if (prev && !didSetActive && active.some(s => s.isPending))
                return prev.setDisabled();
            let options = sortOptions(active, state);
            if (!options.length)
-               return prev && active.some(a => a.state == 1 /* State.Pending */) ? prev.setDisabled() : null;
+               return prev && active.some(a => a.isPending) ? prev.setDisabled() : null;
            let selected = state.facet(completionConfig).selectOnOpen ? 0 : -1;
            if (prev && prev.selected != selected && prev.selected != -1) {
                let selectedValue = prev.options[prev.selected].completion;
@@ -22872,9 +22895,9 @@
            if (tr.selection || active.some(a => a.hasResult() && tr.changes.touchesRange(a.from, a.to)) ||
                !sameResults(active, this.active) || didSet)
                open = CompletionDialog.build(active, state, this.id, open, conf, didSet);
-           else if (open && open.disabled && !active.some(a => a.state == 1 /* State.Pending */))
+           else if (open && open.disabled && !active.some(a => a.isPending))
                open = null;
-           if (!open && active.every(a => a.state != 1 /* State.Pending */) && active.some(a => a.hasResult()))
+           if (!open && active.every(a => !a.isPending) && active.some(a => a.hasResult()))
                active = active.map(a => a.hasResult() ? new ActiveSource(a.source, 0 /* State.Inactive */) : a);
            for (let effect of tr.effects)
                if (effect.is(setSelectedEffect))
@@ -22888,9 +22911,9 @@
        if (a == b)
            return true;
        for (let iA = 0, iB = 0;;) {
-           while (iA < a.length && !a[iA].hasResult)
+           while (iA < a.length && !a[iA].hasResult())
                iA++;
-           while (iB < b.length && !b[iB].hasResult)
+           while (iB < b.length && !b[iB].hasResult())
                iB++;
            let endA = iA == a.length, endB = iB == b.length;
            if (endA || endB)
@@ -22928,12 +22951,13 @@
                        : tr.docChanged ? 16 /* UpdateType.ResetIfTouching */ : 0 /* UpdateType.None */;
    }
    class ActiveSource {
-       constructor(source, state, explicitPos = -1) {
+       constructor(source, state, explicit = false) {
            this.source = source;
            this.state = state;
-           this.explicitPos = explicitPos;
+           this.explicit = explicit;
        }
        hasResult() { return false; }
+       get isPending() { return this.state == 1 /* State.Pending */; }
        update(tr, conf) {
            let type = getUpdateType(tr, conf), value = this;
            if ((type & 8 /* UpdateType.Reset */) || (type & 16 /* UpdateType.ResetIfTouching */) && this.touches(tr))
@@ -22943,7 +22967,7 @@
            value = value.updateFor(tr, type);
            for (let effect of tr.effects) {
                if (effect.is(startCompletionEffect))
-                   value = new ActiveSource(value.source, 1 /* State.Pending */, effect.value ? cur(tr.state) : -1);
+                   value = new ActiveSource(value.source, 1 /* State.Pending */, effect.value);
                else if (effect.is(closeCompletionEffect))
                    value = new ActiveSource(value.source, 0 /* State.Inactive */);
                else if (effect.is(setActiveEffect))
@@ -22954,16 +22978,15 @@
            return value;
        }
        updateFor(tr, type) { return this.map(tr.changes); }
-       map(changes) {
-           return changes.empty || this.explicitPos < 0 ? this : new ActiveSource(this.source, this.state, changes.mapPos(this.explicitPos));
-       }
+       map(changes) { return this; }
        touches(tr) {
            return tr.changes.touchesRange(cur(tr.state));
        }
    }
    class ActiveResult extends ActiveSource {
-       constructor(source, explicitPos, result, from, to) {
-           super(source, 2 /* State.Result */, explicitPos);
+       constructor(source, explicit, limit, result, from, to) {
+           super(source, 3 /* State.Result */, explicit);
+           this.limit = limit;
            this.result = result;
            this.from = from;
            this.to = to;
@@ -22978,17 +23001,16 @@
                result = result.map(result, tr.changes);
            let from = tr.changes.mapPos(this.from), to = tr.changes.mapPos(this.to, 1);
            let pos = cur(tr.state);
-           if ((this.explicitPos < 0 ? pos <= from : pos < this.from) ||
-               pos > to || !result ||
-               (type & 2 /* UpdateType.Backspacing */) && cur(tr.startState) == this.from)
+           if (pos > to || !result ||
+               (type & 2 /* UpdateType.Backspacing */) && (cur(tr.startState) == this.from || pos < this.limit))
                return new ActiveSource(this.source, type & 4 /* UpdateType.Activate */ ? 1 /* State.Pending */ : 0 /* State.Inactive */);
-           let explicitPos = this.explicitPos < 0 ? -1 : tr.changes.mapPos(this.explicitPos);
+           let limit = tr.changes.mapPos(this.limit);
            if (checkValid(result.validFor, tr.state, from, to))
-               return new ActiveResult(this.source, explicitPos, result, from, to);
+               return new ActiveResult(this.source, this.explicit, limit, result, from, to);
            if (result.update &&
-               (result = result.update(result, from, to, new CompletionContext(tr.state, pos, explicitPos >= 0))))
-               return new ActiveResult(this.source, explicitPos, result, result.from, (_a = result.to) !== null && _a !== void 0 ? _a : cur(tr.state));
-           return new ActiveSource(this.source, 1 /* State.Pending */, explicitPos);
+               (result = result.update(result, from, to, new CompletionContext(tr.state, pos, false))))
+               return new ActiveResult(this.source, this.explicit, limit, result, result.from, (_a = result.to) !== null && _a !== void 0 ? _a : cur(tr.state));
+           return new ActiveSource(this.source, 1 /* State.Pending */, this.explicit);
        }
        map(mapping) {
            if (mapping.empty)
@@ -22996,7 +23018,7 @@
            let result = this.result.map ? this.result.map(this.result, mapping) : this.result;
            if (!result)
                return new ActiveSource(this.source, 0 /* State.Inactive */);
-           return new ActiveResult(this.source, this.explicitPos < 0 ? -1 : mapping.mapPos(this.explicitPos), this.result, mapping.mapPos(this.from), mapping.mapPos(this.to, 1));
+           return new ActiveResult(this.source, this.explicit, mapping.mapPos(this.limit), this.result, mapping.mapPos(this.from), mapping.mapPos(this.to, 1));
        }
        touches(tr) {
            return tr.changes.touchesRange(this.from, this.to);
@@ -23108,7 +23130,7 @@
            this.pendingStart = false;
            this.composing = 0 /* CompositionState.None */;
            for (let active of view.state.field(completionState).active)
-               if (active.state == 1 /* State.Pending */)
+               if (active.isPending)
                    this.startQuery(active);
        }
        update(update) {
@@ -23145,7 +23167,7 @@
            if (update.transactions.some(tr => tr.effects.some(e => e.is(startCompletionEffect))))
                this.pendingStart = true;
            let delay = this.pendingStart ? 50 : conf.activateOnTypingDelay;
-           this.debounceUpdate = cState.active.some(a => a.state == 1 /* State.Pending */ && !this.running.some(q => q.active.source == a.source))
+           this.debounceUpdate = cState.active.some(a => a.isPending && !this.running.some(q => q.active.source == a.source))
                ? setTimeout(() => this.startUpdate(), delay) : -1;
            if (this.composing != 0 /* CompositionState.None */)
                for (let tr of update.transactions) {
@@ -23160,7 +23182,7 @@
            this.pendingStart = false;
            let { state } = this.view, cState = state.field(completionState);
            for (let active of cState.active) {
-               if (active.state == 1 /* State.Pending */ && !this.running.some(r => r.active.source == active.source))
+               if (active.isPending && !this.running.some(r => r.active.source == active.source))
                    this.startQuery(active);
            }
            if (this.running.length && cState.open && cState.open.disabled)
@@ -23168,7 +23190,7 @@
        }
        startQuery(active) {
            let { state } = this.view, pos = cur(state);
-           let context = new CompletionContext(state, pos, active.explicitPos == pos, this.view);
+           let context = new CompletionContext(state, pos, active.explicit, this.view);
            let pending = new RunningQuery(active, context);
            this.running.push(pending);
            Promise.resolve(active.source(context)).then(result => {
@@ -23202,7 +23224,9 @@
                    continue;
                this.running.splice(i--, 1);
                if (query.done) {
-                   let active = new ActiveResult(query.active.source, query.active.explicitPos, query.done, query.done.from, (_a = query.done.to) !== null && _a !== void 0 ? _a : cur(query.updates.length ? query.updates[0].startState : this.view.state));
+                   let pos = cur(query.updates.length ? query.updates[0].startState : this.view.state);
+                   let limit = Math.min(pos, query.done.from + (query.active.explicit ? 0 : 1));
+                   let active = new ActiveResult(query.active.source, query.active.explicit, limit, query.done, query.done.from, (_a = query.done.to) !== null && _a !== void 0 ? _a : pos);
                    // Replay the transactions that happened since the start of
                    // the request and see if that preserves the result
                    for (let tr of query.updates)
@@ -23213,14 +23237,14 @@
                    }
                }
                let current = cState.active.find(a => a.source == query.active.source);
-               if (current && current.state == 1 /* State.Pending */) {
+               if (current && current.isPending) {
                    if (query.done == null) {
                        // Explicitly failed. Should clear the pending status if it
                        // hasn't been re-set in the meantime.
                        let active = new ActiveSource(query.active.source, 0 /* State.Inactive */);
                        for (let tr of query.updates)
                            active = active.update(tr, conf);
-                       if (active.state != 1 /* State.Pending */)
+                       if (!active.isPending)
                            updated.push(active);
                    }
                    else {
@@ -25627,17 +25651,10 @@
      Z_OK:               0,
      Z_STREAM_END:       1,
      Z_NEED_DICT:        2,
-     Z_ERRNO:           -1,
      Z_STREAM_ERROR:    -2,
      Z_DATA_ERROR:      -3,
      Z_MEM_ERROR:       -4,
      Z_BUF_ERROR:       -5,
-     //Z_VERSION_ERROR: -6,
-
-     /* compression levels */
-     Z_NO_COMPRESSION:         0,
-     Z_BEST_SPEED:             1,
-     Z_BEST_COMPRESSION:       9,
      Z_DEFAULT_COMPRESSION:   -1,
 
 
@@ -25647,9 +25664,6 @@
      Z_FIXED:                  4,
      Z_DEFAULT_STRATEGY:       0,
 
-     /* Possible values of the data_type field (though see inflate()) */
-     Z_BINARY:                 0,
-     Z_TEXT:                   1,
      //Z_ASCII:                1, // = Z_TEXT (deprecated)
      Z_UNKNOWN:                2,
 
@@ -28328,51 +28342,10 @@
 
      return deflator.result;
    }
-
-
-   /**
-    * deflateRaw(data[, options]) -> Uint8Array
-    * - data (Uint8Array|ArrayBuffer|String): input data to compress.
-    * - options (Object): zlib deflate options.
-    *
-    * The same as [[deflate]], but creates raw data, without wrapper
-    * (header and adler32 crc).
-    **/
-   function deflateRaw$1(input, options) {
-     options = options || {};
-     options.raw = true;
-     return deflate$1(input, options);
-   }
-
-
-   /**
-    * gzip(data[, options]) -> Uint8Array
-    * - data (Uint8Array|ArrayBuffer|String): input data to compress.
-    * - options (Object): zlib deflate options.
-    *
-    * The same as [[deflate]], but create gzip wrapper instead of
-    * deflate one.
-    **/
-   function gzip$1(input, options) {
-     options = options || {};
-     options.gzip = true;
-     return deflate$1(input, options);
-   }
-
-
-   var Deflate_1$1 = Deflate$1;
    var deflate_2 = deflate$1;
-   var deflateRaw_1$1 = deflateRaw$1;
-   var gzip_1$1 = gzip$1;
-   var constants$1 = constants$2;
 
    var deflate_1$1 = {
-   	Deflate: Deflate_1$1,
-   	deflate: deflate_2,
-   	deflateRaw: deflateRaw_1$1,
-   	gzip: gzip_1$1,
-   	constants: constants$1
-   };
+   	deflate: deflate_2};
 
    // (C) 1995-2013 Jean-loup Gailly and Mark Adler
    // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -31071,50 +31044,14 @@
 
      return inflator.result;
    }
-
-
-   /**
-    * inflateRaw(data[, options]) -> Uint8Array|String
-    * - data (Uint8Array|ArrayBuffer): input data to decompress.
-    * - options (Object): zlib inflate options.
-    *
-    * The same as [[inflate]], but creates raw data, without wrapper
-    * (header and adler32 crc).
-    **/
-   function inflateRaw$1(input, options) {
-     options = options || {};
-     options.raw = true;
-     return inflate$1(input, options);
-   }
-
-
-   /**
-    * ungzip(data[, options]) -> Uint8Array|String
-    * - data (Uint8Array|ArrayBuffer): input data to decompress.
-    * - options (Object): zlib inflate options.
-    *
-    * Just shortcut to [[inflate]], because it autodetects format
-    * by header.content. Done for convenience.
-    **/
-
-
-   var Inflate_1$1 = Inflate$1;
    var inflate_2 = inflate$1;
-   var inflateRaw_1$1 = inflateRaw$1;
-   var ungzip$1 = inflate$1;
-   var constants = constants$2;
 
    var inflate_1$1 = {
-   	Inflate: Inflate_1$1,
-   	inflate: inflate_2,
-   	inflateRaw: inflateRaw_1$1,
-   	ungzip: ungzip$1,
-   	constants: constants
-   };
+   	inflate: inflate_2};
 
-   const { Deflate, deflate, deflateRaw, gzip } = deflate_1$1;
+   const { deflate} = deflate_1$1;
 
-   const { Inflate, inflate, inflateRaw, ungzip } = inflate_1$1;
+   const { inflate} = inflate_1$1;
    var deflate_1 = deflate;
    var inflate_1 = inflate;
 
