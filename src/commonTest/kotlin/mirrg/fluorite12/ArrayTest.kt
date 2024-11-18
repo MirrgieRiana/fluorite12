@@ -43,7 +43,7 @@ class ArrayTest {
     @Test
     fun subArray() = runTest {
         assertEquals("[1;2;3]", run("[1; 2; 3][]").array()) // 配列のコピー
-        assertEquals("[2]", run("[1; 2; 3][1]").array()) // 単一要素による部分配列の取得
+        assertEquals("[2]", run("[1; 2; 3][1]").array()) // 単一インデックスによる部分配列の取得
         assertEquals("[2]", run("[1; 2; 3]['0.95']").array()) // インデックスは数値化し、四捨五入される
         assertEquals("[NULL]", run("[1; 2; 3][3]").array()) // 範囲外のインデックスは NULL が返る
         assertEquals("[3]", run("[1; 2; 3][-1]").array()) // 負のインデックスは後ろから数える
