@@ -28,6 +28,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteDouble
 import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.defineVariable
+import mirrg.fluorite12.getMount
 import mirrg.fluorite12.getVariable
 import mirrg.fluorite12.operations.AndGetter
 import mirrg.fluorite12.operations.ArrayCreationGetter
@@ -63,6 +64,7 @@ import mirrg.fluorite12.operations.MethodBindGetter
 import mirrg.fluorite12.operations.MethodInvocationGetter
 import mirrg.fluorite12.operations.MinusGetter
 import mirrg.fluorite12.operations.ModGetter
+import mirrg.fluorite12.operations.MountGetter
 import mirrg.fluorite12.operations.NewEnvironmentGetter
 import mirrg.fluorite12.operations.NotEqualComparator
 import mirrg.fluorite12.operations.NullGetter
@@ -93,8 +95,17 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is IdentifierNode -> {
             val name = node.string
-            val variable = getVariable(name) ?: throw IllegalArgumentException("Unknown variable: $name")
-            VariableGetter(variable.first, variable.second)
+            val variable = getVariable(name)
+            if (variable != null) {
+                VariableGetter(variable.first, variable.second)
+            } else {
+                val mount = getMount()
+                if (mount != null) {
+                    MountGetter(mount.first, mount.second, name)
+                } else {
+                    throw IllegalArgumentException("Unresolvable identifier: $name")
+                }
+            }
         }
 
         is IntegerNode -> LiteralGetter(FluoriteInt(node.string.toInt()))
@@ -124,7 +135,7 @@ fun Frame.compileToGetter(node: Node): Getter {
                     is NodeStringContent -> {
                         val frame = Frame(this)
                         val newNode = frame.compileToGetter(it.main)
-                        ConversionStringGetter(NewEnvironmentGetter(frame.nextVariableIndex, newNode))
+                        ConversionStringGetter(NewEnvironmentGetter(frame.nextVariableIndex, frame.mountCount, newNode))
                     }
 
                     is FormattedStringContent -> FormattedStringGetter(it.formatter, compileToGetter(it.main))
@@ -137,7 +148,7 @@ fun Frame.compileToGetter(node: Node): Getter {
             BracketsType.ROUND -> {
                 val frame = Frame(this)
                 val newNode = frame.compileToGetter(node.main)
-                NewEnvironmentGetter(frame.nextVariableIndex, newNode)
+                NewEnvironmentGetter(frame.nextVariableIndex, frame.mountCount, newNode)
             }
 
             BracketsType.SQUARE -> {

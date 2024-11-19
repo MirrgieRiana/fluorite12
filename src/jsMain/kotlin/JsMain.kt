@@ -22,7 +22,7 @@ fun evaluate(node: Node) = GlobalScope.promise {
     val frame = Frame()
     val runners = frame.defineCommonBuiltinConstants()
     val getter = frame.compileToGetter(node)
-    val env = Environment(null, frame.nextVariableIndex)
+    val env = Environment(null, frame.nextVariableIndex, frame.mountCount)
     runners.forEach {
         it.evaluate(env)
     }

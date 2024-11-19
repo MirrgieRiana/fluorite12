@@ -46,6 +46,11 @@ class VariableGetter(private val frameIndex: Int, private val variableIndex: Int
     override val code get() = "Variable[$frameIndex;$variableIndex]"
 }
 
+class MountGetter(private val frameIndex: Int, private val mountIndex: Int, private val name: String) : Getter {
+    override suspend fun evaluate(env: Environment) = env.mountTable[frameIndex][mountIndex]!![name] ?: throw IllegalArgumentException("No such mount entry: $name")
+    override val code get() = "Mount[$frameIndex;$mountIndex;$name]"
+}
+
 class StringConcatenationGetter(private val stringGetters: List<StringGetter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val sb = StringBuilder()
@@ -58,9 +63,9 @@ class StringConcatenationGetter(private val stringGetters: List<StringGetter>) :
     override val code get() = "StringConcatenation[${stringGetters.code}]"
 }
 
-class NewEnvironmentGetter(private val variableCount: Int, private val getter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = getter.evaluate(Environment(env, variableCount))
-    override val code get() = "NewEnvironment[$variableCount;${getter.code}]"
+class NewEnvironmentGetter(private val variableCount: Int, private val mountCount: Int, private val getter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment) = getter.evaluate(Environment(env, variableCount, mountCount))
+    override val code get() = "NewEnvironment[$variableCount;$mountCount;${getter.code}]"
 }
 
 class LinesGetter(private val runners: List<Runner>, private val getter: Getter) : Getter {
@@ -499,7 +504,7 @@ class EntryGetter(private val leftGetter: Getter, private val rightGetter: Gette
 class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariableIndex: Int, private val variableIndices: List<Int>, private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return FluoriteFunction { arguments ->
-            val newEnv = Environment(env, 1 + variableIndices.size)
+            val newEnv = Environment(env, 1 + variableIndices.size, 0)
             newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = FluoriteArray(arguments.toMutableList())
             variableIndices.forEachIndexed { i, variableIndex ->
                 newEnv.variableTable[newFrameIndex][variableIndex] = arguments.getOrNull(i) ?: FluoriteNull
@@ -597,7 +602,7 @@ class TryCatchWithVariableGetter(private val leftGetter: Getter, private val new
         return try {
             leftGetter.evaluate(env)
         } catch (e: FluoriteException) {
-            val newEnv = Environment(env, 1)
+            val newEnv = Environment(env, 1, 0)
             newEnv.variableTable[newFrameIndex][argumentVariableIndex] = e.value
             rightGetter.evaluate(newEnv)
         }
@@ -623,7 +628,7 @@ class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: In
         val stream = streamGetter.evaluate(env)
         return if (stream is FluoriteStream) {
             FluoriteStream {
-                val newEnv = Environment(env, 1)
+                val newEnv = Environment(env, 1, 0)
                 stream.collect { value ->
                     newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
                     val result = contentGetter.evaluate(newEnv)
@@ -635,7 +640,7 @@ class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: In
                 }
             }
         } else {
-            val newEnv = Environment(env, 1)
+            val newEnv = Environment(env, 1, 0)
             newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
             contentGetter.evaluate(newEnv)
         }

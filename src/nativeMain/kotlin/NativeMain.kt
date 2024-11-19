@@ -41,7 +41,7 @@ fun main(args: Array<String>) = runBlocking {
         }),
     )
     val getter = frame.compileToGetter(parseResult.value)
-    val env = Environment(null, frame.nextVariableIndex)
+    val env = Environment(null, frame.nextVariableIndex, frame.mountCount)
     runners.forEach {
         it.evaluate(env)
     }

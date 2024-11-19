@@ -28,7 +28,7 @@ suspend fun run(src: String): FluoriteValue {
     val frame = Frame()
     val runners = frame.defineCommonBuiltinConstants()
     val getter = frame.compileToGetter(parseResult.value)
-    val env = Environment(null, frame.nextVariableIndex)
+    val env = Environment(null, frame.nextVariableIndex, frame.mountCount)
     runners.forEach {
         it.evaluate(env)
     }

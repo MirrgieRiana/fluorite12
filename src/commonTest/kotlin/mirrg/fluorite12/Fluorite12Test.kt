@@ -864,4 +864,16 @@ class Fluorite12Test {
         assertEquals(123, run("{abc: 123}.`abc`").int) // プロパティアクセスのクォート識別子
         assertEquals(123, run("{abc: this -> 123}{}::`abc`()").int) // メソッドのクォート識別子
     }
+
+    @Test
+    fun mount() = runTest {
+        assertEquals(123, run("@{a: 123}; a").int) // 値のマウント
+        assertEquals(123, run("@{add: a, b -> a + b}; add(100; 23)").int) // 関数のマウント
+        assertEquals(123, run("@{a: () -> 123}; @{b: () -> a()}; b()").int) // マウントの統合
+        assertEquals(123, run("@{a: 100}; @{a: 123}; a").int) // マウントのオーバーライド
+        assertEquals(123, run("a := 123; @{a: 100}; a").int) // 変数はマウントに優先する
+        assertEquals(123, run("@{a: 123}; (@{a: 100};); a").int) // マウントはスコープに制限される
+        assertEquals(123, run("@{a: 123}; b := () -> a; @{a: 100}; b()").int) // マウントはそれより上には影響しない
+        assertEquals(123, run("@{a: 123}; m := {}; @m; m.a = 100; a").int) // マウントに使ったオブジェクトを改変しても影響しない
+    }
 }

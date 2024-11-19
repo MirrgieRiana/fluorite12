@@ -4,10 +4,15 @@ import mirrg.fluorite12.EmptyNode
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.IdentifierNode
 import mirrg.fluorite12.InfixNode
+import mirrg.fluorite12.LeftNode
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.defineVariable
+import mirrg.fluorite12.getMount
+import mirrg.fluorite12.mount
+import mirrg.fluorite12.operations.AdditiveMountRunner
 import mirrg.fluorite12.operations.AssignmentRunner
 import mirrg.fluorite12.operations.GetterRunner
+import mirrg.fluorite12.operations.MountRunner
 import mirrg.fluorite12.operations.Runner
 import mirrg.fluorite12.operations.TryCatchRunner
 import mirrg.fluorite12.operations.VariableSetter
@@ -43,6 +48,16 @@ fun Frame.compileToRunner(node: Node): List<Runner> {
             val newFrame = Frame(this)
             val argumentVariableIndex = newFrame.defineVariable(name)
             listOf(TryCatchRunner(compileToRunner(node.left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToRunner(rightNode)))
+        }
+
+        node is LeftNode && node.left.text == "@" -> {
+            val oldMount = getMount()
+            val newMountIndex = mount()
+            if (oldMount != null) {
+                listOf(AdditiveMountRunner(oldMount.first, oldMount.second, frameIndex, newMountIndex, compileToGetter(node.right)))
+            } else {
+                listOf(MountRunner(frameIndex, newMountIndex, compileToGetter(node.right)))
+            }
         }
 
         else -> listOf(GetterRunner(compileToGetter(node))) // 式文

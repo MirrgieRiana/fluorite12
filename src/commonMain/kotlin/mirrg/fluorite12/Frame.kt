@@ -12,13 +12,19 @@ class Frame(val parent: Frame? = null) {
     val frameIndex: Int = parent?.let { it.frameIndex + 1 } ?: 0
     val variableIndexTable = mutableMapOf<String, Int>()
     var nextVariableIndex = 0
+    var mountCount = 0
 }
 
-class Environment(val parent: Environment?, variableCount: Int) {
+class Environment(val parent: Environment?, variableCount: Int, mountCount: Int) {
     val variableTable: Array<Array<FluoriteValue>> = if (parent != null) {
         arrayOf(*parent.variableTable, Array(variableCount) { FluoriteNull })
     } else {
         arrayOf(Array(variableCount) { FluoriteNull })
+    }
+    val mountTable: Array<Array<Map<String, FluoriteValue>?>> = if (parent != null) {
+        arrayOf(*parent.mountTable, Array(mountCount) { null })
+    } else {
+        arrayOf(Array(mountCount) { null })
     }
 }
 
@@ -43,4 +49,21 @@ fun Frame.defineConstant(name: String, value: FluoriteValue): Runner {
     val variableIndex = defineVariable(name)
     val getter = LiteralGetter(value)
     return AssignmentRunner(VariableSetter(frameIndex, variableIndex), getter)
+}
+
+fun Frame.mount(): Int {
+    val mountIndex = mountCount
+    mountCount++
+    return mountIndex
+}
+
+fun Frame.getMount(): Pair<Int, Int>? {
+    var currentFrame = this
+    while (true) {
+        if (currentFrame.mountCount > 0) {
+            val mountIndex = currentFrame.mountCount - 1
+            return Pair(currentFrame.frameIndex, mountIndex)
+        }
+        currentFrame = currentFrame.parent ?: return null
+    }
 }
