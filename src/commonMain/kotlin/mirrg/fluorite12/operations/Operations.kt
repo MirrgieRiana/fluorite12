@@ -17,6 +17,10 @@ interface StringGetter : Operation {
     suspend fun evaluate(env: Environment): String
 }
 
+interface Comparator : Operation {
+    suspend fun evaluate(env: Environment): suspend (FluoriteValue, FluoriteValue) -> Boolean
+}
+
 interface Runner : Operation {
     suspend fun evaluate(env: Environment)
 }

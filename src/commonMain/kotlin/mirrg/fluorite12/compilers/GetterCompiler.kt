@@ -26,22 +26,21 @@ import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
 import mirrg.fluorite12.compilers.objects.FluoriteInt
-import mirrg.fluorite12.compilers.objects.FluoriteNumber
 import mirrg.fluorite12.compilers.objects.FluoriteString
-import mirrg.fluorite12.compilers.objects.FluoriteValue
-import mirrg.fluorite12.compilers.objects.contains
-import mirrg.fluorite12.compilers.objects.instanceOf
 import mirrg.fluorite12.defineVariable
 import mirrg.fluorite12.getVariable
 import mirrg.fluorite12.operations.AndGetter
 import mirrg.fluorite12.operations.ArrayCreationGetter
 import mirrg.fluorite12.operations.AssignmentGetter
+import mirrg.fluorite12.operations.Comparator
 import mirrg.fluorite12.operations.ComparisonChainGetter
+import mirrg.fluorite12.operations.ContainsComparator
 import mirrg.fluorite12.operations.ConversionStringGetter
 import mirrg.fluorite12.operations.DivGetter
 import mirrg.fluorite12.operations.DivisibleGetter
 import mirrg.fluorite12.operations.ElvisGetter
 import mirrg.fluorite12.operations.EntryGetter
+import mirrg.fluorite12.operations.EqualComparator
 import mirrg.fluorite12.operations.ExclusiveRangeGetter
 import mirrg.fluorite12.operations.FormattedStringGetter
 import mirrg.fluorite12.operations.FromJsonGetter
@@ -50,8 +49,13 @@ import mirrg.fluorite12.operations.FunctionGetter
 import mirrg.fluorite12.operations.FunctionInvocationGetter
 import mirrg.fluorite12.operations.GetLengthGetter
 import mirrg.fluorite12.operations.Getter
+import mirrg.fluorite12.operations.GreaterComparator
+import mirrg.fluorite12.operations.GreaterEqualComparator
 import mirrg.fluorite12.operations.IfGetter
+import mirrg.fluorite12.operations.InstanceOfComparator
 import mirrg.fluorite12.operations.ItemAccessGetter
+import mirrg.fluorite12.operations.LessComparator
+import mirrg.fluorite12.operations.LessEqualComparator
 import mirrg.fluorite12.operations.LinesGetter
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.LiteralStringGetter
@@ -60,6 +64,7 @@ import mirrg.fluorite12.operations.MethodInvocationGetter
 import mirrg.fluorite12.operations.MinusGetter
 import mirrg.fluorite12.operations.ModGetter
 import mirrg.fluorite12.operations.NewEnvironmentGetter
+import mirrg.fluorite12.operations.NotEqualComparator
 import mirrg.fluorite12.operations.NullGetter
 import mirrg.fluorite12.operations.ObjectCreationGetter
 import mirrg.fluorite12.operations.OrGetter
@@ -214,16 +219,16 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is ComparisonsNode -> {
             val termGetters = node.nodes.map { compileToGetter(it) }
-            val operators: List<suspend (FluoriteValue, FluoriteValue) -> Boolean> = node.operators.map {
+            val operators: List<Comparator> = node.operators.map {
                 when (it.text) {
-                    "==" -> ({ a, b -> a == b })
-                    "!=" -> ({ a, b -> a != b })
-                    ">" -> ({ a, b -> (a as FluoriteNumber).value.toDouble() > (b as FluoriteNumber).value.toDouble() })
-                    "<" -> ({ a, b -> (a as FluoriteNumber).value.toDouble() < (b as FluoriteNumber).value.toDouble() })
-                    ">=" -> ({ a, b -> (a as FluoriteNumber).value.toDouble() >= (b as FluoriteNumber).value.toDouble() })
-                    "<=" -> ({ a, b -> (a as FluoriteNumber).value.toDouble() <= (b as FluoriteNumber).value.toDouble() })
-                    "?=" -> ({ a, b -> a.instanceOf(b) })
-                    "@" -> ({ a, b -> b.contains(a).value })
+                    "==" -> EqualComparator
+                    "!=" -> NotEqualComparator
+                    ">" -> GreaterComparator
+                    "<" -> LessComparator
+                    ">=" -> GreaterEqualComparator
+                    "<=" -> LessEqualComparator
+                    "?=" -> InstanceOfComparator
+                    "@" -> ContainsComparator
                     else -> throw IllegalArgumentException("Unknown operator: A ${it.text} B")
                 }
             }

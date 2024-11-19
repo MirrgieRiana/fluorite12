@@ -511,26 +511,25 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
     override val code get() = "Function[$newFrameIndex;$argumentsVariableIndex;${variableIndices.joinToString(",") { "$it" }};${getter.code}]"
 }
 
-// TODO operatorsのOperation化
-class ComparisonChainGetter(private val termGetters: List<Getter>, private val operators: List<suspend (FluoriteValue, FluoriteValue) -> Boolean>) : Getter {
+class ComparisonChainGetter(private val termGetters: List<Getter>, private val comparators: List<Comparator>) : Getter {
     init {
-        require(operators.isNotEmpty())
-        require(termGetters.size == operators.size + 1)
+        require(comparators.isNotEmpty())
+        require(termGetters.size == comparators.size + 1)
     }
 
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val values = arrayOfNulls<FluoriteValue>(termGetters.size)
         values[0] = termGetters[0].evaluate(env)
-        operators.forEachIndexed { i, operator ->
+        comparators.forEachIndexed { i, comparator ->
             val leftValue = values[i]!!
             val rightValue = termGetters[i + 1].evaluate(env)
             values[i + 1] = rightValue
-            if (!operator(leftValue, rightValue)) return FluoriteBoolean.FALSE
+            if (!comparator.evaluate(env)(leftValue, rightValue)) return FluoriteBoolean.FALSE
         }
         return FluoriteBoolean.TRUE
     }
 
-    override val code get() = "ComparisonChain[${termGetters.code};${operators.joinToString(",") { it.toString() }}]"
+    override val code get() = "ComparisonChain[${termGetters.code};${comparators.code}]"
 }
 
 class AndGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
