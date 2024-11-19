@@ -123,8 +123,8 @@ $ flc '!1'
 
 | 演算子                   | 右辺が評価される条件                       |
 |-----------------------|----------------------------------|
-| `condition && then`   | `condition` の論理値化が `TRUE` である場合  | 
-| `condition \|\| else` | `condition` の論理値化が `FALSE` である場合 | 
+| `condition && then`   | `condition` の論理値化が `TRUE` である場合  |
+| `condition \|\| else` | `condition` の論理値化が `FALSE` である場合 |
 
 ```shell
 $ flc '
