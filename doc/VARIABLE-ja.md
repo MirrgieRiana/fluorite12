@@ -1,23 +1,36 @@
-## 識別子 `identifier`
+# 識別子
 
-識別子は組み込み定数や変数、引数などを指し表す文字列です。
+識別子 `identifier` は、変数などを指し表すための文字列です。
 
 ```shell
-$ flc 'TRUE'
-# TRUE
+$ flc '
+  variable := 10
+  variable
+'
+# 10
 
-$ flc 'x := 10; y := 2; x + y'
-# 12
+$ flc 'PI'
+# 3.141592653589793
 
-$ flc '(x, y -> x + y)(10; 2)'
-# 12
+$ flc 'SQRT(4)'
+# 2.0
+
+$ flc '
+  function := x, y, z -> x + y + z
+  function(100; 20; 3)
+'
+# 123
 ```
 
----
+## 識別子に使用できる文字
 
 識別子は1文字以上の英数字もしくはアンダースコア `_` であり、かつ先頭は数字であってはいけません。
 
-`[A-Za-z_][A-Za-z_0-9]*`
+正規表現で表すと、以下のようになります。
+
+```
+[A-Za-z_][A-Za-z_0-9]*
+```
 
 ## クォート識別子
 
@@ -49,6 +62,108 @@ $ flc '
   `#`
 '
 # 10
+```
+
+# 変数
+
+変数は、識別子によって値に名前を付けて格納・参照するための仕組みです。
+
+```shell
+$ flc '
+  x := 100
+  y :=  20
+  z :=   3
+
+  x + y + z
+'
+# 123
+```
+
+## 変数の宣言
+
+変数の宣言には、変数宣言演算子 `variable := value` を使います。
+
+変数宣言演算子は、書かれたスコープ内で変数を宣言しつつ、右辺の値で初期化します。
+
+fluorite12では、変数は宣言と同時に初期化する必要があります。
+
+```shell
+$ flc '
+  x := 123
+
+  x
+'
+# 123
+```
+
+## 変数への値の代入
+
+変数に値を代入するには、代入演算子 `variable = value` を使います。
+
+代入先の変数はすでに宣言されている必要があります。
+
+```shell
+$ flc '
+
+  x := 123
+  OUT << x
+
+  x = 456
+  OUT << x
+
+  ; ,
+'
+# 123
+# 456
+```
+
+## 変数のスコープ
+
+宣言された変数は、宣言以降、そのスコープ内でのみ有効です。
+
+`( )` など、スコープを生成する演算子内で宣言された変数は、そのスコープを抜けると破棄されます。
+
+```shell
+$ flc '
+
+  x := "A (outer initial value)"
+  OUT << x
+
+  (
+    x = "B (outer assigned value)"
+    OUT << x
+  
+    x := "C (inner initial value)"
+    OUT << x
+
+    x = "D (inner assigned value)"
+    OUT << x
+  )
+
+  OUT << x
+
+  ; ,
+'
+# A (outer initial value)
+# B (outer assigned value)
+# C (inner initial value)
+# D (inner assigned value)
+# B (outer assigned value)
+```
+
+## 変数宣言演算子の右辺からの自身の参照
+
+変数宣言演算子の右辺では、その変数自身を参照することができます。
+
+この性質は、再帰関数を作るときに便利です。
+
+```shell
+$ flc '
+  factorial := n -> n == 0 ? 1 : n * factorial(n - 1)
+
+  factorial(5)
+'
+# 120
 ```
 
 # マウント
@@ -103,14 +218,14 @@ $ flc '
 
   @lib
 
-  lib.drink = "coffee"
+  lib.fruit = "orange"
 
-  drink
+  fruit
 '
-# No such mount entry: drink
+# apple
 ```
 
-また、同様の理由でマウントに対してメソッドを呼び出すこともできません。
+また、同様の理由でマウントを使ったメソッド呼び出しもできません。
 
 ## マウントは複数できる
 
