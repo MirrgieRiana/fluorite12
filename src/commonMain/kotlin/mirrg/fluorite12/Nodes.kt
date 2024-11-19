@@ -4,7 +4,7 @@ import com.github.h0tk3y.betterParse.lexer.TokenMatch
 
 sealed class Node
 object EmptyNode : Node()
-class IdentifierNode(val tokens: List<TokenMatch>, val string: String) : Node()
+class IdentifierNode(val left: List<TokenMatch>, val tokens: List<TokenMatch>, val string: String, val right: List<TokenMatch>) : Node()
 sealed class NumberNode(val tokens: List<TokenMatch>, val string: String) : Node()
 class IntegerNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens, string)
 class HexadecimalNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens, string)

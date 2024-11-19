@@ -145,8 +145,27 @@ class Fluorite12Grammar : Grammar<Node>() {
     val number by zero or nonZero
 
     val identifier: Parser<Node> by (uAlphabet or lAlphabet or underscore) * zeroOrMore(uAlphabet or lAlphabet or underscore or number) map {
-        val tokens = listOf(it.t1, *it.t2.toTypedArray())
-        IdentifierNode(tokens, tokens.joinToString("") { t -> t.text })
+        IdentifierNode(
+            listOf(),
+            listOf(it.t1, *it.t2.toTypedArray()),
+            listOf(it.t1, *it.t2.toTypedArray()).joinToString("") { t -> t.text },
+            listOf(),
+        )
+    }
+
+    val quotedIdentifierContent: Parser<Pair<List<TokenMatch>, String>> by OrCombinator(
+        -NotParser(bQuote or bSlash or br) * AnyParser map { Pair(listOf(it), it.text) }, // ' \ 改行以外の文字
+        br map { Pair(listOf(it), "\n") }, // 改行
+        bSlash * -NotParser(br) * AnyParser map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた改行以外の文字
+        bSlash * br map { Pair(listOf(it.t1, it.t2), "\n") }, // エスケープされた改行
+    )
+    val quotedIdentifier: Parser<Node> by bQuote * zeroOrMore(quotedIdentifierContent) * bQuote map {
+        IdentifierNode(
+            listOf(it.t1),
+            it.t2.flatMap { pair -> pair.first },
+            it.t2.joinToString("") { pair -> pair.second },
+            listOf(it.t3),
+        )
     }
 
     val float: Parser<Node> by oneOrMore(number) * period * oneOrMore(number) map {
@@ -224,7 +243,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val round: Parser<Node> by lRound * -b * optional(cachedParser { expression } * -b) * rRound map { BracketsNode(BracketsType.ROUND, it.t1, it.t2 ?: EmptyNode, it.t3) }
     val square: Parser<Node> by lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsNode(BracketsType.SQUARE, it.t1, it.t2 ?: EmptyNode, it.t3) }
     val curly: Parser<Node> by lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsNode(BracketsType.CURLY, it.t1, it.t2 ?: EmptyNode, it.t3) }
-    val factor: Parser<Node> by hexadecimal or identifier or float or integer or rawString or templateString or embeddedString or round or square or curly
+    val factor: Parser<Node> by hexadecimal or identifier or quotedIdentifier or float or integer or rawString or templateString or embeddedString or round or square or curly
 
     val rightOperator: Parser<(Node) -> Node> by OrCombinator(
         -s * lRound * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> RightBracketsNode(BracketsType.ROUND, main, it.t1, it.t2 ?: EmptyNode, it.t3) } },

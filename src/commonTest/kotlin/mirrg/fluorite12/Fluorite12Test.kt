@@ -851,4 +851,17 @@ class Fluorite12Test {
         assertEquals("bcd", run("'abcde'[1 .. 3]").string) // 範囲指定による部分配列の取得
     }
 
+    @Test
+    fun quotedIdentifier() = runTest {
+        assertEquals(123, run("abc := 123; `abc`").int) // 識別子とクォート識別子は同じ
+        assertEquals(123, run("`a` := 123; a").int) // 逆でもよい
+
+        assertEquals(123, run("{`#abc`: 123}.`#abc`").int) // 記号を含むクォート識別子
+
+        assertEquals(123, run("(`a` -> a)(123)").int) // ラムダ引数のクォート識別子
+        assertEquals(123, run("123 | `a` => a").int) // パイプ引数のクォート識別子
+        assertEquals(123, run("{`abc`: 123}.abc").int) // エントリーキーのクォート識別子
+        assertEquals(123, run("{abc: 123}.`abc`").int) // プロパティアクセスのクォート識別子
+        assertEquals(123, run("{abc: this -> 123}{}::`abc`()").int) // メソッドのクォート識別子
+    }
 }
