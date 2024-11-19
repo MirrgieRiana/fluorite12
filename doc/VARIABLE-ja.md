@@ -1,6 +1,6 @@
 # 識別子
 
-識別子 `identifier` は、変数などを指し表すための文字列です。
+識別子 `identifier` は、変数、組み込み定数、組み込み関数、引数などを指し表すための文字列です。
 
 ```shell
 $ flc '
@@ -36,7 +36,7 @@ $ flc '
 
 ``` ` ` ``` で囲った識別子はクォート識別子と呼ばれます。
 
-識別子とクォート識別子は、書き方が違うだけで同じ識別子を指します。
+識別子とクォート識別子は、書き方が違うだけで同じ識別子を表します。
 
 ```shell
 $ flc '
@@ -85,15 +85,14 @@ $ flc '
 
 変数宣言演算子は、書かれたスコープ内で変数を宣言しつつ、右辺の値で初期化します。
 
-fluorite12では、変数は宣言と同時に初期化する必要があります。
+fluorite12では、変数は宣言と同時に何らかの値で初期化する必要があります。
 
 ```shell
 $ flc '
-  x := 123
-
+  x := 10
   x
 '
-# 123
+# 10
 ```
 
 ## 変数への値の代入
@@ -105,16 +104,16 @@ $ flc '
 ```shell
 $ flc '
 
-  x := 123
+  x := 10
   OUT << x
 
-  x = 456
+  x = 123
   OUT << x
 
   ; ,
 '
+# 10
 # 123
-# 456
 ```
 
 ## 変数のスコープ
@@ -160,7 +159,6 @@ $ flc '
 ```shell
 $ flc '
   factorial := n -> n == 0 ? 1 : n * factorial(n - 1)
-
   factorial(5)
 '
 # 120
@@ -227,25 +225,23 @@ $ flc '
 
 また、同様の理由でマウントを使ったメソッド呼び出しもできません。
 
-## マウントは複数できる
+## マウントは多重にできる
 
 既にマウントが行われた状態で更にマウントを行うと、両方のエントリーがマウントされた状態になります。
 
 ```shell
 $ flc '
-  favorite_fruit := {
+  @{
     fruit: "apple"
   }
-  @favorite_fruit
 
-  favorite_drink := {
+  @{
     drink: "coffee"
   }
-  @favorite_drink
 
-  "My favorite fruit is $fruit and drink is $drink"
+  "fruit=$fruit, drink=$drink"
 '
-# My favorite fruit is apple and drink is coffee
+# fruit=apple, drink=coffee
 ```
 
 ## マウントは既存のマウントを上書きする
@@ -254,28 +250,26 @@ $ flc '
 
 ```shell
 $ flc '
-  favorite_foods := {
+  @{
     fruit: "apple"
     bread: "epi"
   }
-  @favorite_foods
 
-  favorite_plants := {
+  @{
     vegetable: "tomato"
     fruit: "orange"
   }
-  @favorite_plants
 
-  "My favorite fruit is $fruit"
+  "fruit=$fruit, bread=$bread, vegetable=$vegetable"
 '
-# My favorite fruit is orange
+# fruit=orange, bread=epi, vegetable=tomato
 ```
 
 ## マウントは変数と同様のスコープを持つ
 
 マウントは、スコープを抜けると解除されます。
 
-マウントのスコープは、マウント演算子によってマウントされてから、その階層の括弧類を抜けるまでです。
+マウントのスコープは、変数と同様に、マウント演算子によってマウントされてからその階層の括弧類を抜けるまでです。
 
 ```shell
 $ flc '
