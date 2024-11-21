@@ -4960,6 +4960,7 @@
        chrome_version: chrome ? +chrome[1] : 0,
        ios,
        android: /*@__PURE__*//Android\b/.test(nav.userAgent),
+       webkit,
        safari,
        webkit_version: webkit ? +(/*@__PURE__*//\bAppleWebKit\/(\d+)/.exec(nav.userAgent) || [0, 0])[1] : 0,
        tabSize: doc.documentElement.style.tabSize != null ? "tab-size" : "-moz-tab-size"
@@ -19398,7 +19399,9 @@
    }
    ({
        rtl: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "rtl" }, bidiIsolate: Direction.RTL }),
-       ltr: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "ltr" }, bidiIsolate: Direction.LTR })});
+       ltr: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "ltr" }, bidiIsolate: Direction.LTR }),
+       auto: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "auto" }, bidiIsolate: null })
+   });
 
    /**
    Comment or uncomment the current selection. Will use line comments
@@ -25651,10 +25654,17 @@
      Z_OK:               0,
      Z_STREAM_END:       1,
      Z_NEED_DICT:        2,
+     Z_ERRNO:           -1,
      Z_STREAM_ERROR:    -2,
      Z_DATA_ERROR:      -3,
      Z_MEM_ERROR:       -4,
      Z_BUF_ERROR:       -5,
+     //Z_VERSION_ERROR: -6,
+
+     /* compression levels */
+     Z_NO_COMPRESSION:         0,
+     Z_BEST_SPEED:             1,
+     Z_BEST_COMPRESSION:       9,
      Z_DEFAULT_COMPRESSION:   -1,
 
 
@@ -25664,6 +25674,9 @@
      Z_FIXED:                  4,
      Z_DEFAULT_STRATEGY:       0,
 
+     /* Possible values of the data_type field (though see inflate()) */
+     Z_BINARY:                 0,
+     Z_TEXT:                   1,
      //Z_ASCII:                1, // = Z_TEXT (deprecated)
      Z_UNKNOWN:                2,
 
@@ -28342,10 +28355,51 @@
 
      return deflator.result;
    }
+
+
+   /**
+    * deflateRaw(data[, options]) -> Uint8Array
+    * - data (Uint8Array|ArrayBuffer|String): input data to compress.
+    * - options (Object): zlib deflate options.
+    *
+    * The same as [[deflate]], but creates raw data, without wrapper
+    * (header and adler32 crc).
+    **/
+   function deflateRaw$1(input, options) {
+     options = options || {};
+     options.raw = true;
+     return deflate$1(input, options);
+   }
+
+
+   /**
+    * gzip(data[, options]) -> Uint8Array
+    * - data (Uint8Array|ArrayBuffer|String): input data to compress.
+    * - options (Object): zlib deflate options.
+    *
+    * The same as [[deflate]], but create gzip wrapper instead of
+    * deflate one.
+    **/
+   function gzip$1(input, options) {
+     options = options || {};
+     options.gzip = true;
+     return deflate$1(input, options);
+   }
+
+
+   var Deflate_1$1 = Deflate$1;
    var deflate_2 = deflate$1;
+   var deflateRaw_1$1 = deflateRaw$1;
+   var gzip_1$1 = gzip$1;
+   var constants$1 = constants$2;
 
    var deflate_1$1 = {
-   	deflate: deflate_2};
+   	Deflate: Deflate_1$1,
+   	deflate: deflate_2,
+   	deflateRaw: deflateRaw_1$1,
+   	gzip: gzip_1$1,
+   	constants: constants$1
+   };
 
    // (C) 1995-2013 Jean-loup Gailly and Mark Adler
    // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -31044,14 +31098,50 @@
 
      return inflator.result;
    }
+
+
+   /**
+    * inflateRaw(data[, options]) -> Uint8Array|String
+    * - data (Uint8Array|ArrayBuffer): input data to decompress.
+    * - options (Object): zlib inflate options.
+    *
+    * The same as [[inflate]], but creates raw data, without wrapper
+    * (header and adler32 crc).
+    **/
+   function inflateRaw$1(input, options) {
+     options = options || {};
+     options.raw = true;
+     return inflate$1(input, options);
+   }
+
+
+   /**
+    * ungzip(data[, options]) -> Uint8Array|String
+    * - data (Uint8Array|ArrayBuffer): input data to decompress.
+    * - options (Object): zlib inflate options.
+    *
+    * Just shortcut to [[inflate]], because it autodetects format
+    * by header.content. Done for convenience.
+    **/
+
+
+   var Inflate_1$1 = Inflate$1;
    var inflate_2 = inflate$1;
+   var inflateRaw_1$1 = inflateRaw$1;
+   var ungzip$1 = inflate$1;
+   var constants = constants$2;
 
    var inflate_1$1 = {
-   	inflate: inflate_2};
+   	Inflate: Inflate_1$1,
+   	inflate: inflate_2,
+   	inflateRaw: inflateRaw_1$1,
+   	ungzip: ungzip$1,
+   	constants: constants
+   };
 
-   const { deflate} = deflate_1$1;
+   const { Deflate, deflate, deflateRaw, gzip } = deflate_1$1;
 
-   const { inflate} = inflate_1$1;
+   const { Inflate, inflate, inflateRaw, ungzip } = inflate_1$1;
    var deflate_1 = deflate;
    var inflate_1 = inflate;
 
