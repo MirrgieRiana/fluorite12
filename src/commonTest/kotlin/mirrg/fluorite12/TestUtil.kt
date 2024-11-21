@@ -14,6 +14,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.toFluoriteString
+import mirrg.fluorite12.mounts.createCommonMount
 
 fun parse(src: String): String {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
@@ -25,7 +26,7 @@ fun parse(src: String): String {
 suspend fun run(src: String): FluoriteValue {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
-    val runner = frame.defineBuiltinMount(createCommonBuiltinMount())
+    val runner = frame.defineBuiltinMount(createCommonMount())
     val getter = frame.compileToGetter(parseResult.value)
     val env = Environment(null, frame.nextVariableIndex, frame.mountCount)
     runner.evaluate(env)

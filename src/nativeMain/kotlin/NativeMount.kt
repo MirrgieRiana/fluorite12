@@ -6,7 +6,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 
-fun createNativeBuiltinMount(args: Array<String>): Map<String, FluoriteValue> {
+fun createNativeMount(args: Array<String>): Map<String, FluoriteValue> {
     return mapOf(
         "ARGS" to FluoriteArray(args.drop(1).map { it.toFluoriteString() }.toMutableList()),
         "IN" to FluoriteStream {

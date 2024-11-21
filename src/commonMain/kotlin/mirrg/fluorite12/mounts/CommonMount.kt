@@ -1,4 +1,4 @@
-package mirrg.fluorite12
+package mirrg.fluorite12.mounts
 
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
@@ -21,7 +21,7 @@ import kotlin.math.sqrt
 
 private fun usage(vararg usages: String): Nothing = throw IllegalArgumentException(listOf("Usage:", *usages.map { "  $it" }.toTypedArray()).joinToString("\n"))
 
-fun createCommonBuiltinMount(): Map<String, FluoriteValue> {
+fun createCommonMount(): Map<String, FluoriteValue> {
     return mapOf(
         "VALUE_CLASS" to FluoriteValue.fluoriteClass,
         "NULL_CLASS" to FluoriteNull.fluoriteClass,

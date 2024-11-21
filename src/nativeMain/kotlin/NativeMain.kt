@@ -8,8 +8,8 @@ import mirrg.fluorite12.compilers.compileToGetter
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
-import mirrg.fluorite12.createCommonBuiltinMount
 import mirrg.fluorite12.defineBuiltinMount
+import mirrg.fluorite12.mounts.createCommonMount
 import mirrg.fluorite12.operations.Runner
 
 fun main(args: Array<String>) = runBlocking {
@@ -17,8 +17,8 @@ fun main(args: Array<String>) = runBlocking {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
     val runners = mutableListOf<Runner>()
-    runners += frame.defineBuiltinMount(createCommonBuiltinMount())
-    runners += frame.defineBuiltinMount(createNativeBuiltinMount(args))
+    runners += frame.defineBuiltinMount(createCommonMount())
+    runners += frame.defineBuiltinMount(createNativeMount(args))
     val getter = frame.compileToGetter(parseResult.value)
     val env = Environment(null, frame.nextVariableIndex, frame.mountCount)
     runners.forEach {
