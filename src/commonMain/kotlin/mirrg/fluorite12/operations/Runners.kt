@@ -57,8 +57,8 @@ class MountRunner(private val frameIndex: Int, private val mountIndex: Int, priv
 class AdditiveMountRunner(private val oldFrameIndex: Int, private val oldMountIndex: Int, private val newFrameIndex: Int, private val newMountIndex: Int, private val getter: Getter) : Runner {
     override suspend fun evaluate(env: Environment) {
         val old = env.mountTable[oldFrameIndex][oldMountIndex]!!
-        val obj = (getter.evaluate(env) as FluoriteObject).map
-        env.mountTable[newFrameIndex][newMountIndex] = old + obj
+        val map = (getter.evaluate(env) as FluoriteObject).map
+        env.mountTable[newFrameIndex][newMountIndex] = old + map
     }
 
     override val code get() = "AdditiveMount[$oldFrameIndex;$oldMountIndex;$newFrameIndex;$newMountIndex;${getter.code}]"
