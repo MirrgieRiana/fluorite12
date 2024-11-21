@@ -29,9 +29,13 @@ if (base64DeflateUtf8Src === null) {
     src = `
 a := 1 .. 2 | "l"
 b := "He$a"
-c := [b, ", W", "rld!"]
+c := [
+  b
+  ", W"
+  "rld!"
+]
 
-c[] >> JOIN["o"]
+c() >> JOIN["o"]
 `;
 } else {
     const deflateUtf8Src = new Uint8Array([...atob(base64DeflateUtf8Src)].map(c => c.charCodeAt(0)));
