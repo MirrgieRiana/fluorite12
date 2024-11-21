@@ -276,7 +276,7 @@ class Fluorite12Test {
         assertEquals(55, run("+(1 .. 10)").int) // ストリームは各要素の合計
 
 
-        assertEquals(123, run("+{TO_NUMBER: this -> 123}{}").int) // オブジェクトの数値化はTO_NUMBERメソッドでオーバーライドできる
+        assertEquals(123, run("+{`+_`: this -> 123}{}").int) // オブジェクトの数値化はTO_NUMBERメソッドでオーバーライドできる
     }
 
     @Test
@@ -317,8 +317,8 @@ class Fluorite12Test {
         assertEquals(true, run("?[NULL]").boolean) // 要素がある配列の論理値化はTRUE
         assertEquals(false, run("?{}").boolean) // 空オブジェクトの論理値化はFALSE
         assertEquals(true, run("?{a: 1}").boolean) // 要素があるオブジェクトの論理値化はTRUE
-        assertEquals(true, run("?{TO_BOOLEAN: this -> TRUE}{}").boolean) // TO_BOOLEANメソッドでオーバーライドできる
-        assertEquals(true, run("TRUE::TO_BOOLEAN()").boolean) // 論理値に対してもTO_BOOLEANが呼び出せる
+        assertEquals(true, run("?{`?_`: this -> TRUE}{}").boolean) // `?_` メソッドでオーバーライドできる
+        assertEquals(true, run("TRUE::`?_`()").boolean) // 論理値に対しても `?_` が呼び出せる
     }
 
     @Test
@@ -349,7 +349,7 @@ class Fluorite12Test {
         assertEquals("[1;2;3]", run("&[1, 2, 3]").string)
         assertEquals("{a:1;b:2}", run("&{a: 1; b: 2}").string)
 
-        assertEquals("10", run("&{TO_STRING: this -> &this.a}{a: 10}").string) // 文字列化のオーバーライド
+        assertEquals("10", run("&{`&_`: this -> &this.a}{a: 10}").string) // 文字列化のオーバーライド
 
         assertEquals("[1;2;3]", run("&[1;2;3]").string) // 配列の文字列化
         assertEquals("{a:1;b:2}", run("&{a:1;b:2}").string) // オブジェクトの文字列化
@@ -429,10 +429,10 @@ class Fluorite12Test {
     @Test
     fun invokeTest() = runTest {
         assertEquals(123, run("(a -> a + 23)(100)").int) // function() で関数を呼び出せる
-        assertEquals(123, run("(a -> a + 23)::INVOKE(100)").int) // INVOKEメソッドでも関数を呼び出せる
-        assertEquals(123, run("{INVOKE: this, a, b -> a + b + 3}{}(100; 20)").int) // INVOKEメソッドを定義したオブジェクトも関数として呼び出せる
-        assertEquals(123, run("{INVOKE: this, a, b -> a + b + 3}{}[100](20)").int) // INVOKEメソッドを定義したオブジェクトも部分適用できる
-        assertEquals(123, run("{INVOKE: {INVOKE: this2, this1, a, b -> a + b}{}}{}(100; 23)").int) // INVOKEの多重追跡
+        assertEquals(123, run("(a -> a + 23)::`_()`(100)").int) // INVOKEメソッドでも関数を呼び出せる
+        assertEquals(123, run("{`_()`: this, a, b -> a + b + 3}{}(100; 20)").int) // INVOKEメソッドを定義したオブジェクトも関数として呼び出せる
+        assertEquals(123, run("{`_()`: this, a, b -> a + b + 3}{}[100](20)").int) // INVOKEメソッドを定義したオブジェクトも部分適用できる
+        assertEquals(123, run("{`_()`: {`_()`: this2, this1, a, b -> a + b}{}}{}(100; 23)").int) // INVOKEの多重追跡
     }
 
     @Test
@@ -544,8 +544,8 @@ class Fluorite12Test {
         assertEquals(false, run("'c' @ {a: 10; b: 20}").boolean)
 
         // CONTAINSメソッドで上書きできる
-        assertEquals(true, run("'abc' @ {CONTAINS: this, value -> value @ '---abc---'}{}").boolean)
-        assertEquals(false, run("'123' @ {CONTAINS: this, value -> value @ '---abc---'}{}").boolean)
+        assertEquals(true, run("'abc' @ {`_@_`: this, value -> value @ '---abc---'}{}").boolean)
+        assertEquals(false, run("'123' @ {`_@_`: this, value -> value @ '---abc---'}{}").boolean)
     }
 
     @Test
@@ -599,9 +599,9 @@ class Fluorite12Test {
 
         assertEquals(4, run("FALSE ? 1 : NULL ?: FALSE ? 3 : 4").int) // == FALSE ? 1 : (NULL ?: (FALSE ? 3 : 4))
 
-        // 条件項はTO_BOOLEANで論理値に変換される
-        assertEquals(1, run("{TO_BOOLEAN: _ -> TRUE}{} ? 1 : 2").int)
-        assertEquals(2, run("{TO_BOOLEAN: _ -> FALSE}{} ? 1 : 2").int)
+        // 条件項は `?_` で論理値に変換される
+        assertEquals(1, run("{`?_`: _ -> TRUE}{} ? 1 : 2").int)
+        assertEquals(2, run("{`?_`: _ -> FALSE}{} ? 1 : 2").int)
 
         // 評価されない項は副作用も起こさない
         assertEquals(2, run("a := 1; TRUE ? (a = 2) : 0; a").int)
@@ -710,11 +710,11 @@ class Fluorite12Test {
         assertEquals(10, run("{method: this -> this.a}{a: 10}::method()").int) // メソッド関数は最初の引数にthisを受け取る
         assertEquals(20, run("{method: this, b -> this.a * b}{a: 10}::method(2)").int) // 2個目以降の引数にメソッド呼び出し時の引数を受け取る
 
-        assertEquals("10", run("10::TO_STRING()").string) // 組み込みメソッドの呼び出し
+        assertEquals("10", run("10::`&_`()").string) // 組み込みメソッドの呼び出し
 
         assertEquals(10, run("A := {m: _ -> _.v}; a := A {v: 10}; a::m()").int) // メソッドの継承
 
-        assertEquals("{TO_STRING:1}", run("&{TO_STRING: 1}").string) // オブジェクトキーがメソッド名と衝突する場合でもオーバーライドしない
+        assertEquals("{&_:1}", run("&{`&_`: 1}").string) // オブジェクトキーがメソッド名と衝突する場合でもオーバーライドしない
     }
 
     @Test
@@ -782,7 +782,7 @@ class Fluorite12Test {
         assertEquals("a", run(""" JOIN("|"; "a",) """).string) // ストリームは1要素でもよい
         assertEquals("", run(""" JOIN("|"; ,) """).string) // ストリームは空でもよい
         assertEquals("a", run(""" JOIN("|"; "a") """).string) // ストリームは非ストリームでもよい
-        assertEquals("10|[20]|30", run(""" JOIN("|"; 10, [20], {TO_STRING: _ -> 30}{}) """).string) // ストリームは文字列化される
+        assertEquals("10|[20]|30", run(""" JOIN("|"; 10, [20], {`&_`: _ -> 30}{}) """).string) // ストリームは文字列化される
         assertEquals("a1b1c", run(""" JOIN(1; "a", "b", "c") """).string) // セパレータも文字列化される
         assertEquals("a|b|c", run(""" JOIN["|"]("a", "b", "c") """).string) // 部分適用を使用した例
 

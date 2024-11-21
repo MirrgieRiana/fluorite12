@@ -7,7 +7,7 @@ class FluoriteString(val value: String) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "INVOKE" to FluoriteFunction { arguments ->
+                    "_()" to FluoriteFunction { arguments ->
                         val string = (arguments[0] as FluoriteString).value
                         when (arguments.size) {
                             1 -> {
@@ -39,7 +39,7 @@ class FluoriteString(val value: String) : FluoriteValue {
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
-                    "BIND" to FluoriteFunction { arguments ->
+                    "_[]" to FluoriteFunction { arguments ->
                         val string = arguments[0] as FluoriteString
                         when (arguments.size) {
                             1 -> string
@@ -71,7 +71,7 @@ class FluoriteString(val value: String) : FluoriteValue {
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
-                    "TO_NUMBER" to FluoriteFunction { arguments ->
+                    "+_" to FluoriteFunction { arguments ->
                         val string = (arguments[0] as FluoriteString).value
                         if (string.all { c -> c in '0'..'9' }) {
                             when (val int = string.toInt()) {
@@ -86,13 +86,13 @@ class FluoriteString(val value: String) : FluoriteValue {
                             }
                         }
                     },
-                    "TO_BOOLEAN" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
-                    "TO_STRING" to FluoriteFunction { it[0] as FluoriteString },
-                    "TO_JSON" to FluoriteFunction { arguments ->
+                    "?_" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
+                    "&_" to FluoriteFunction { it[0] as FluoriteString },
+                    "$&_" to FluoriteFunction { arguments ->
                         val escaped = (arguments[0] as FluoriteString).value.escapeJsonString()
                         "\"$escaped\"".toFluoriteString()
                     },
-                    "CONTAINS" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
+                    "_@_" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
                 )
             )
         }

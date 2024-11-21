@@ -9,7 +9,7 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "TO_NUMBER" to FluoriteFunction { arguments ->
+                    "+_" to FluoriteFunction { arguments ->
                         var intSum = 0
                         var doubleSum = 0.0
                         (arguments[0] as FluoriteStream).collect { item ->
@@ -20,7 +20,7 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
                         }
                         if (doubleSum == 0.0) FluoriteInt(intSum) else FluoriteDouble(intSum + doubleSum)
                     },
-                    "TO_BOOLEAN" to FluoriteFunction { arguments ->
+                    "?_" to FluoriteFunction { arguments ->
                         flow {
                             (arguments[0] as FluoriteStream).collect {
                                 if (it.toBoolean()) emit(FluoriteBoolean.TRUE)
@@ -28,7 +28,7 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
                             emit(FluoriteBoolean.FALSE)
                         }.first()
                     },
-                    "TO_STRING" to FluoriteFunction { arguments ->
+                    "&_" to FluoriteFunction { arguments ->
                         val stream = arguments[0] as FluoriteStream
                         val sb = StringBuilder()
                         stream.collect { item ->

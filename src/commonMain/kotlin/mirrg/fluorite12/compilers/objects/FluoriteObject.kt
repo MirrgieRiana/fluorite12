@@ -7,7 +7,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "INVOKE" to FluoriteFunction { arguments ->
+                    "_()" to FluoriteFunction { arguments ->
                         val obj = arguments[0] as FluoriteObject
                         when (arguments.size) {
                             1 -> {
@@ -36,7 +36,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
-                    "BIND" to FluoriteFunction { arguments ->
+                    "_[]" to FluoriteFunction { arguments ->
                         // TODO
                         val obj = arguments[0] as FluoriteObject
                         val arguments1 = arguments.sliceArray(1 until arguments.size)
@@ -44,7 +44,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                             obj.invoke(arguments1 + arguments2)
                         }
                     },
-                    "TO_STRING" to FluoriteFunction { arguments ->
+                    "&_" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('{')
                         (arguments[0] as FluoriteObject).map.entries.forEachIndexed { i, (key, value) ->
@@ -56,8 +56,8 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                         sb.append('}')
                         sb.toString().toFluoriteString()
                     },
-                    "TO_BOOLEAN" to FluoriteFunction { (it[0] as FluoriteObject).map.isNotEmpty().toFluoriteBoolean() },
-                    "TO_JSON" to FluoriteFunction { arguments ->
+                    "?_" to FluoriteFunction { (it[0] as FluoriteObject).map.isNotEmpty().toFluoriteBoolean() },
+                    "$&_" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('{')
                         (arguments[0] as FluoriteObject).map.entries.forEachIndexed { i, (key, value) ->
@@ -71,7 +71,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                         sb.append('}')
                         sb.toString().toFluoriteString()
                     },
-                    "CONTAINS" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteObject).map).toFluoriteBoolean() },
+                    "_@_" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteObject).map).toFluoriteBoolean() },
                 )
             )
         }

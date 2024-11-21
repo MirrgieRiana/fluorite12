@@ -87,12 +87,12 @@ $ flc '"d" @ {a: 1; b: 2; c: 3}'
 
 ### 含有演算子のオーバーライド
 
-含有演算子は、より厳密には右辺の値の `CONTAINS` メソッドを呼び出し、論理値化したものを返します。
+含有演算子は、より厳密には右辺の値の `_@_` メソッドを呼び出し、論理値化したものを返します。
 
 ```shell
 $ flc '
   Basket := {
-    CONTAINS: this, item -> item @ this.items
+    `_@_`: this, item -> item @ this.items
   }
 
   basket := Basket{items: ["apple", "orange", "banana"]}

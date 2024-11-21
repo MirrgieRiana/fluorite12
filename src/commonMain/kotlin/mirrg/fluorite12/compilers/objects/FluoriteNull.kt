@@ -4,9 +4,9 @@ object FluoriteNull : FluoriteValue {
     val fluoriteClass by lazy {
         FluoriteObject(
             FluoriteValue.fluoriteClass, mutableMapOf(
-                "TO_NUMBER" to FluoriteFunction { FluoriteInt.ZERO },
-                "TO_BOOLEAN" to FluoriteFunction { FluoriteBoolean.FALSE },
-                "TO_JSON" to FluoriteFunction { "null".toFluoriteString() },
+                "+_" to FluoriteFunction { FluoriteInt.ZERO },
+                "?_" to FluoriteFunction { FluoriteBoolean.FALSE },
+                "$&_" to FluoriteFunction { "null".toFluoriteString() },
             )
         )
     }

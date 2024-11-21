@@ -8,7 +8,7 @@ sealed interface FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 null, mutableMapOf(
-                    "TO_STRING" to FluoriteFunction { "${it[0]}".toFluoriteString() },
+                    "&_" to FluoriteFunction { "${it[0]}".toFluoriteString() },
                 )
             )
         }
@@ -47,11 +47,11 @@ suspend fun FluoriteValue.callMethod(name: String, arguments: Array<FluoriteValu
     }
 }
 
-suspend fun FluoriteValue.invoke(arguments: Array<FluoriteValue>) = this.callMethod("INVOKE", arguments)
-suspend fun FluoriteValue.bind(arguments: Array<FluoriteValue>) = this.callMethod("BIND", arguments)
-suspend fun FluoriteValue.toJson() = this.callMethod("TO_JSON")
-suspend fun FluoriteValue.toFluoriteNumber(): FluoriteNumber = this.callMethod("TO_NUMBER").let { if (it is FluoriteNumber) it else it.toFluoriteNumber() }
-suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod("TO_STRING").let { if (it is FluoriteString) it else it.toFluoriteString() }
-suspend fun FluoriteValue.toFluoriteBoolean(): FluoriteBoolean = this.callMethod("TO_BOOLEAN").let { if (it is FluoriteBoolean) it else it.toFluoriteBoolean() }
+suspend fun FluoriteValue.invoke(arguments: Array<FluoriteValue>) = this.callMethod("_()", arguments)
+suspend fun FluoriteValue.bind(arguments: Array<FluoriteValue>) = this.callMethod("_[]", arguments)
+suspend fun FluoriteValue.toJson() = this.callMethod("$&_")
+suspend fun FluoriteValue.toFluoriteNumber(): FluoriteNumber = this.callMethod("+_").let { if (it is FluoriteNumber) it else it.toFluoriteNumber() }
+suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod("&_").let { if (it is FluoriteString) it else it.toFluoriteString() }
+suspend fun FluoriteValue.toFluoriteBoolean(): FluoriteBoolean = this.callMethod("?_").let { if (it is FluoriteBoolean) it else it.toFluoriteBoolean() }
 suspend fun FluoriteValue.toBoolean() = this.toFluoriteBoolean().value
-suspend fun FluoriteValue.contains(value: FluoriteValue) = this.callMethod("CONTAINS", arrayOf(value)).toFluoriteBoolean()
+suspend fun FluoriteValue.contains(value: FluoriteValue) = this.callMethod("_@_", arrayOf(value)).toFluoriteBoolean()

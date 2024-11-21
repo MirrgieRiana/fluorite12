@@ -5,7 +5,7 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "INVOKE" to FluoriteFunction { arguments ->
+                    "_()" to FluoriteFunction { arguments ->
                         val array = arguments[0] as FluoriteArray
                         when (arguments.size) {
                             1 -> FluoriteStream(array.values)
@@ -31,7 +31,7 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
-                    "BIND" to FluoriteFunction { arguments ->
+                    "_[]" to FluoriteFunction { arguments ->
                         val array = arguments[0] as FluoriteArray
                         when (arguments.size) {
                             1 -> FluoriteArray(array.values.toMutableList())
@@ -57,7 +57,7 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
-                    "TO_STRING" to FluoriteFunction { arguments ->
+                    "&_" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('[')
                         (arguments[0] as FluoriteArray).values.forEachIndexed { i, value ->
@@ -67,8 +67,8 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                         sb.append(']')
                         sb.toString().toFluoriteString()
                     },
-                    "TO_BOOLEAN" to FluoriteFunction { (it[0] as FluoriteArray).values.isNotEmpty().toFluoriteBoolean() },
-                    "TO_JSON" to FluoriteFunction { arguments ->
+                    "?_" to FluoriteFunction { (it[0] as FluoriteArray).values.isNotEmpty().toFluoriteBoolean() },
+                    "$&_" to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('[')
                         (arguments[0] as FluoriteArray).values.forEachIndexed { i, value ->
@@ -78,7 +78,7 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                         sb.append(']')
                         sb.toString().toFluoriteString()
                     },
-                    "CONTAINS" to FluoriteFunction { (it[1] in (it[0] as FluoriteArray).values).toFluoriteBoolean() }, // TODO EQUALSメソッドの使用
+                    "_@_" to FluoriteFunction { (it[1] in (it[0] as FluoriteArray).values).toFluoriteBoolean() }, // TODO EQUALSメソッドの使用
                 )
             )
         }

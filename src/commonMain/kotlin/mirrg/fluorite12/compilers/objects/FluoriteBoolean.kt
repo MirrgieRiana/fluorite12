@@ -9,9 +9,9 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "TO_NUMBER" to FluoriteFunction { if ((it[0] as FluoriteBoolean).value) FluoriteInt.ONE else FluoriteInt.ZERO },
-                    "TO_BOOLEAN" to FluoriteFunction { it[0] as FluoriteBoolean },
-                    "TO_JSON" to FluoriteFunction { (if ((it[0] as FluoriteBoolean).value) "true" else "false").toFluoriteString() },
+                    "+_" to FluoriteFunction { if ((it[0] as FluoriteBoolean).value) FluoriteInt.ONE else FluoriteInt.ZERO },
+                    "?_" to FluoriteFunction { it[0] as FluoriteBoolean },
+                    "$&_" to FluoriteFunction { (if ((it[0] as FluoriteBoolean).value) "true" else "false").toFluoriteString() },
                 )
             )
         }
