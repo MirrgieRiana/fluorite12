@@ -876,4 +876,12 @@ class Fluorite12Test {
         assertEquals(123, run("@{a: 123}; b := () -> a; @{a: 100}; b()").int) // マウントはそれより上には影響しない
         assertEquals(123, run("@{a: 123}; m := {}; @m; m.a = 100; a").int) // マウントに使ったオブジェクトを改変しても影響しない
     }
+
+    @Test
+    fun reduce() = runTest {
+        assertEquals(10, run("1 .. 4 >> REDUCE[a, b -> a + b]").int) // ストリームの集約を行う REDUCE 関数
+        assertEquals(123, run("123 >> REDUCE[a, b -> a + b]").int) // ストリームでない場合、その値がそのまま帰ってくる
+        assertEquals(123, run("123, >> REDUCE[a, b -> a + b]").int) // 長さが1のストリームでもその値がそのまま帰ってくる
+        assertEquals(FluoriteNull, run(", >> REDUCE[a, b -> a + b]")) // 長さが0のストリームはNULLになる
+    }
 }

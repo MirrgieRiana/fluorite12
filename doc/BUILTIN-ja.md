@@ -208,6 +208,44 @@ $ flc 'MAX(,)'
 # NULL
 ```
 
+## `REDUCE` ストリームの要素を累積する
+
+`REDUCE(function: VALUE, VALUE -> VALUE; stream: STREAM<VALUE>): VALUE`
+
+`REDUCE` は `stream` の隣り合った要素を `function` によって累積し、一つの値に集約する関数です。
+
+`REDUCE` は、しばしば部分適用によってストリームを処理する関数として用いられます。
+
+```shell
+$ flc 'REDUCE(a, b -> a + b; 1 .. 4)'
+# 10
+
+$ flc '1 .. 4 >> REDUCE[a, b -> a + b]'
+# 10
+```
+
+この例は、1から4までのすべての隣接する値に対して `a + b` を適当します。
+
+すなわち、 `1 + 2 + 3 + 4` と同じです。
+
+---
+
+ストリームの要素が1つしかない、もしくはストリームでない場合、その要素をそのまま返します。
+
+```shell
+$ flc '1 >> REDUCE[a, b -> a + b]'
+# 1
+```
+
+---
+
+ストリームが空の場合、 `NULL` を返します。
+
+```shell
+$ flc ', >> REDUCE[a, b -> a + b]'
+# NULL
+```
+
 ## `ARRAY` ストリームを配列に変換
 
 `ARRAY(stream: STREAM<VALUE>): ARRAY<VALUE>`

@@ -12,6 +12,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import kotlin.math.E
@@ -227,6 +228,24 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 }
             } else {
                 usage("MAX(numbers: STREAM<NUMBER>): NUMBER")
+            }
+        },
+        "REDUCE" to FluoriteFunction { arguments ->
+            if (arguments.size == 2) {
+                val function = arguments[0]
+                val stream = arguments[1]
+                if (stream is FluoriteStream) {
+                    var result: FluoriteValue? = null
+                    stream.collect { item ->
+                        val result2 = result
+                        result = (if (result2 == null) item else function.invoke(arrayOf(result2, item)))
+                    }
+                    result ?: FluoriteNull
+                } else {
+                    stream
+                }
+            } else {
+                usage("REDUCE(function: VALUE, VALUE -> VALUE; stream: STREAM<VALUE>): VALUE")
             }
         },
     )
