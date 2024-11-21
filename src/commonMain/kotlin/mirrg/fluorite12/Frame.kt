@@ -2,7 +2,9 @@ package mirrg.fluorite12
 
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.operations.AdditiveBuiltinMountRunner
 import mirrg.fluorite12.operations.AssignmentRunner
+import mirrg.fluorite12.operations.BuiltinMountRunner
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.Runner
 import mirrg.fluorite12.operations.VariableSetter
@@ -65,5 +67,15 @@ fun Frame.getMount(): Pair<Int, Int>? {
             return Pair(currentFrame.frameIndex, mountIndex)
         }
         currentFrame = currentFrame.parent ?: return null
+    }
+}
+
+fun Frame.defineBuiltinMount(map: Map<String, FluoriteValue>): Runner {
+    val oldMount = getMount()
+    val newMountIndex = mount()
+    return if (oldMount != null) {
+        AdditiveBuiltinMountRunner(oldMount.first, oldMount.second, frameIndex, newMountIndex, map)
+    } else {
+        BuiltinMountRunner(frameIndex, newMountIndex, map)
     }
 }

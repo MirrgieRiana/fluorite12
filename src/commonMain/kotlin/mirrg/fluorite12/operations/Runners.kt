@@ -3,6 +3,7 @@ package mirrg.fluorite12.operations
 import mirrg.fluorite12.Environment
 import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteStream
+import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 
 class GetterRunner(private val getter: Getter) : Runner {
@@ -62,4 +63,21 @@ class AdditiveMountRunner(private val oldFrameIndex: Int, private val oldMountIn
     }
 
     override val code get() = "AdditiveMount[$oldFrameIndex;$oldMountIndex;$newFrameIndex;$newMountIndex;${getter.code}]"
+}
+
+class BuiltinMountRunner(private val frameIndex: Int, private val mountIndex: Int, private val entries: Map<String, FluoriteValue>) : Runner {
+    override suspend fun evaluate(env: Environment) {
+        env.mountTable[frameIndex][mountIndex] = entries
+    }
+
+    override val code get() = "BuiltinMount[$frameIndex;$mountIndex;{${entries.keys.sorted().joinToString { it }}}]"
+}
+
+class AdditiveBuiltinMountRunner(private val oldFrameIndex: Int, private val oldMountIndex: Int, private val newFrameIndex: Int, private val newMountIndex: Int, private val entries: Map<String, FluoriteValue>) : Runner {
+    override suspend fun evaluate(env: Environment) {
+        val old = env.mountTable[oldFrameIndex][oldMountIndex]!!
+        env.mountTable[newFrameIndex][newMountIndex] = old + entries
+    }
+
+    override val code get() = "AdditiveBuiltinMount[$oldFrameIndex;$oldMountIndex;$newFrameIndex;$newMountIndex;{${entries.keys.sorted().joinToString { it }}}]"
 }

@@ -18,7 +18,6 @@ import mirrg.fluorite12.compilers.objects.toFluoriteString
 fun parse(src: String): String {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
-    frame.defineCommonBuiltinConstants()
     val getter = frame.compileToGetter(parseResult.value)
     return getter.code
 }
@@ -26,12 +25,10 @@ fun parse(src: String): String {
 suspend fun run(src: String): FluoriteValue {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
-    val runners = frame.defineCommonBuiltinConstants()
+    val runner = frame.defineBuiltinMount(createCommonBuiltinMount())
     val getter = frame.compileToGetter(parseResult.value)
     val env = Environment(null, frame.nextVariableIndex, frame.mountCount)
-    runners.forEach {
-        it.evaluate(env)
-    }
+    runner.evaluate(env)
     return getter.evaluate(env)
 }
 
