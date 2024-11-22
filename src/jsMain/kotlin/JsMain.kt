@@ -1,4 +1,6 @@
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
+import com.github.h0tk3y.betterParse.parser.ErrorResult
+import com.github.h0tk3y.betterParse.parser.Parsed
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 import mirrg.fluorite12.Environment
@@ -16,11 +18,23 @@ import kotlin.js.Promise
 
 @Suppress("unused")
 @JsName("parse")
-fun parse(src: String) = Fluorite12Grammar().tryParseToEnd(src)
+fun parse(src: String): Any {
+    return when (val result = Fluorite12Grammar().tryParseToEnd(src)) {
+        is Parsed -> object {
+            val success = true
+            val node = result.value
+        }
+
+        is ErrorResult -> object {
+            val success = false
+            val error = result
+        }
+    }
+}
 
 @Suppress("unused")
 @JsName("evaluate")
-fun evaluate(node: Node) = GlobalScope.promise {
+fun evaluate(node: Node, out: suspend (FluoriteValue) -> Unit) = GlobalScope.promise {
     val frame = Frame()
     val runner = frame.defineBuiltinMount(createCommonMount())
     val getter = frame.compileToGetter(node)

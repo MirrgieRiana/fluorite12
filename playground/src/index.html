@@ -59,14 +59,20 @@
             const src = window.input.state.doc.toString();
             try {
                 const result = fluorite12.parse(src);
-                if (result.errors !== undefined) {
-                    document.getElementById("output").value = "" + result.errors;
+                console.log(result);
+                if (!result.success) {
+                    document.getElementById("output").value = "" + result.error;
                     highlight(document.getElementById("output"));
-                    console.log(result.errors);
                     return;
                 }
-                const value = await fluorite12.evaluate(result.value);
-                document.getElementById("output").value = await fluorite12.stringify(value);
+                const output = [];
+                const value = await fluorite12.evaluate(result.node, async value => {
+                    console.log(value);
+                    output.push(await fluorite12.stringify(value));
+                });
+                console.log(value);
+                output.push(await fluorite12.stringify(value));
+                document.getElementById("output").value = output.join("\n");
                 highlight(document.getElementById("output"));
                 await fluorite12.log(value);
             } catch (e) {
