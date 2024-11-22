@@ -333,3 +333,11 @@ $ flc '
 ---
 
 `OUT` 関数自体は `NULL` を返します。
+
+# JavaScript版限定API
+
+## `OUT` コンソールに出力
+
+`OUT(value: VALUE): NULL`
+
+値をWebアプリケーションごとに決められた出力欄に出力します。
