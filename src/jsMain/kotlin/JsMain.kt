@@ -9,6 +9,7 @@ import mirrg.fluorite12.compilers.compileToGetter
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.defineBuiltinMount
 import mirrg.fluorite12.mounts.createCommonMount
 import kotlin.js.Promise
@@ -60,5 +61,5 @@ fun stringify(value: FluoriteValue): Promise<String> = GlobalScope.promise {
             value.toString()
         }
     }
-    f(value)
+    f(value).toFluoriteString().value
 }
