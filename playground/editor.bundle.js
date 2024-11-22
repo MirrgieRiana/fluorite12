@@ -14075,10 +14075,10 @@
                let tooltip = this.manager.tooltips[i], tView = this.manager.tooltipViews[i], { dom } = tView;
                let pos = measured.pos[i], size = measured.size[i];
                // Hide tooltips that are outside of the editor.
-               if (!pos || pos.bottom <= Math.max(visible.top, space.top) ||
+               if (!pos || tooltip.clip !== false && (pos.bottom <= Math.max(visible.top, space.top) ||
                    pos.top >= Math.min(visible.bottom, space.bottom) ||
                    pos.right < Math.max(visible.left, space.left) - .1 ||
-                   pos.left > Math.min(visible.right, space.right) + .1) {
+                   pos.left > Math.min(visible.right, space.right) + .1)) {
                    dom.style.top = Outside;
                    continue;
                }
@@ -31169,9 +31169,13 @@
        src = `
 a := 1 .. 2 | "l"
 b := "He$a"
-c := [b, ", W", "rld!"]
+c := [
+  b
+  ", W"
+  "rld!"
+]
 
-c[] >> JOIN["o"]
+c() >> JOIN["o"]
 `;
    } else {
        const deflateUtf8Src = new Uint8Array([...atob(base64DeflateUtf8Src)].map(c => c.charCodeAt(0)));
