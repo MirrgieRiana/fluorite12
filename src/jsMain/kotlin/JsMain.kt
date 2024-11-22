@@ -36,10 +36,15 @@ fun parse(src: String): Any {
 @JsName("evaluate")
 fun evaluate(node: Node, out: suspend (FluoriteValue) -> Unit) = GlobalScope.promise {
     val frame = Frame()
-    val runner = frame.defineBuiltinMount(createCommonMount())
+    val runners = listOf(
+        frame.defineBuiltinMount(createCommonMount()),
+        frame.defineBuiltinMount(createJsMount(out)),
+    )
     val getter = frame.compileToGetter(node)
     val env = Environment(null, frame.nextVariableIndex, frame.mountCount)
-    runner.evaluate(env)
+    runners.forEach {
+        it.evaluate(env)
+    }
     getter.evaluate(env)
 }
 
