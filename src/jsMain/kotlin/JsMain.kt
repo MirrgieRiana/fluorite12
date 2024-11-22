@@ -43,20 +43,22 @@ fun log(value: FluoriteValue) = GlobalScope.promise {
 @Suppress("unused")
 @JsName("stringify")
 fun stringify(value: FluoriteValue): Promise<String> = GlobalScope.promise {
-    suspend fun f(value: FluoriteValue): String = if (value is FluoriteStream) {
-        val sb = StringBuilder()
-        var isFirst = true
-        value.collect {
-            if (isFirst) {
-                isFirst = false
-            } else {
-                sb.append('\n')
+    suspend fun f(value: FluoriteValue): String {
+        return if (value is FluoriteStream) {
+            val sb = StringBuilder()
+            var isFirst = true
+            value.collect {
+                if (isFirst) {
+                    isFirst = false
+                } else {
+                    sb.append('\n')
+                }
+                sb.append(f(it))
             }
-            sb.append(f(it))
+            sb.toString()
+        } else {
+            value.toString()
         }
-        sb.toString()
-    } else {
-        value.toString()
     }
     f(value)
 }
