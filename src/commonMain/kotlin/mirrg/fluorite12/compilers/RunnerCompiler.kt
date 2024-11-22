@@ -51,10 +51,11 @@ fun Frame.compileToRunner(node: Node): List<Runner> {
         }
 
         node is LeftNode && node.left.text == "@" -> {
+            val getter = compileToGetter(node.right)
             val oldMount = getMount()
             val newMountIndex = mount()
             if (oldMount != null) {
-                listOf(AdditiveMountRunner(oldMount.first, oldMount.second, frameIndex, newMountIndex, compileToGetter(node.right)))
+                listOf(AdditiveMountRunner(oldMount.first, oldMount.second, frameIndex, newMountIndex, getter))
             } else {
                 listOf(MountRunner(frameIndex, newMountIndex, compileToGetter(node.right)))
             }
