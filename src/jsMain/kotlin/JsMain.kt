@@ -58,8 +58,8 @@ fun stringify(value: FluoriteValue): Promise<String> = GlobalScope.promise {
             }
             sb.toString()
         } else {
-            value.toString()
+            value.toFluoriteString().value
         }
     }
-    f(value).toFluoriteString().value
+    f(value)
 }
