@@ -36,9 +36,13 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         "STREAM_CLASS" to FluoriteStream.fluoriteClass,
 
         "NULL" to FluoriteNull,
+        "N" to FluoriteNull,
         "TRUE" to FluoriteBoolean.TRUE,
+        "T" to FluoriteBoolean.TRUE,
         "FALSE" to FluoriteBoolean.FALSE,
+        "F" to FluoriteBoolean.FALSE,
         "EMPTY" to FluoriteStream.EMPTY,
+        "E" to FluoriteStream.EMPTY,
 
         "MATH" to FluoriteObject(
             FluoriteObject.fluoriteClass, mutableMapOf(
