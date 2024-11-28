@@ -40,8 +40,12 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         "FALSE" to FluoriteBoolean.FALSE,
         "EMPTY" to FluoriteStream.EMPTY,
 
-        "PI" to FluoriteDouble(PI),
-        "E" to FluoriteDouble(E),
+        "MATH" to FluoriteObject(
+            FluoriteObject.fluoriteClass, mutableMapOf(
+                "PI" to FluoriteDouble(PI),
+                "E" to FluoriteDouble(E),
+            )
+        ),
         "FLOOR" to FluoriteFunction { arguments ->
             when (arguments.size) {
                 1 -> when (val number = arguments[0]) {
