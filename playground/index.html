@@ -17,107 +17,185 @@
             animation: highlight 1s;
         }
 
-        html {
-            height: 100%;
-            font-size: 125%;
-        }
+
         body {
-            height: 100%;
             margin: 0;
+            padding: 0;
+            font-size: 125%;
         }
         #container {
             width: 100%;
-            height: 100%;
-            border-collapse: collapse;
-        }
-        #container td {
-            padding: 0;
+            height: 100vh;
         }
         #input_container > .cm-editor, #output {
             box-sizing: border-box;
             width: 100%;
             height: 100%;
         }
-        #input_container > .cm-editor {
-            border-bottom: 1px solid #777777;
-        }
-        #output {
-            margin: 0%;
-            background-color: #FFFFFF;
-            vertical-align: top;
-        }
         #input_container > .cm-editor.cm-focused {
             outline: none !important;
         }
+        #divider {
+            height: 5px;
+            cursor: row-resize;
+            background-color: #ddd;
+        }
+        #output_container {
+             display: flex;
+             flex-direction: column;
+             height: 100vh;
+        }
+        #output_header {
+            flex: 0;
+            background-color: #f8f8f8;
+        }
+        #output {
+            margin: 0;
+            border-style: none;
+            vertical-align: top;
+            background-color: #fff;
+            resize: none;
+        }
     </style>
     <script src="fluorite12.js"></script>
-    <script>
-        async function run() {
-
-            updateUrl();
-
-            const src = window.input.state.doc.toString();
-            try {
-                const result = fluorite12.parse(src);
-                console.log(result);
-                if (!result.success) {
-                    document.getElementById("output").value = "" + result.error;
-                    highlight(document.getElementById("output"));
-                    return;
-                }
-                const output = [];
-                const value = await fluorite12.evaluate(result.node, async value => {
-                    console.log(value);
-                    output.push(await fluorite12.stringify(value));
-                });
-                console.log(value);
-                output.push(await fluorite12.stringify(value));
-                document.getElementById("output").value = output.join("\n");
-                highlight(document.getElementById("output"));
-                await fluorite12.log(value);
-            } catch (e) {
-                document.getElementById("output").value = "" + e;
-                highlight(document.getElementById("output"));
-                console.log(e);
-            }
-        }
-        function updateUrl() {
-            const src = window.input.state.doc.toString();
-            const utf8Src = new TextEncoder().encode(src);
-            const deflateUtf8Src = deflate(utf8Src);
-            const base64DeflateUtf8Src = btoa([...deflateUtf8Src].map(n => String.fromCharCode(n)).join(""));
-            const url = new URL(location.href);
-            url.searchParams.set("s", base64DeflateUtf8Src);
-            history.replaceState(null, "", url.toString());
-        }
-        function highlight(element) {
-            element.className = "box";
-            window.requestAnimationFrame(function (time) {
-                window.requestAnimationFrame(function (time) {
-                    element.className = "highlight";
-                });
-            });
-        }
-    </script>
 </head>
 <body>
-<table id="container">
-    <tr style="height: 80%;">
-        <td id="input_container" colspan="2"></td>
-    </tr>
-    <tr style="height: 0%;">
-        <td style="padding: 0.1em;">
-            <input type="button" value="Run (F9, Ctrl+Enter)" onclick="run();">
-            <input type="button" value="🔗" title="Update URL" onclick="updateUrl();">
-        </td>
-        <td style="padding: 0.1em; text-align: right;">
-            <a href="https://github.com/MirrgieRiana/fluorite12" target="_blank">About fluorite12</a>
-        </td>
-    </tr>
-    <tr style="height: 20%;">
-        <td colspan="2"><textarea id="output"></textarea></td>
-    </tr>
-</table>
+<div id="container">
+    <div id="input_container"></div>
+    <div id="divider"></div>
+    <div id="output_container">
+        <table id="output_header">
+            <tr>
+                <td style="padding: 0.1em;">
+                    <input type="button" value="Run (F9, Ctrl+Enter)" onclick="run();">
+                    <input type="button" value="🔗" title="Update URL" onclick="updateUrlWithSrc();">
+                </td>
+                <td style="padding: 0.1em; text-align: right;">
+                    <a href="https://github.com/MirrgieRiana/fluorite12" target="_blank">About fluorite12</a>
+                </td>
+            </tr>
+        </table>
+        <textarea id="output"></textarea>
+    </div>
+</div>
+<script>
+    async function run() {
+
+        updateUrlWithSrc();
+
+        const src = window.input.state.doc.toString();
+        try {
+            const result = fluorite12.parse(src);
+            console.log(result);
+            if (!result.success) {
+                document.getElementById("output").value = "" + result.error;
+                highlight(document.getElementById("output"));
+                return;
+            }
+            const output = [];
+            const value = await fluorite12.evaluate(result.node, async value => {
+                console.log(value);
+                output.push(await fluorite12.stringify(value));
+            });
+            console.log(value);
+            output.push(await fluorite12.stringify(value));
+            document.getElementById("output").value = output.join("\n");
+            highlight(document.getElementById("output"));
+            await fluorite12.log(value);
+        } catch (e) {
+            document.getElementById("output").value = "" + e;
+            highlight(document.getElementById("output"));
+            console.log(e);
+        }
+    }
+    function setParam(key, value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set(key, value);
+        history.replaceState(null, "", url.toString());
+    }
+    function updateUrlWithSrc() {
+        const src = window.input.state.doc.toString();
+        const utf8Src = new TextEncoder().encode(src);
+        const deflateUtf8Src = deflate(utf8Src);
+        const base64DeflateUtf8Src = btoa([...deflateUtf8Src].map(n => String.fromCharCode(n)).join(""));
+        setParam("s", base64DeflateUtf8Src);
+    }
+    function getDividerPositionFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const dividerPosition = params.get("d");
+        return dividerPosition ? Math.min(Math.max(parseFloat(dividerPosition), 10), 90) : 70;
+    }
+    function updateUrlWithDividerPosition(dividerPosition) {
+        setParam("d", dividerPosition.toFixed(2));
+    }
+    function highlight(element) {
+        element.className = "box";
+        window.requestAnimationFrame(function (time) {
+            window.requestAnimationFrame(function (time) {
+                element.className = "highlight";
+            });
+        });
+    }
+    function makeDividerLayout(container, initialDividerPosition) {
+        const [topPanel, divider, bottomPanel] = container.children;
+
+        let isDragging = false;
+        let currentDividerPosition = initialDividerPosition;
+        let onDragEndCallback = null;
+
+        function updateLayout(dividerPosition) {
+            const totalHeight = container.clientHeight;
+            const dividerHeight = divider.offsetHeight;
+            const availableHeight = totalHeight - dividerHeight
+            const topHeight = (dividerPosition / 100) * availableHeight;
+            const bottomHeight = availableHeight - topHeight;
+
+            topPanel.style.height = `${topHeight}px`;
+            bottomPanel.style.height = `${bottomHeight}px`;
+        }
+
+        divider.addEventListener("mousedown", () => {
+            isDragging = true;
+        });
+
+        document.addEventListener("mousemove", e => {
+            if (!isDragging) return;
+
+            const totalHeight = container.clientHeight;
+            const dividerHeight = divider.offsetHeight;
+            const availableHeight = totalHeight - dividerHeight
+
+            let topHeight = e.clientY - container.getBoundingClientRect().top;
+            topHeight = Math.min(Math.max(topHeight, totalHeight * 0.1), totalHeight * 0.9);
+
+            currentDividerPosition = (topHeight / availableHeight) * 100;
+            updateLayout(currentDividerPosition);
+        });
+
+        document.addEventListener("mouseup", () => {
+            if (isDragging) {
+                isDragging = false;
+                if (onDragEndCallback) onDragEndCallback(currentDividerPosition);
+            }
+        });
+
+        window.addEventListener("resize", () => {
+            updateLayout(currentDividerPosition);
+        });
+
+        updateLayout(currentDividerPosition);
+
+        return {
+            onDragEnd: callback => {
+                onDragEndCallback = callback;
+                return this;
+            }
+        };
+    }
+
+    makeDividerLayout(document.getElementById("container"), getDividerPositionFromUrl())
+        .onDragEnd(dividerPosition => updateUrlWithDividerPosition(dividerPosition));
+</script>
 <script src="editor.bundle.js"></script>
 </body>
 </html>
