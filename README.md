@@ -1,5 +1,17 @@
-[![.github/workflows/release.yml](https://github.com/MirrgieRiana/fluorite12/actions/workflows/release.yml/badge.svg)](https://github.com/MirrgieRiana/fluorite12/actions/workflows/release.yml)
-![](https://img.shields.io/github/v/tag/MirrgieRiana/fluorite12.svg?label=Latest%20Version)
+<br>
+
+<div align="center">
+  <img alt="fluorite12 Logo" src="assets/icon.svg" height="160px" />
+  fluorite 12
+</div>
+
+<br>
+<br>
+
+<div align="center">
+  <a href="https://github.com/MirrgieRiana/fluorite12/actions/workflows/release.yml"><img alt=".github/workflows/release.yml" src="https://github.com/MirrgieRiana/fluorite12/actions/workflows/release.yml/badge.svg" /></a>
+  <img alt="" src="https://img.shields.io/github/v/tag/MirrgieRiana/fluorite12.svg?label=Latest%20Version" />
+</div>
 
 # NAME
 
