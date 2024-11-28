@@ -67,3 +67,7 @@ Download the `flc` binary to the `./fluorite12`, and register it in `/usr/local/
 # DOCUMENTATION
 
 - [Japanese](doc/ja/INDEX.md)
+
+---
+
+*The fluorite12 logo uses the font [Monaspace Krypton](https://monaspace.githubnext.com/).*
