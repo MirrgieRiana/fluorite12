@@ -7,9 +7,7 @@ import mirrg.fluorite12.InfixNode
 import mirrg.fluorite12.LeftNode
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.defineVariable
-import mirrg.fluorite12.getMount
 import mirrg.fluorite12.mount
-import mirrg.fluorite12.operations.AdditiveMountRunner
 import mirrg.fluorite12.operations.AssignmentRunner
 import mirrg.fluorite12.operations.GetterRunner
 import mirrg.fluorite12.operations.MountRunner
@@ -52,13 +50,8 @@ fun Frame.compileToRunner(node: Node): List<Runner> {
 
         node is LeftNode && node.left.text == "@" -> {
             val getter = compileToGetter(node.right)
-            val oldMount = getMount()
             val newMountIndex = mount()
-            if (oldMount != null) {
-                listOf(AdditiveMountRunner(oldMount.first, oldMount.second, frameIndex, newMountIndex, getter))
-            } else {
-                listOf(MountRunner(frameIndex, newMountIndex, compileToGetter(node.right)))
-            }
+            listOf(MountRunner(frameIndex, newMountIndex, getter))
         }
 
         else -> listOf(GetterRunner(compileToGetter(node))) // 式文

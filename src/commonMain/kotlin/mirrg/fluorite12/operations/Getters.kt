@@ -46,9 +46,26 @@ class VariableGetter(private val frameIndex: Int, private val variableIndex: Int
     override val code get() = "Variable[$frameIndex;$variableIndex]"
 }
 
-class MountGetter(private val frameIndex: Int, private val mountIndex: Int, private val name: String) : Getter {
-    override suspend fun evaluate(env: Environment) = env.mountTable[frameIndex][mountIndex]!![name] ?: throw IllegalArgumentException("No such mount entry: $name")
-    override val code get() = "Mount[$frameIndex;$mountIndex;$name]"
+class MountGetter(private val mountCounts: IntArray, private val name: String) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        var currentFrameIndex = mountCounts.size - 1
+        while (currentFrameIndex >= 0) {
+
+            var currentMountIndex = mountCounts[currentFrameIndex] - 1
+            while (currentMountIndex >= 0) {
+
+                val value = env.mountTable[currentFrameIndex][currentMountIndex][name]
+                if (value != null) return value
+
+                currentMountIndex--
+            }
+
+            currentFrameIndex--
+        }
+        throw IllegalArgumentException("No such mount entry: $name")
+    }
+
+    override val code get() = "Mount[${mountCounts.joinToString(",") { "$it" }};$name]"
 }
 
 class StringConcatenationGetter(private val stringGetters: List<StringGetter>) : Getter {

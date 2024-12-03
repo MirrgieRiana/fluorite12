@@ -28,7 +28,6 @@ import mirrg.fluorite12.compilers.objects.FluoriteDouble
 import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.defineVariable
-import mirrg.fluorite12.getMount
 import mirrg.fluorite12.getVariable
 import mirrg.fluorite12.operations.AndGetter
 import mirrg.fluorite12.operations.ArrayCreationGetter
@@ -99,12 +98,13 @@ fun Frame.compileToGetter(node: Node): Getter {
             if (variable != null) {
                 VariableGetter(variable.first, variable.second)
             } else {
-                val mount = getMount()
-                if (mount != null) {
-                    MountGetter(mount.first, mount.second, name)
-                } else {
-                    throw IllegalArgumentException("Unresolvable identifier: $name")
+                val mountCounts = mutableListOf<Int>()
+                var frame = this
+                while (true) {
+                    mountCounts += frame.mountCount
+                    frame = frame.parent ?: break
                 }
+                MountGetter(mountCounts.reversed().toIntArray(), name)
             }
         }
 

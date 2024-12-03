@@ -2,7 +2,6 @@ package mirrg.fluorite12
 
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteValue
-import mirrg.fluorite12.operations.AdditiveBuiltinMountRunner
 import mirrg.fluorite12.operations.AssignmentRunner
 import mirrg.fluorite12.operations.BuiltinMountRunner
 import mirrg.fluorite12.operations.LiteralGetter
@@ -23,10 +22,10 @@ class Environment(val parent: Environment?, variableCount: Int, mountCount: Int)
     } else {
         arrayOf(Array(variableCount) { FluoriteNull })
     }
-    val mountTable: Array<Array<Map<String, FluoriteValue>?>> = if (parent != null) {
-        arrayOf(*parent.mountTable, Array(mountCount) { null })
+    val mountTable: Array<Array<Map<String, FluoriteValue>>> = if (parent != null) {
+        arrayOf(*parent.mountTable, Array(mountCount) { mapOf() })
     } else {
-        arrayOf(Array(mountCount) { null })
+        arrayOf(Array(mountCount) { mapOf() })
     }
 }
 
@@ -59,23 +58,7 @@ fun Frame.mount(): Int {
     return mountIndex
 }
 
-fun Frame.getMount(): Pair<Int, Int>? {
-    var currentFrame = this
-    while (true) {
-        if (currentFrame.mountCount > 0) {
-            val mountIndex = currentFrame.mountCount - 1
-            return Pair(currentFrame.frameIndex, mountIndex)
-        }
-        currentFrame = currentFrame.parent ?: return null
-    }
-}
-
 fun Frame.defineBuiltinMount(map: Map<String, FluoriteValue>): Runner {
-    val oldMount = getMount()
     val newMountIndex = mount()
-    return if (oldMount != null) {
-        AdditiveBuiltinMountRunner(oldMount.first, oldMount.second, frameIndex, newMountIndex, map)
-    } else {
-        BuiltinMountRunner(frameIndex, newMountIndex, map)
-    }
+    return BuiltinMountRunner(frameIndex, newMountIndex, map)
 }

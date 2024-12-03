@@ -55,29 +55,10 @@ class MountRunner(private val frameIndex: Int, private val mountIndex: Int, priv
     override val code get() = "Mount[$frameIndex;$mountIndex;${getter.code}]"
 }
 
-class AdditiveMountRunner(private val oldFrameIndex: Int, private val oldMountIndex: Int, private val newFrameIndex: Int, private val newMountIndex: Int, private val getter: Getter) : Runner {
-    override suspend fun evaluate(env: Environment) {
-        val old = env.mountTable[oldFrameIndex][oldMountIndex]!!
-        val map = (getter.evaluate(env) as FluoriteObject).map
-        env.mountTable[newFrameIndex][newMountIndex] = old + map
-    }
-
-    override val code get() = "AdditiveMount[$oldFrameIndex;$oldMountIndex;$newFrameIndex;$newMountIndex;${getter.code}]"
-}
-
 class BuiltinMountRunner(private val frameIndex: Int, private val mountIndex: Int, private val entries: Map<String, FluoriteValue>) : Runner {
     override suspend fun evaluate(env: Environment) {
         env.mountTable[frameIndex][mountIndex] = entries
     }
 
     override val code get() = "BuiltinMount[$frameIndex;$mountIndex;{${entries.keys.sorted().joinToString { it }}}]"
-}
-
-class AdditiveBuiltinMountRunner(private val oldFrameIndex: Int, private val oldMountIndex: Int, private val newFrameIndex: Int, private val newMountIndex: Int, private val entries: Map<String, FluoriteValue>) : Runner {
-    override suspend fun evaluate(env: Environment) {
-        val old = env.mountTable[oldFrameIndex][oldMountIndex]!!
-        env.mountTable[newFrameIndex][newMountIndex] = old + entries
-    }
-
-    override val code get() = "AdditiveBuiltinMount[$oldFrameIndex;$oldMountIndex;$newFrameIndex;$newMountIndex;{${entries.keys.sorted().joinToString { it }}}]"
 }
