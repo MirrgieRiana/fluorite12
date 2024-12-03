@@ -2,11 +2,8 @@ package mirrg.fluorite12
 
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteValue
-import mirrg.fluorite12.operations.AssignmentRunner
 import mirrg.fluorite12.operations.BuiltinMountRunner
-import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.Runner
-import mirrg.fluorite12.operations.VariableSetter
 
 
 class Frame(val parent: Frame? = null) {
@@ -44,12 +41,6 @@ fun Frame.getVariable(name: String): Pair<Int, Int>? {
         if (variableIndex != null) return Pair(currentFrame.frameIndex, variableIndex)
         currentFrame = currentFrame.parent ?: return null
     }
-}
-
-fun Frame.defineConstant(name: String, value: FluoriteValue): Runner {
-    val variableIndex = defineVariable(name)
-    val getter = LiteralGetter(value)
-    return AssignmentRunner(VariableSetter(frameIndex, variableIndex), getter)
 }
 
 fun Frame.mount(): Int {
