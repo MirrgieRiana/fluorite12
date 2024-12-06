@@ -85,7 +85,51 @@ $ flc '
 # 123
 ```
 
-## 名前付き引数
+# メソッド参照 `value::method`
+
+メソッド参照は、値の親オブジェクトに登録された関数に、その値を部分適用した関数を生成します。
+
+```shell
+$ flc '
+  Adder := {
+    add: this, y, z -> this.x + y + z
+  }
+  adder := Adder{x: 100}
+
+  function := adder::add
+
+  function(20; 3)
+'
+# 123
+```
+
+---
+
+メソッド呼び出しは、概念的にはメソッド参照と関数呼び出しの組み合わせと等価です。
+
+```shell
+$ flc '
+  Adder := {
+    add: this, y -> this.x + y
+    new: x -> Adder{x: x}
+  }
+  adder := Adder.new(100)
+
+  OUT << adder::add(23)
+
+  OUT << (adder::add)(23)
+
+  function := adder::add
+  OUT << function(23)
+
+  ;,
+'
+# 123
+# 123
+# 123
+```
+
+# 名前付き引数
 
 名前付き引数専用の文法はありませんが、エントリー演算子を使って近いことが実現できます。
 

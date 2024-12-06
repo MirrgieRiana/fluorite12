@@ -718,6 +718,19 @@ class Fluorite12Test {
     }
 
     @Test
+    fun methodReferenceTest() = runTest {
+        assertEquals(123, run("({m: this, y -> this.x + y + 3}{x: 100}::m)(20)").int) // メソッド参照
+
+        // メソッド参照を使った左実行パイプ
+        """
+            out := []
+            out::push << "1"
+            out::push << "a"
+            out
+        """.let { assertEquals("[1;a]", run(it).array()) }
+    }
+
+    @Test
     fun bindTest() = runTest {
         assertEquals("12", run("(a, b -> a & b)[1](2)").string) // [ ] で関数に部分適用できる
         assertEquals("12", run("(a, b -> a & b)[1; 2]()").string) // [ ] の中に複数の引数があってもよい

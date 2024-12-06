@@ -287,6 +287,13 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             ItemAccessGetter(receiverGetter, nameGetter)
         }
 
+        "::" -> {
+            if (right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: $right")
+            val receiverGetter = compileToGetter(left)
+            val name = right.string
+            MethodBindGetter(receiverGetter, name, listOf())
+        }
+
         "+" -> PlusGetter(compileToGetter(left), compileToGetter(right))
         "&" -> StringConcatenationGetter(listOf(ConversionStringGetter(compileToGetter(left)), ConversionStringGetter(compileToGetter(right))))
         "-" -> MinusGetter(compileToGetter(left), compileToGetter(right))
