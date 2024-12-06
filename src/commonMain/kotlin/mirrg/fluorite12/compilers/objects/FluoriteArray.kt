@@ -79,6 +79,46 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                         sb.toString().toFluoriteString()
                     },
                     "_@_" to FluoriteFunction { (it[1] in (it[0] as FluoriteArray).values).toFluoriteBoolean() }, // TODO EQUALSメソッドの使用
+                    "push" to FluoriteFunction { arguments ->
+                        if (arguments.size != 2) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+                        val array = arguments[0] as FluoriteArray
+                        val value = arguments[1]
+                        if (value is FluoriteStream) {
+                            value.collect { item ->
+                                array.values.add(item)
+                            }
+                        } else {
+                            array.values.add(value)
+                        }
+                        FluoriteNull
+                    },
+                    "pop" to FluoriteFunction { arguments ->
+                        if (arguments.size != 1) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+                        val array = arguments[0] as FluoriteArray
+                        array.values.removeLast()
+                        FluoriteNull
+                    },
+                    "unshift" to FluoriteFunction { arguments ->
+                        if (arguments.size != 2) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+                        val array = arguments[0] as FluoriteArray
+                        val value = arguments[1]
+                        if (value is FluoriteStream) {
+                            var index = 0
+                            value.collect { item ->
+                                array.values.add(index, item)
+                                index++
+                            }
+                        } else {
+                            array.values.add(0, value)
+                        }
+                        FluoriteNull
+                    },
+                    "shift" to FluoriteFunction { arguments ->
+                        if (arguments.size != 1) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+                        val array = arguments[0] as FluoriteArray
+                        array.values.removeFirst()
+                        FluoriteNull
+                    },
                 )
             )
         }

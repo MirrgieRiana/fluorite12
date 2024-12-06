@@ -884,4 +884,14 @@ class Fluorite12Test {
         assertEquals(123, run("123, >> REDUCE[a, b -> a + b]").int) // 長さが1のストリームでもその値がそのまま帰ってくる
         assertEquals(FluoriteNull, run(", >> REDUCE[a, b -> a + b]")) // 長さが0のストリームはNULLになる
     }
+
+    @Test
+    fun pushPopUnshiftShift() = runTest {
+        assertEquals("[1;2;3]", run("a := [1, 2]; a::push(3); a").array())
+        assertEquals("[1;2;3;4]", run("a := [1, 2]; a::push(3, 4); a").array())
+        assertEquals("[1]", run("a := [1, 2]; a::pop(); a").array())
+        assertEquals("[3;1;2]", run("a := [1, 2]; a::unshift(3); a").array())
+        assertEquals("[3;4;1;2]", run("a := [1, 2]; a::unshift(3, 4); a").array())
+        assertEquals("[2]", run("a := [1, 2]; a::shift(); a").array())
+    }
 }

@@ -346,3 +346,60 @@ $ flc '
 '
 # [zero;one;two;three]
 ```
+
+# 配列の両端に追加・削除するメソッド
+
+`unshift` `shift` `push` `pop` メソッドは、それぞれ配列の末尾・先頭に要素を追加・削除します。
+
+これらのメソッドは、破壊的な操作を行います。
+
+| メソッド      | 操作対象 | 操作内容  |
+|-----------|------|-------|
+| `unshift` | 先頭   | 要素を追加 |
+| `shift`   | 先頭   | 要素を削除 |
+| `push`    | 末尾   | 要素を追加 |
+| `pop`     | 末尾   | 要素を削除 |
+
+```shell
+$ flc '
+  array := ["zero", "one", "two", "three", "four"]
+
+  array::unshift("minus one")
+  OUT << array
+
+  array::shift()
+  OUT << array
+
+  array::push("five")
+  OUT << array
+
+  array::pop()
+  OUT << array
+
+  array
+'
+# [minus one;zero;one;two;three;four]
+# [zero;one;two;three;four]
+# [zero;one;two;three;four;five]
+# [zero;one;two;three;four]
+```
+
+## ストリームの `unshift` `push`
+
+`unshift` `push` メソッドにストリームを渡すと、そのストリームの各要素が配列に追加されます。
+
+```shell
+$ flc '
+  array := ["zero", "one", "two", "three", "four"]
+
+  array::unshift("minus two", "minus one")
+  OUT << array
+
+  array::push("five", "six")
+  OUT << array
+
+  array
+'
+# [minus two;minus one;zero;one;two;three;four]
+# [minus two;minus one;zero;one;two;three;four;five;six]
+```
