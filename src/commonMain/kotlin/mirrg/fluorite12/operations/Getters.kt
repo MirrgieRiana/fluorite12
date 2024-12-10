@@ -22,6 +22,8 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.bind
 import mirrg.fluorite12.compilers.objects.callMethod
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.getMethod
+import mirrg.fluorite12.compilers.objects.instanceOf
 import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.compilers.objects.toBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteBoolean
@@ -29,6 +31,7 @@ import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.compilers.objects.toJson
 import mirrg.fluorite12.escapeJsonString
+import mirrg.fluorite12.getMounts
 import kotlin.math.pow
 
 object NullGetter : Getter {
@@ -48,19 +51,8 @@ class VariableGetter(private val frameIndex: Int, private val variableIndex: Int
 
 class MountGetter(private val mountCounts: IntArray, private val name: String) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
-        var currentFrameIndex = mountCounts.size - 1
-        while (currentFrameIndex >= 0) {
-
-            var currentMountIndex = mountCounts[currentFrameIndex] - 1
-            while (currentMountIndex >= 0) {
-
-                val value = env.mountTable[currentFrameIndex][currentMountIndex][name]
-                if (value != null) return value
-
-                currentMountIndex--
-            }
-
-            currentFrameIndex--
+        env.getMounts(name, mountCounts).forEach {
+            return it
         }
         throw IllegalArgumentException("No such mount entry: $name")
     }
@@ -139,14 +131,81 @@ class ObjectCreationGetter(private val parentGetter: Getter?, private val conten
     override val code get() = "ObjectCreation[${parentGetter?.code};${contentGetters.code}]"
 }
 
-class MethodInvocationGetter(private val receiverGetter: Getter, private val name: String, private val argumentGetters: List<Getter>) : Getter {
+class MethodAccessGetter(
+    private val receiverGetter: Getter,
+    private val variable: Pair<Int, Int>?,
+    private val mountCounts: IntArray,
+    private val name: String,
+    private val argumentGetters: List<Getter>,
+    private val isBinding: Boolean,
+) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val receiver = receiverGetter.evaluate(env)
-        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
-        return receiver.callMethod(name, arguments)
+
+        suspend fun processFunction(function: FluoriteValue): FluoriteValue {
+            val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
+            return if (isBinding) {
+                FluoriteFunction { arguments2 ->
+                    receiver.callMethod(function, arguments + arguments2)
+                }
+            } else {
+                receiver.callMethod(function, arguments)
+            }
+        }
+
+        suspend fun processEntry(entry: FluoriteArray): FluoriteValue? {
+            if (entry.values.size == 2) {
+                val clazz = entry.values[0]
+                val function = entry.values[1]
+                if (receiver.instanceOf(clazz)) {
+                    return processFunction(function)
+                }
+            }
+            return null
+        }
+
+        suspend fun processEntries(value: FluoriteValue): FluoriteValue? {
+            if (value is FluoriteArray) {
+                if (value.values.size >= 1 && value.values[0] is FluoriteArray) {
+                    value.values.forEach { item ->
+                        if (item is FluoriteArray) {
+                            val result = processEntry(item)
+                            if (result != null) return result
+                        }
+                    }
+                } else {
+                    val result = processEntry(value)
+                    if (result != null) return result
+                }
+            }
+            return null
+        }
+
+        // ローカル変数のチェック
+        if (variable != null) {
+            val value = env.variableTable[variable.first][variable.second]
+            val result = processEntries(value)
+            if (result != null) return result
+        }
+
+        // レシーバのメソッドのチェック
+        run {
+            val function = receiver.getMethod(name)
+            if (function != null) {
+                return processFunction(function)
+            }
+        }
+
+        // マウントのチェック
+        env.getMounts("::$name", mountCounts).forEach {
+            val result = processEntries(it)
+            if (result != null) return result
+        }
+
+        throw RuntimeException("Method not found: $this::$name")
     }
 
-    override val code get() = "MethodInvocation[${receiverGetter.code};${name.escapeJsonString()};${argumentGetters.code}]"
+    override val code get() = "MethodAccess[${receiverGetter.code};$variable;${mountCounts.joinToString { "$it" }};${name.escapeJsonString()};${argumentGetters.code};$isBinding]"
 }
 
 class FunctionInvocationGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
@@ -157,18 +216,6 @@ class FunctionInvocationGetter(private val functionGetter: Getter, private val a
     }
 
     override val code get() = "FunctionInvocation[${functionGetter.code};${argumentGetters.code}]"
-}
-
-class MethodBindGetter(private val receiverGetter: Getter, private val name: String, private val argumentGetters: List<Getter>) : Getter {
-    override suspend fun evaluate(env: Environment): FluoriteValue {
-        val receiver = receiverGetter.evaluate(env)
-        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
-        return FluoriteFunction { arguments2 ->
-            receiver.callMethod(name, arguments + arguments2)
-        }
-    }
-
-    override val code get() = "MethodBind[${receiverGetter.code};${name.escapeJsonString()};${argumentGetters.code}]"
 }
 
 class FunctionBindGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {

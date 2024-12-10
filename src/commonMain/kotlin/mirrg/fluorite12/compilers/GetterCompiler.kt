@@ -28,6 +28,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteDouble
 import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.defineVariable
+import mirrg.fluorite12.getMountCounts
 import mirrg.fluorite12.getVariable
 import mirrg.fluorite12.operations.AndGetter
 import mirrg.fluorite12.operations.ArrayCreationGetter
@@ -59,8 +60,7 @@ import mirrg.fluorite12.operations.LessEqualComparator
 import mirrg.fluorite12.operations.LinesGetter
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.LiteralStringGetter
-import mirrg.fluorite12.operations.MethodBindGetter
-import mirrg.fluorite12.operations.MethodInvocationGetter
+import mirrg.fluorite12.operations.MethodAccessGetter
 import mirrg.fluorite12.operations.MinusGetter
 import mirrg.fluorite12.operations.ModGetter
 import mirrg.fluorite12.operations.MountGetter
@@ -173,13 +173,15 @@ fun Frame.compileToGetter(node: Node): Getter {
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
                     val receiverGetter = compileToGetter(node.main.left)
                     val name = node.main.right.string
+                    val variable = getVariable("::$name")
+                    val mountCounts = getMountCounts()
                     val argumentNodes = when (node.argument) {
                         is EmptyNode -> listOf()
                         is SemicolonsNode -> node.argument.nodes
                         else -> listOf(node.argument)
                     }
                     val argumentGetters = argumentNodes.map { compileToGetter(it) }
-                    MethodInvocationGetter(receiverGetter, name, argumentGetters)
+                    MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, false)
                 } else { // 関数呼び出し
                     val functionGetter = compileToGetter(node.main)
                     val argumentNodes = when (node.argument) {
@@ -197,13 +199,15 @@ fun Frame.compileToGetter(node: Node): Getter {
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
                     val receiverGetter = compileToGetter(node.main.left)
                     val name = node.main.right.string
+                    val variable = getVariable("::$name")
+                    val mountCounts = getMountCounts()
                     val argumentNodes = when (node.argument) {
                         is EmptyNode -> listOf()
                         is SemicolonsNode -> node.argument.nodes
                         else -> listOf(node.argument)
                     }
                     val argumentGetters = argumentNodes.map { compileToGetter(it) }
-                    MethodBindGetter(receiverGetter, name, argumentGetters)
+                    MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, true)
                 } else { // 関数呼び出し
                     val functionGetter = compileToGetter(node.main)
                     val argumentNodes = when (node.argument) {
@@ -291,7 +295,9 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             if (right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: $right")
             val receiverGetter = compileToGetter(left)
             val name = right.string
-            MethodBindGetter(receiverGetter, name, listOf())
+            val variable = getVariable("::$name")
+            val mountCounts = getMountCounts()
+            MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true)
         }
 
         "+" -> PlusGetter(compileToGetter(left), compileToGetter(right))

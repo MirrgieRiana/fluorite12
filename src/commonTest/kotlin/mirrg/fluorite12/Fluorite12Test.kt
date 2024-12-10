@@ -907,4 +907,86 @@ class Fluorite12Test {
         assertEquals("[3;4;1;2]", run("a := [1, 2]; a::unshift(3, 4); a").array())
         assertEquals("[2]", run("a := [1, 2]; a::shift(); a").array())
     }
+
+    @Test
+    fun extensionMethod() = runTest {
+
+        // 変数による拡張関数
+        """
+            `::m` := (INT_CLASS): this -> "V"
+            100::m()
+        """.let { assertEquals("V", run(it).string) }
+
+        // マウントによる拡張関数
+        """
+            @{`::m`: (INT_CLASS): this -> "M"}
+            100::m()
+        """.let { assertEquals("M", run(it).string) }
+
+
+        // 配列にすることでオーバーロードできる
+        """
+            `::m` := [
+                (INT_CLASS): this -> "Vi"
+                (STRING_CLASS): this -> "Vs"
+            ]
+            [
+                100::m()
+                "abc"::m()
+            ]
+        """.let { assertEquals("[Vi;Vs]", run(it).array()) }
+
+        // マウントのオーバーロード
+        """
+            @{`::m`: [
+                (INT_CLASS): this -> "Mi"
+                (STRING_CLASS): this -> "Ms"
+            ]}
+            [
+                100::m()
+                "abc"::m()
+            ]
+        """.let { assertEquals("[Mi;Ms]", run(it).array()) }
+
+
+        // 変数による拡張関数はシャドーイングする
+        """
+            Obj := {m: this -> "I"}
+            `::m` := (Obj): this -> "V"
+            `::m` := (INT_CLASS): this -> "V"
+            Obj{}::m()
+        """.let { assertEquals("I", run(it).string) }
+
+        // マウントによる拡張関数はマージされる
+        """
+            Obj := {}
+            @{`::m`: (Obj): this -> "M"}
+            @{`::m`: (INT_CLASS): this -> "M"}
+            Obj{}::m()
+        """.let { assertEquals("M", run(it).string) }
+
+
+        // 変数による拡張関数はインスタンスメソッドを上書きする
+        """
+            Obj := {m: this -> "I"}
+            `::m` := (Obj): this -> "V"
+            Obj{}::m()
+        """.let { assertEquals("V", run(it).string) }
+
+        // マウントによる拡張関数はインスタンスメソッドに上書きされる
+        """
+            Obj := {m: this -> "I"}
+            @{`::m`: (Obj): this -> "M"}
+            Obj{}::m()
+        """.let { assertEquals("I", run(it).string) }
+
+        // 変数による拡張関数はマウントによる拡張関数を上書きする
+        """
+            Obj := {}
+            @{`::m`: (Obj): this -> "M"}
+            `::m` := (Obj): this -> "V"
+            Obj{}::m()
+        """.let { assertEquals("V", run(it).string) }
+
+    }
 }

@@ -40,6 +40,10 @@ fun FluoriteValue.getMethod(name: String): FluoriteValue? {
 
 suspend fun FluoriteValue.callMethod(name: String, arguments: Array<FluoriteValue> = arrayOf()): FluoriteValue {
     val method = this.getMethod(name) ?: throw RuntimeException("Method not found: $this::$name")
+    return callMethod(method, arguments)
+}
+
+suspend fun FluoriteValue.callMethod(method: FluoriteValue, arguments: Array<FluoriteValue> = arrayOf()): FluoriteValue {
     return if (method is FluoriteFunction) {
         method.function(arrayOf(this, *arguments))
     } else {

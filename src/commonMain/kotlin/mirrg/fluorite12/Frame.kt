@@ -49,7 +49,36 @@ fun Frame.mount(): Int {
     return mountIndex
 }
 
+fun Frame.getMountCounts(): IntArray {
+    val mountCounts = mutableListOf<Int>()
+    var frame = this
+    while (true) {
+        mountCounts += frame.mountCount
+        frame = frame.parent ?: break
+    }
+    return mountCounts.reversed().toIntArray()
+}
+
 fun Frame.defineBuiltinMount(map: Map<String, FluoriteValue>): Runner {
     val newMountIndex = mount()
     return BuiltinMountRunner(frameIndex, newMountIndex, map)
+}
+
+fun Environment.getMounts(name: String, mountCounts: IntArray): Sequence<FluoriteValue> {
+    return sequence {
+        var currentFrameIndex = mountCounts.size - 1
+        while (currentFrameIndex >= 0) {
+
+            var currentMountIndex = mountCounts[currentFrameIndex] - 1
+            while (currentMountIndex >= 0) {
+
+                val value = this@getMounts.mountTable[currentFrameIndex][currentMountIndex][name]
+                if (value != null) yield(value)
+
+                currentMountIndex--
+            }
+
+            currentFrameIndex--
+        }
+    }
 }
