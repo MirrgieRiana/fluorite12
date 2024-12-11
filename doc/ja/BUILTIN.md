@@ -8,16 +8,16 @@
 
 各種組み込みオブジェクトのクラスを参照できます。
 
-- `VALUE_CLASS`
+- `VALUE`
 - `NULL_CLASS`
-- `INT_CLASS`
-- `DOUBLE_CLASS`
-- `BOOLEAN_CLASS`
-- `STRING_CLASS`
-- `ARRAY_CLASS`
-- `OBJECT_CLASS`
-- `FUNCTION_CLASS`
-- `STREAM_CLASS`
+- `INT`
+- `DOUBLE`
+- `BOOLEAN`
+- `STRING`
+- `ARRAY`
+- `OBJECT`
+- `FUNCTION`
+- `STREAM`
 
 # 定数
 
@@ -246,25 +246,25 @@ $ flc ', >> REDUCE[a, b -> a + b]'
 # NULL
 ```
 
-## `ARRAY` ストリームを配列に変換
+## `TO_ARRAY` ストリームを配列に変換
 
 `ARRAY(stream: STREAM<VALUE>): ARRAY<VALUE>`
 
 第1引数のストリームの各要素を配列に変換します。
 
 ```shell
-$ flc 'ARRAY(1 .. 3)'
+$ flc 'TO_ARRAY(1 .. 3)'
 # [1;2;3]
 ```
 
-## `OBJECT` エントリーのストリームをオブジェクトに変換
+## `TO_OBJECT` エントリーのストリームをオブジェクトに変換
 
 `OBJECT(stream: STREAM<ARRAY<STRING; VALUE>>): OBJECT`
 
 第1引数のストリームの各要素をエントリーとしてオブジェクトに変換します。
 
 ```shell
-$ flc 'OBJECT(("a": 1), ("b": 2), ("c": 3))'
+$ flc 'TO_OBJECT(("a": 1), ("b": 2), ("c": 3))'
 # {a:1;b:2;c:3}
 ```
 

@@ -657,23 +657,23 @@ class Fluorite12Test {
     @Test
     fun builtInClassTest() = runTest {
         // 各クラスのtrue判定
-        assertEquals(true, run("1 ?= VALUE_CLASS").boolean)
+        assertEquals(true, run("1 ?= VALUE").boolean)
         assertEquals(true, run("NULL ?= NULL_CLASS").boolean)
-        assertEquals(true, run("1 ?= INT_CLASS").boolean)
-        assertEquals(true, run("1.2 ?= DOUBLE_CLASS").boolean)
-        assertEquals(true, run("TRUE ?= BOOLEAN_CLASS").boolean)
-        assertEquals(true, run("'a' ?= STRING_CLASS").boolean)
-        assertEquals(true, run("[1] ?= ARRAY_CLASS").boolean)
-        assertEquals(true, run("{a: 1} ?= OBJECT_CLASS").boolean)
-        assertEquals(true, run("(a -> 1) ?= FUNCTION_CLASS").boolean)
-        assertEquals(true, run("(1, 2) ?= STREAM_CLASS").boolean)
+        assertEquals(true, run("1 ?= INT").boolean)
+        assertEquals(true, run("1.2 ?= DOUBLE").boolean)
+        assertEquals(true, run("TRUE ?= BOOLEAN").boolean)
+        assertEquals(true, run("'a' ?= STRING").boolean)
+        assertEquals(true, run("[1] ?= ARRAY").boolean)
+        assertEquals(true, run("{a: 1} ?= OBJECT").boolean)
+        assertEquals(true, run("(a -> 1) ?= FUNCTION").boolean)
+        assertEquals(true, run("(1, 2) ?= STREAM").boolean)
 
         // falseテスト
-        assertEquals(false, run("'10' ?= INT_CLASS").boolean)
-        assertEquals(false, run("10 ?= STRING_CLASS").boolean)
-        assertEquals(false, run("(1, 2) ?= ARRAY_CLASS").boolean)
-        assertEquals(false, run("1.2 ?= INT_CLASS").boolean)
-        assertEquals(false, run("1 ?= DOUBLE_CLASS").boolean)
+        assertEquals(false, run("'10' ?= INT").boolean)
+        assertEquals(false, run("10 ?= STRING").boolean)
+        assertEquals(false, run("(1, 2) ?= ARRAY").boolean)
+        assertEquals(false, run("1.2 ?= INT").boolean)
+        assertEquals(false, run("1 ?= DOUBLE").boolean)
     }
 
     @Test
@@ -766,16 +766,16 @@ class Fluorite12Test {
 
     @Test
     fun arrayFunctionTest() = runTest {
-        assertEquals("[1;2;3]", run("ARRAY(1, 2, 3)").array()) // ARRAY関数はストリームを配列にする
-        assertEquals("[100]", run("ARRAY(100)").array()) // ストリームでなくてもよい
-        assertEquals("[10;20;30]", run("1 .. 3 | _ * 10 >> ARRAY").array()) // ARRAY関数はパイプ演算子と組み合わせて使うと便利
+        assertEquals("[1;2;3]", run("TO_ARRAY(1, 2, 3)").array()) // ARRAY関数はストリームを配列にする
+        assertEquals("[100]", run("TO_ARRAY(100)").array()) // ストリームでなくてもよい
+        assertEquals("[10;20;30]", run("1 .. 3 | _ * 10 >> TO_ARRAY").array()) // ARRAY関数はパイプ演算子と組み合わせて使うと便利
     }
 
     @Test
     fun objectFunctionTest() = runTest {
-        assertEquals("{a:1;b:2;c:3}", run("OBJECT((a: 1), (b: 2), (c: 3))").obj) // OBJECT関数はストリームをオブジェクトにする
-        assertEquals("{a:100}", run("OBJECT(a: 100)").obj) // ストリームでなくてもよい
-        assertEquals("{1:10;2:20;3:30}", run("1 .. 3 | ((_): _ * 10) >> OBJECT").obj) // OBJECT関数はパイプ演算子と組み合わせて使うと便利
+        assertEquals("{a:1;b:2;c:3}", run("TO_OBJECT((a: 1), (b: 2), (c: 3))").obj) // OBJECT関数はストリームをオブジェクトにする
+        assertEquals("{a:100}", run("TO_OBJECT(a: 100)").obj) // ストリームでなくてもよい
+        assertEquals("{1:10;2:20;3:30}", run("1 .. 3 | ((_): _ * 10) >> TO_OBJECT").obj) // OBJECT関数はパイプ演算子と組み合わせて使うと便利
     }
 
     @Test
@@ -913,13 +913,13 @@ class Fluorite12Test {
 
         // 変数による拡張関数
         """
-            `::m` := (INT_CLASS): this -> "V"
+            `::m` := (INT): this -> "V"
             100::m()
         """.let { assertEquals("V", run(it).string) }
 
         // マウントによる拡張関数
         """
-            @{`::m`: (INT_CLASS): this -> "M"}
+            @{`::m`: (INT): this -> "M"}
             100::m()
         """.let { assertEquals("M", run(it).string) }
 
@@ -927,8 +927,8 @@ class Fluorite12Test {
         // 配列にすることでオーバーロードできる
         """
             `::m` := [
-                (INT_CLASS): this -> "Vi"
-                (STRING_CLASS): this -> "Vs"
+                (INT): this -> "Vi"
+                (STRING): this -> "Vs"
             ]
             [
                 100::m()
@@ -939,8 +939,8 @@ class Fluorite12Test {
         // マウントのオーバーロード
         """
             @{`::m`: [
-                (INT_CLASS): this -> "Mi"
-                (STRING_CLASS): this -> "Ms"
+                (INT): this -> "Mi"
+                (STRING): this -> "Ms"
             ]}
             [
                 100::m()
@@ -953,7 +953,7 @@ class Fluorite12Test {
         """
             Obj := {m: this -> "I"}
             `::m` := (Obj): this -> "V"
-            `::m` := (INT_CLASS): this -> "V"
+            `::m` := (INT): this -> "V"
             Obj{}::m()
         """.let { assertEquals("I", run(it).string) }
 
@@ -961,7 +961,7 @@ class Fluorite12Test {
         """
             Obj := {}
             @{`::m`: (Obj): this -> "M"}
-            @{`::m`: (INT_CLASS): this -> "M"}
+            @{`::m`: (INT): this -> "M"}
             Obj{}::m()
         """.let { assertEquals("M", run(it).string) }
 

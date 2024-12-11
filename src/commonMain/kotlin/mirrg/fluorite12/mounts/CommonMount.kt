@@ -24,16 +24,16 @@ private fun usage(vararg usages: String): Nothing = throw IllegalArgumentExcepti
 
 fun createCommonMount(): Map<String, FluoriteValue> {
     return mapOf(
-        "VALUE_CLASS" to FluoriteValue.fluoriteClass,
+        "VALUE" to FluoriteValue.fluoriteClass,
         "NULL_CLASS" to FluoriteNull.fluoriteClass,
-        "INT_CLASS" to FluoriteInt.fluoriteClass,
-        "DOUBLE_CLASS" to FluoriteDouble.fluoriteClass,
-        "BOOLEAN_CLASS" to FluoriteBoolean.fluoriteClass,
-        "STRING_CLASS" to FluoriteString.fluoriteClass,
-        "ARRAY_CLASS" to FluoriteArray.fluoriteClass,
-        "OBJECT_CLASS" to FluoriteObject.fluoriteClass,
-        "FUNCTION_CLASS" to FluoriteFunction.fluoriteClass,
-        "STREAM_CLASS" to FluoriteStream.fluoriteClass,
+        "INT" to FluoriteInt.fluoriteClass,
+        "DOUBLE" to FluoriteDouble.fluoriteClass,
+        "BOOLEAN" to FluoriteBoolean.fluoriteClass,
+        "STRING" to FluoriteString.fluoriteClass,
+        "ARRAY" to FluoriteArray.fluoriteClass,
+        "OBJECT" to FluoriteObject.fluoriteClass,
+        "FUNCTION" to FluoriteFunction.fluoriteClass,
+        "STREAM" to FluoriteStream.fluoriteClass,
 
         "NULL" to FluoriteNull,
         "N" to FluoriteNull,
@@ -67,7 +67,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 else -> usage("SQRT(number: NUMBER): NUMBER")
             }
         },
-        "ARRAY" to FluoriteFunction { arguments ->
+        "TO_ARRAY" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 val stream = arguments[0]
                 val list = if (stream is FluoriteStream) {
@@ -84,7 +84,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("ARRAY(stream: STREAM<VALUE>): ARRAY<VALUE>")
             }
         },
-        "OBJECT" to FluoriteFunction { arguments ->
+        "TO_OBJECT" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 val stream = arguments[0]
                 val map = mutableMapOf<String, FluoriteValue>()
