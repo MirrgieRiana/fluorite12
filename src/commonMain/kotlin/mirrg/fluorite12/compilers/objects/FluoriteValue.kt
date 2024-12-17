@@ -59,3 +59,4 @@ suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod("
 suspend fun FluoriteValue.toFluoriteBoolean(): FluoriteBoolean = this.callMethod("?_").let { if (it is FluoriteBoolean) it else it.toFluoriteBoolean() }
 suspend fun FluoriteValue.toBoolean() = this.toFluoriteBoolean().value
 suspend fun FluoriteValue.contains(value: FluoriteValue) = this.callMethod("_@_", arrayOf(value)).toFluoriteBoolean()
+suspend fun FluoriteValue.plus(value: FluoriteValue) = this.callMethod("_+_", arrayOf(value))

@@ -989,4 +989,14 @@ class Fluorite12Test {
         """.let { assertEquals("V", run(it).string) }
 
     }
+
+    @Test
+    fun plus() = runTest {
+        """
+            Obj := {
+                `_+_`: this, other -> this.x + other.x
+            }
+            Obj{x: 100} + Obj{x: 23}
+        """.let { assertEquals(123, run(it).int) }
+    }
 }

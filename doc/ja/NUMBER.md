@@ -207,6 +207,21 @@ $ flc '1 + 2'
 # 3
 ```
 
+### 加算メソッド
+
+加算メソッド `_+_` を実装することで、オブジェクトの加算をカスタマイズできます。
+
+```shell
+$ flc '
+  Obj := {
+    `_+_`: this, other -> this.value + other.value
+  }
+  
+  Obj{value: 100} + Obj{value: 23}
+'
+# 123
+```
+
 ## 減算 `number - number`
 
 減算演算子は、2つの値を減算します。

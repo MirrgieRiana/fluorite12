@@ -16,6 +16,14 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
                     "+_" to FluoriteFunction { it[0] as FluoriteInt },
                     "?_" to FluoriteFunction { ((it[0] as FluoriteInt).value != 0).toFluoriteBoolean() },
                     "$&_" to FluoriteFunction { "${(it[0] as FluoriteInt).value}".toFluoriteString() },
+                    "_+_" to FluoriteFunction { arguments ->
+                        val left = arguments[0] as FluoriteInt
+                        when (val right = arguments[1]) {
+                            is FluoriteInt -> FluoriteInt(left.value + right.value)
+                            is FluoriteDouble -> FluoriteDouble(left.value + right.value)
+                            else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                        }
+                    },
                 )
             )
         }
@@ -39,6 +47,14 @@ class FluoriteDouble(override val value: Double) : FluoriteNumber {
                     "+_" to FluoriteFunction { it[0] as FluoriteDouble },
                     "?_" to FluoriteFunction { ((it[0] as FluoriteDouble).value != 0.0).toFluoriteBoolean() },
                     "$&_" to FluoriteFunction { "${(it[0] as FluoriteDouble).value}".toFluoriteString() },
+                    "_+_" to FluoriteFunction { arguments ->
+                        val left = arguments[0] as FluoriteDouble
+                        when (val right = arguments[1]) {
+                            is FluoriteInt -> FluoriteDouble(left.value + right.value)
+                            is FluoriteDouble -> FluoriteDouble(left.value + right.value)
+                            else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                        }
+                    }
                 )
             )
         }

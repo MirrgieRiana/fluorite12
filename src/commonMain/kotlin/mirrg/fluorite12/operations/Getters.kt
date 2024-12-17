@@ -25,6 +25,7 @@ import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.getMethod
 import mirrg.fluorite12.compilers.objects.instanceOf
 import mirrg.fluorite12.compilers.objects.invoke
+import mirrg.fluorite12.compilers.objects.plus
 import mirrg.fluorite12.compilers.objects.toBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
@@ -317,33 +318,11 @@ class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter
     override val code get() = "ItemAccess[${receiverGetter.code};${keyGetter.code}]"
 }
 
-// TODO to method
 class PlusGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val left = leftGetter.evaluate(env)
         val right = rightGetter.evaluate(env)
-        return when (left) {
-            is FluoriteInt -> when (right) {
-                is FluoriteInt -> FluoriteInt(left.value + right.value)
-                is FluoriteDouble -> FluoriteDouble(left.value + right.value)
-                else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
-            }
-
-            is FluoriteDouble -> when (right) {
-                is FluoriteInt -> FluoriteDouble(left.value + right.value)
-                is FluoriteDouble -> FluoriteDouble(left.value + right.value)
-                else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
-            }
-
-            is FluoriteArray -> {
-                val list = mutableListOf<FluoriteValue>()
-                list += left.values
-                list += (right as FluoriteArray).values
-                FluoriteArray(list)
-            }
-
-            else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
-        }
+        return left.plus(right)
     }
 
     override val code get() = "Plus[${leftGetter.code};${rightGetter.code}]"

@@ -78,6 +78,14 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                         sb.append(']')
                         sb.toString().toFluoriteString()
                     },
+                    "_+_" to FluoriteFunction { arguments ->
+                        val left = arguments[0] as FluoriteArray
+                        val right = arguments[1] as FluoriteArray
+                        val list = mutableListOf<FluoriteValue>()
+                        list += left.values
+                        list += right.values
+                        FluoriteArray(list)
+                    },
                     "_@_" to FluoriteFunction { (it[1] in (it[0] as FluoriteArray).values).toFluoriteBoolean() }, // TODO EQUALSメソッドの使用
                     "push" to FluoriteFunction { arguments ->
                         if (arguments.size != 2) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
