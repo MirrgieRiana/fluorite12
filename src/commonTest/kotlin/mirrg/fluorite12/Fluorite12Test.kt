@@ -999,4 +999,13 @@ class Fluorite12Test {
             Obj{x: 100} + Obj{x: 23}
         """.let { assertEquals(123, run(it).int) }
     }
+
+    @Test
+    fun objectPlus() = runTest {
+        assertEquals("{a:1;b:2}", run("{a: 1} + {b: 2}").obj) // + でマージできる
+        assertEquals("{b:2}", run("{} + {b: 2}").obj) // 左辺が空でもよい
+        assertEquals("{a:1}", run("{a: 1} + {}").obj) // 右辺が空でもよい
+        assertEquals("{}", run("{} + {}").obj) // 両方空の場合空になる
+        assertEquals("{a:5;b:2}", run("{a: 1; b: 2} + {a: 5}").obj) // 既にある場合は右が優先される
+    }
 }

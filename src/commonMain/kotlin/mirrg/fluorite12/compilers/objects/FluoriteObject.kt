@@ -4,7 +4,7 @@ import mirrg.fluorite12.escapeJsonString
 
 class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<String, FluoriteValue>) : FluoriteValue {
     companion object {
-        val fluoriteClass by lazy {
+        val fluoriteClass: FluoriteObject by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     "_()" to FluoriteFunction { arguments ->
@@ -70,6 +70,14 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                         }
                         sb.append('}')
                         sb.toString().toFluoriteString()
+                    },
+                    "_+_" to FluoriteFunction { arguments ->
+                        val left = arguments[0] as FluoriteObject
+                        val right = arguments[1] as FluoriteObject
+                        val map = mutableMapOf<String, FluoriteValue>()
+                        map += left.map
+                        map += right.map
+                        FluoriteObject(FluoriteObject.fluoriteClass, map)
                     },
                     "_@_" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteObject).map).toFluoriteBoolean() },
                 )
