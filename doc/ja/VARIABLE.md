@@ -131,7 +131,7 @@ $ flc '
   (
     x = "B (outer assigned value)"
     OUT << x
-  
+
     x := "C (inner initial value)"
     OUT << x
 
@@ -285,7 +285,7 @@ $ flc '
     @{
       fruit: "banana"
     }
-    
+
     OUT << fruit
   )
 
