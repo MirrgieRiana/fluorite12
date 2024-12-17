@@ -92,6 +92,11 @@ class FluoriteString(val value: String) : FluoriteValue {
                         val escaped = (arguments[0] as FluoriteString).value.escapeJsonString()
                         "\"$escaped\"".toFluoriteString()
                     },
+                    "_+_" to FluoriteFunction { arguments ->
+                        val left = arguments[0] as FluoriteString
+                        val right = arguments[1]
+                        FluoriteString(left.value + right.toFluoriteString().value)
+                    },
                     "_@_" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
                 )
             )
