@@ -208,6 +208,66 @@ $ flc 'MAX(,)'
 # NULL
 ```
 
+## `SORT` ストリームを昇順にソートする
+
+ストリームを昇順にソートします。
+
+`SORT` は、3種類の呼び出し方があります。
+
+### 自然順序付けによるソート
+
+`SORT(stream: STREAM<VALUE>): STREAM<VALUE>`
+
+1引数で呼び出した場合、そのストリームの要素を昇順にソートしたストリームを返します。
+
+```shell
+$ flc '3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5 >> SORT >> JOIN[" "]'
+# 1 1 2 3 3 4 5 5 5 6 9
+```
+
+### 比較関数によるソート
+
+`SORT(comparator: VALUE, VALUE -> INT; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+2引数で呼び出した場合、第1引数の比較関数を使用して第2引数のストリームをソートします。
+
+以下の例では、各要素を3で割った余りでソートしています。
+
+```shell
+$ flc '1 .. 9 >> SORT[a, b -> a % 3 <=> b % 3] >> JOIN[" "]'
+# 3 6 9 1 4 7 2 5 8
+````
+
+### キー取得関数によるソート
+
+`SORT(by: key_getter: VALUE -> VALUE; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+第1引数が `by` パラメータである場合、第2引数の各要素に対して `key_getter` 関数を適用し、その結果を比較してソートします。
+
+以下の例では、各要素を3で割った余りでソートしています。
+
+```shell
+$ flc '1 .. 9 >> SORT[by: x -> x % 3] >> JOIN[" "]'
+# 3 6 9 1 4 7 2 5 8
+````
+
+## `SORTR` ストリームを降順にソートする
+
+`SORTR(stream: STREAM<VALUE>): STREAM<VALUE>`
+
+`SORTR(comparator: VALUE, VALUE -> INT; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+`SORTR(by: key_getter: VALUE -> VALUE; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+ストリームを降順にソートします。
+
+ソートが降順である点を除き、 `SORT` 関数と同じです。
+
+```shell
+$ flc '3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5 >> SORTR >> JOIN[" "]'
+# 9 6 5 5 5 4 3 3 2 1 1
+```
+
 ## `REDUCE` ストリームの要素を累積する
 
 `REDUCE(function: VALUE, VALUE -> VALUE; stream: STREAM<VALUE>): VALUE`

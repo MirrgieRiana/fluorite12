@@ -1015,4 +1015,14 @@ class Fluorite12Test {
         assertEquals(0, run("1 <=> 1").int) // 等しい場合は0
         assertEquals(1, run("2 <=> 1").int) // 左辺が大きい場合は1
     }
+
+    @Test
+    fun sort() = runTest {
+        assertEquals("1,2,3", run("3, 1, 2 >> SORT").stream()) // SORT でストリームをソートできる
+        assertEquals("3,2,1", run("3, 1, 2 >> SORTR").stream()) // SORTR で降順にソートする
+
+        assertEquals("21,32,13", run("13, 21, 32 >> SORT[a, b -> a % 10 <=> b % 10]").stream()) // 2引数の関数を指定して比較をカスタマイズできる
+
+        assertEquals("21,32,13", run("13, 21, 32 >> SORT[by: _ -> _ % 10]").stream()) // byでソートキーを指定できる
+    }
 }
