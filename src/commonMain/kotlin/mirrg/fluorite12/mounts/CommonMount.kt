@@ -12,8 +12,8 @@ import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.compareTo
 import mirrg.fluorite12.compilers.objects.invoke
-import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.compilers.objects.toMutableList
@@ -203,7 +203,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                     var result: FluoriteValue? = null
                     stream.collect { item ->
                         val result2 = result
-                        if (result2 == null || item.toFluoriteNumber().value.toDouble() < result2.toFluoriteNumber().value.toDouble()) { // TODO
+                        if (result2 == null || item.compareTo(result2).value < 0) {
                             result = item
                         }
                     }
@@ -222,7 +222,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                     var result: FluoriteValue? = null
                     stream.collect { item ->
                         val result2 = result
-                        if (result2 == null || item.toFluoriteNumber().value.toDouble() > result2.toFluoriteNumber().value.toDouble()) { // TODO
+                        if (result2 == null || item.compareTo(result2).value > 0) {
                             result = item
                         }
                     }
@@ -264,7 +264,7 @@ private fun createSortFunction(name: String, isDescending: Boolean): FluoriteFun
             val stream = arguments[0]
 
             return@FluoriteFunction if (stream is FluoriteStream) {
-                stream.toMutableList().mergeSort(isDescending) { a, b -> a.compareTo(b) }.toFluoriteStream()
+                stream.toMutableList().mergeSort(isDescending) { a, b -> a.compareTo(b).value }.toFluoriteStream()
             } else {
                 stream
             }
@@ -281,7 +281,7 @@ private fun createSortFunction(name: String, isDescending: Boolean): FluoriteFun
             val stream = arguments[1]
 
             return@FluoriteFunction if (stream is FluoriteStream) {
-                stream.toMutableList().mergeSort(isDescending) { a, b -> keyGetter.invoke(arrayOf(a)).compareTo(keyGetter.invoke(arrayOf(b))) }.toFluoriteStream()
+                stream.toMutableList().mergeSort(isDescending) { a, b -> keyGetter.invoke(arrayOf(a)).compareTo(keyGetter.invoke(arrayOf(b))).value }.toFluoriteStream()
             } else {
                 stream
             }
@@ -344,8 +344,4 @@ private suspend fun merge(isDescending: Boolean, comparator: suspend (FluoriteVa
     }
 
     return result
-}
-
-private suspend fun FluoriteValue.compareTo(other: FluoriteValue): Int {
-    return this.toFluoriteNumber().value.toDouble().compareTo(other.toFluoriteNumber().value.toDouble()) // TODO
 }

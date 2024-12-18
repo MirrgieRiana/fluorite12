@@ -22,6 +22,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.bind
 import mirrg.fluorite12.compilers.objects.callMethod
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.compareTo
 import mirrg.fluorite12.compilers.objects.getMethod
 import mirrg.fluorite12.compilers.objects.instanceOf
 import mirrg.fluorite12.compilers.objects.invoke
@@ -563,14 +564,7 @@ class SpaceshipGetter(private val leftGetter: Getter, private val rightGetter: G
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val left = leftGetter.evaluate(env)
         val right = rightGetter.evaluate(env)
-        // TODO
-        val left2 = (left as FluoriteNumber).value.toDouble()
-        val right2 = (right as FluoriteNumber).value.toDouble()
-        return when {
-            left2 < right2 -> FluoriteInt.MINUS_ONE
-            left2 > right2 -> FluoriteInt.ONE
-            else -> FluoriteInt.ZERO
-        }
+        return left.compareTo(right)
     }
 
     override val code get() = "Spaceship"

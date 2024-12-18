@@ -24,6 +24,14 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
                             else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
                         }
                     },
+                    "_<=>_" to FluoriteFunction { arguments ->
+                        val left = arguments[0] as FluoriteInt
+                        when (val right = arguments[1]) {
+                            is FluoriteInt -> FluoriteInt(left.value.compareTo(right.value))
+                            is FluoriteDouble -> FluoriteInt(left.value.compareTo(right.value))
+                            else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                        }
+                    },
                 )
             )
         }
@@ -53,6 +61,14 @@ class FluoriteDouble(override val value: Double) : FluoriteNumber {
                         when (val right = arguments[1]) {
                             is FluoriteInt -> FluoriteDouble(left.value + right.value)
                             is FluoriteDouble -> FluoriteDouble(left.value + right.value)
+                            else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
+                        }
+                    },
+                    "_<=>_" to FluoriteFunction { arguments ->
+                        val left = arguments[0] as FluoriteDouble
+                        when (val right = arguments[1]) {
+                            is FluoriteInt -> FluoriteInt(left.value.compareTo(right.value))
+                            is FluoriteDouble -> FluoriteInt(left.value.compareTo(right.value))
                             else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
                         }
                     },

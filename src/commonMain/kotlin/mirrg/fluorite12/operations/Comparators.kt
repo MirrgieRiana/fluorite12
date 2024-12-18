@@ -1,8 +1,8 @@
 package mirrg.fluorite12.operations
 
 import mirrg.fluorite12.Environment
-import mirrg.fluorite12.compilers.objects.FluoriteNumber
 import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.compareTo
 import mirrg.fluorite12.compilers.objects.contains
 import mirrg.fluorite12.compilers.objects.instanceOf
 
@@ -18,27 +18,23 @@ object NotEqualComparator : Comparator {
     override val code get() = "NotEqual"
 }
 
-// TODO
 object GreaterComparator : Comparator {
-    override suspend fun evaluate(env: Environment): suspend (FluoriteValue, FluoriteValue) -> Boolean = { a, b -> (a as FluoriteNumber).value.toDouble() > (b as FluoriteNumber).value.toDouble() }
+    override suspend fun evaluate(env: Environment): suspend (FluoriteValue, FluoriteValue) -> Boolean = { a, b -> a.compareTo(b).value > 0 }
     override val code get() = "Greater"
 }
 
-// TODO
 object LessComparator : Comparator {
-    override suspend fun evaluate(env: Environment): suspend (FluoriteValue, FluoriteValue) -> Boolean = { a, b -> (a as FluoriteNumber).value.toDouble() < (b as FluoriteNumber).value.toDouble() }
+    override suspend fun evaluate(env: Environment): suspend (FluoriteValue, FluoriteValue) -> Boolean = { a, b -> a.compareTo(b).value < 0 }
     override val code get() = "Less"
 }
 
-// TODO
 object GreaterEqualComparator : Comparator {
-    override suspend fun evaluate(env: Environment): suspend (FluoriteValue, FluoriteValue) -> Boolean = { a, b -> (a as FluoriteNumber).value.toDouble() >= (b as FluoriteNumber).value.toDouble() }
+    override suspend fun evaluate(env: Environment): suspend (FluoriteValue, FluoriteValue) -> Boolean = { a, b -> a.compareTo(b).value >= 0 }
     override val code get() = "GreaterEqual"
 }
 
-// TODO
 object LessEqualComparator : Comparator {
-    override suspend fun evaluate(env: Environment): suspend (FluoriteValue, FluoriteValue) -> Boolean = { a, b -> (a as FluoriteNumber).value.toDouble() <= (b as FluoriteNumber).value.toDouble() }
+    override suspend fun evaluate(env: Environment): suspend (FluoriteValue, FluoriteValue) -> Boolean = { a, b -> a.compareTo(b).value <= 0 }
     override val code get() = "LessEqual"
 }
 

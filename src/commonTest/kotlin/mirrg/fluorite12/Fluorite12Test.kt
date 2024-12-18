@@ -527,6 +527,26 @@ class Fluorite12Test {
         assertEquals("[FALSE;FALSE;FALSE]".f(), run("[1 <  1.0; 1.0 <  1; 1.0 <  1.0]").array())
         assertEquals("[TRUE ;TRUE ;TRUE ]".f(), run("[1 >= 1.0; 1.0 >= 1; 1.0 >= 1.0]").array())
         assertEquals("[TRUE ;TRUE ;TRUE ]".f(), run("[1 <= 1.0; 1.0 <= 1; 1.0 <= 1.0]").array())
+
+        // 比較のオーバーライド
+        """
+            LengthComparing := {
+                `_<=>_`: this, other -> $#this.string <=> $#other.string
+            }
+            z := LengthComparing{string: "z"}
+            a := LengthComparing{string: "a"}
+            aaa := LengthComparing{string: "aaa"}
+            [
+                z > a,
+                z < a,
+                z >= a,
+                z <= a,
+                z > aaa,
+                z < aaa,
+                z >= aaa,
+                z <= aaa,
+            ]
+        """.let { assertEquals("[FALSE;FALSE;TRUE;TRUE;FALSE;TRUE;FALSE;TRUE]", run(it).array()) }
     }
 
     @Test
@@ -1014,6 +1034,20 @@ class Fluorite12Test {
         assertEquals(-1, run("1 <=> 2").int) // <=> は左辺が小さい場合は-1
         assertEquals(0, run("1 <=> 1").int) // 等しい場合は0
         assertEquals(1, run("2 <=> 1").int) // 左辺が大きい場合は1
+
+        // 宇宙船演算子のオーバーライド
+        """
+            LengthComparing := {
+                `_<=>_`: this, other -> $#this.string <=> $#other.string
+            }
+            z := LengthComparing{string: "z"}
+            a := LengthComparing{string: "a"}
+            aaa := LengthComparing{string: "aaa"}
+            [
+                z <=> a,
+                z <=> aaa,
+            ]
+        """.let { assertEquals("[0;-1]", run(it).array()) }
     }
 
     @Test
