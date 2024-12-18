@@ -55,7 +55,7 @@ class FluoriteDouble(override val value: Double) : FluoriteNumber {
                             is FluoriteDouble -> FluoriteDouble(left.value + right.value)
                             else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
                         }
-                    }
+                    },
                 )
             )
         }
