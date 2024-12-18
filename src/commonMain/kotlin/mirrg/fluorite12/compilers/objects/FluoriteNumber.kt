@@ -27,6 +27,7 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
                 )
             )
         }
+        val MINUS_ONE = FluoriteInt(-1)
         val ZERO = FluoriteInt(0)
         val ONE = FluoriteInt(1)
     }
