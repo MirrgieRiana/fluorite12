@@ -16,6 +16,7 @@ import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
+import mirrg.fluorite12.compilers.objects.toMutableList
 import kotlin.math.E
 import kotlin.math.PI
 import kotlin.math.floor
@@ -72,11 +73,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             if (arguments.size == 1) {
                 val stream = arguments[0]
                 val list = if (stream is FluoriteStream) {
-                    val values = mutableListOf<FluoriteValue>()
-                    stream.collect { value ->
-                        values.add(value)
-                    }
-                    values
+                    stream.toMutableList()
                 } else {
                     mutableListOf(stream)
                 }
@@ -109,11 +106,9 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             if (arguments.size == 1) {
                 val stream = arguments[0]
                 if (stream is FluoriteStream) {
-                    val values = mutableListOf<FluoriteValue>()
-                    stream.collect { value ->
-                        values.add(value)
-                    }
-                    values.reversed().toFluoriteStream()
+                    val list = stream.toMutableList()
+                    list.reverse()
+                    list.toFluoriteStream()
                 } else {
                     stream
                 }

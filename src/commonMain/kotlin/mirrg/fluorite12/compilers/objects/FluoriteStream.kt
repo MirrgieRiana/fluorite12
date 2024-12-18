@@ -75,7 +75,7 @@ suspend fun FluoriteStream.collect(block: suspend (FluoriteValue) -> Unit) = thi
     block(it)
 })
 
-suspend fun FluoriteStream.toList(): List<FluoriteValue> {
+suspend fun FluoriteStream.toMutableList(): MutableList<FluoriteValue> {
     val list = mutableListOf<FluoriteValue>()
     this.collect {
         list.add(it)
