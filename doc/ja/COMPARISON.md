@@ -189,3 +189,30 @@ $ flc '2 <=> 2'
 $ flc '3 <=> 2'
 # 1
 ```
+
+## SORT関数などでの使用
+
+宇宙船演算子は、 `SORT` 関数などの比較関数として使用できます。
+
+以下の例は、文字列の長さでソートする例です。
+
+```shell
+$ flc '
+  (
+    "apple",
+    "banana",
+    "cherry",
+    "durian",
+    "elderberry",
+    "fig",
+    "grape",
+  ) >> SORT[a, b -> $#a <=> $#b]
+'
+# fig
+# apple
+# grape
+# banana
+# cherry
+# durian
+# elderberry
+```
