@@ -57,6 +57,8 @@ fun FluoriteStream(values: Iterable<FluoriteValue>) = FluoriteStream {
     }
 }
 
+fun Iterable<FluoriteValue>.toFluoriteStream() = FluoriteStream(this)
+
 operator fun FluoriteStream.plus(other: FluoriteStream) = FluoriteStream {
     this@plus.flowProvider(this)
     other.flowProvider(this)

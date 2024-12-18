@@ -8,7 +8,7 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                     "_()" to FluoriteFunction { arguments ->
                         val array = arguments[0] as FluoriteArray
                         when (arguments.size) {
-                            1 -> FluoriteStream(array.values)
+                            1 -> array.values.toFluoriteStream()
 
                             2 -> {
                                 suspend fun get(index: FluoriteValue): FluoriteValue {

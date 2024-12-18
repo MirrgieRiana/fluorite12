@@ -14,6 +14,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
+import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import kotlin.math.E
 import kotlin.math.PI
@@ -112,7 +113,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                     stream.collect { value ->
                         values.add(value)
                     }
-                    FluoriteStream(values.reversed())
+                    values.reversed().toFluoriteStream()
                 } else {
                     stream
                 }
@@ -148,9 +149,9 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 val separator = arguments[0].toFluoriteString().value
                 val string = arguments[1]
                 if (separator.isEmpty()) {
-                    FluoriteStream(string.toFluoriteString().value.map { "$it".toFluoriteString() })
+                    string.toFluoriteString().value.map { "$it".toFluoriteString() }.toFluoriteStream()
                 } else {
-                    FluoriteStream(string.toFluoriteString().value.split(separator).map { it.toFluoriteString() })
+                    string.toFluoriteString().value.split(separator).map { it.toFluoriteString() }.toFluoriteStream()
                 }
             } else {
                 usage("SPLIT(separator: VALUE; string: VALUE): STREAM<STRING>")
@@ -160,7 +161,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             if (arguments.size == 1) {
                 val obj = arguments[0]
                 if (obj is FluoriteObject) {
-                    FluoriteStream(obj.map.keys.map { it.toFluoriteString() })
+                    obj.map.keys.map { it.toFluoriteString() }.toFluoriteStream()
                 } else {
                     usage("KEYS(object: OBJECT): STREAM<STRING>")
                 }
@@ -172,7 +173,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             if (arguments.size == 1) {
                 val obj = arguments[0]
                 if (obj is FluoriteObject) {
-                    FluoriteStream(obj.map.values)
+                    obj.map.values.toFluoriteStream()
                 } else {
                     usage("VALUES(object: OBJECT): STREAM<VALUE>")
                 }
