@@ -328,6 +328,24 @@ $ flc 'TO_OBJECT(("a": 1), ("b": 2), ("c": 3))'
 # {a:1;b:2;c:3}
 ```
 
+# `SLEEP` 指定時間の間処理を停止
+
+`SLEEP(milliseconds: NUMBER): NULL`
+
+指定のミリ秒数だけ処理を停止します。
+
+以下のサンプルコードでは、実行後1秒おいてから `Hello, world!` が出力されます。
+
+```shell
+$ flc '
+  SLEEP(1000)
+  "Hello, world!"
+'
+# Hello, world!
+```
+
+この関数はスレッドをブロッキングせず、関数をサスペンドします。
+
 # CLI版限定の関数
 
 CLI版fluorite12でのみ利用可能な関数です。

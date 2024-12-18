@@ -1,5 +1,6 @@
 package mirrg.fluorite12.mounts
 
+import kotlinx.coroutines.delay
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
@@ -254,6 +255,15 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         },
         "SORT" to createSortFunction("SORT", false),
         "SORTR" to createSortFunction("SORTR", true),
+        "SLEEP" to FluoriteFunction { arguments ->
+            if (arguments.size == 1) {
+                val time = arguments[0] as FluoriteNumber
+                delay(time.value.toLong())
+                FluoriteNull
+            } else {
+                usage("SLEEP(milliseconds: NUMBER): NULL")
+            }
+        },
     )
 }
 

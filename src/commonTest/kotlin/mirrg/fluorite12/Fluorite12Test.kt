@@ -1059,4 +1059,12 @@ class Fluorite12Test {
 
         assertEquals("21,32,13", run("13, 21, 32 >> SORT[by: _ -> _ % 10]").stream()) // byでソートキーを指定できる
     }
+
+    @Test
+    fun sleep() = runTest {
+        // runTestを使うとdelayが即終了するので待機時間のテストは行わない
+
+        assertEquals(FluoriteNull, run("SLEEP(1000)")) // SLEEP で一定時間待つ
+    }
+
 }
