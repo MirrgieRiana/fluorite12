@@ -559,6 +559,23 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
     override val code get() = "Function[$newFrameIndex;$argumentsVariableIndex;${variableIndices.joinToString(",") { "$it" }};${getter.code}]"
 }
 
+class SpaceshipGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val left = leftGetter.evaluate(env)
+        val right = rightGetter.evaluate(env)
+        // TODO
+        val left2 = (left as FluoriteNumber).value.toDouble()
+        val right2 = (right as FluoriteNumber).value.toDouble()
+        return when {
+            left2 < right2 -> FluoriteInt.MINUS_ONE
+            left2 > right2 -> FluoriteInt.ONE
+            else -> FluoriteInt.ZERO
+        }
+    }
+
+    override val code get() = "Spaceship"
+}
+
 class ComparisonChainGetter(private val termGetters: List<Getter>, private val comparators: List<Comparator>) : Getter {
     init {
         require(comparators.isNotEmpty())

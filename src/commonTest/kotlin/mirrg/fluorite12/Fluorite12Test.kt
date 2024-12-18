@@ -1008,4 +1008,11 @@ class Fluorite12Test {
         assertEquals("{}", run("{} + {}").obj) // 両方空の場合空になる
         assertEquals("{a:5;b:2}", run("{a: 1; b: 2} + {a: 5}").obj) // 既にある場合は右が優先される
     }
+
+    @Test
+    fun spaceship() = runTest {
+        assertEquals(-1, run("1 <=> 2").int) // <=> は左辺が小さい場合は-1
+        assertEquals(0, run("1 <=> 1").int) // 等しい場合は0
+        assertEquals(1, run("2 <=> 1").int) // 左辺が大きい場合は1
+    }
 }

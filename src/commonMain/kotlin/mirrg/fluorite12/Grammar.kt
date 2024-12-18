@@ -289,6 +289,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val mul: Parser<Node> by leftAssociative(left, -s * (+asterisk or +slash or +(percent * percent) or +percent) * -b) { left, operator, right -> InfixNode(left, operator, right) }
     val add: Parser<Node> by leftAssociative(mul, -s * (+plus or +(minus * -NotParser(greater)) or +(ampersand * -NotParser(ampersand))) * -b) { left, operator, right -> InfixNode(left, operator, right) }
     val range: Parser<Node> by leftAssociative(add, -s * (+(period * period) or +tilde) * -b) { left, operator, right -> InfixNode(left, operator, right) }
+    val spaceship: Parser<Node> by leftAssociative(range, -s * +(less * equal * greater) * -b) { left, operator, right -> InfixNode(left, operator, right) }
     val comparisonOperator: Parser<List<TokenMatch>> by OrCombinator(
         +(equal * equal), // ==
         +(exclamation * equal), // !=
@@ -299,7 +300,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(question * equal), // ?=
         +atSign, // @
     )
-    val comparison: Parser<Node> by range * zeroOrMore(-s * comparisonOperator * -b * range) map {
+    val comparison: Parser<Node> by spaceship * zeroOrMore(-s * comparisonOperator * -b * spaceship) map {
         if (it.t2.isNotEmpty()) {
             ComparisonsNode(listOf(it.t1, *it.t2.map { t -> t.t2 }.toTypedArray()), it.t2.map { t -> t.t1 })
         } else {

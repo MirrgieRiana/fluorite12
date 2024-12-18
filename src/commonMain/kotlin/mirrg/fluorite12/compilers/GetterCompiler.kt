@@ -73,6 +73,7 @@ import mirrg.fluorite12.operations.PipeGetter
 import mirrg.fluorite12.operations.PlusGetter
 import mirrg.fluorite12.operations.PowerGetter
 import mirrg.fluorite12.operations.RangeGetter
+import mirrg.fluorite12.operations.SpaceshipGetter
 import mirrg.fluorite12.operations.StreamConcatenationGetter
 import mirrg.fluorite12.operations.StringConcatenationGetter
 import mirrg.fluorite12.operations.ThrowGetter
@@ -309,6 +310,7 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
         "%" -> ModGetter(compileToGetter(left), compileToGetter(right))
         "^" -> PowerGetter(compileToGetter(left), compileToGetter(right))
         ".." -> RangeGetter(compileToGetter(left), compileToGetter(right))
+        "<=>" -> SpaceshipGetter(compileToGetter(left), compileToGetter(right))
         "~" -> ExclusiveRangeGetter(compileToGetter(left), compileToGetter(right))
         "&&" -> AndGetter(compileToGetter(left), compileToGetter(right))
         "||" -> OrGetter(compileToGetter(left), compileToGetter(right))
