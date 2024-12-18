@@ -6933,6 +6933,15 @@
           return (this.flags & 4 /* UpdateFlag.Viewport */) > 0;
       }
       /**
+      Returns true when
+      [`viewportChanged`](https://codemirror.net/6/docs/ref/#view.ViewUpdate.viewportChanged) is true
+      and the viewport change is not just the result of mapping it in
+      response to document changes.
+      */
+      get viewportMoved() {
+          return (this.flags & 8 /* UpdateFlag.ViewportMoved */) > 0;
+      }
+      /**
       Indicates whether the height of a block element in the editor
       changed in this update.
       */
@@ -6944,7 +6953,7 @@
       editor, or elements within the editor, changed.
       */
       get geometryChanged() {
-          return this.docChanged || (this.flags & (8 /* UpdateFlag.Geometry */ | 2 /* UpdateFlag.Height */)) > 0;
+          return this.docChanged || (this.flags & (16 /* UpdateFlag.Geometry */ | 2 /* UpdateFlag.Height */)) > 0;
       }
       /**
       True when this update indicates a focus change.
@@ -10170,7 +10179,7 @@
               this.updateViewportLines();
           if (this.lineGaps.length || this.viewport.to - this.viewport.from > (2000 /* LG.Margin */ << 1))
               this.updateLineGaps(this.ensureLineGaps(this.mapLineGaps(this.lineGaps, update.changes)));
-          update.flags |= this.computeVisibleRanges();
+          update.flags |= this.computeVisibleRanges(update.changes);
           if (scrollTarget)
               this.scrollTarget = scrollTarget;
           if (!this.mustEnforceCursorAssoc && update.selectionSet && update.view.lineWrapping &&
@@ -10195,7 +10204,7 @@
                   scaleY > .005 && Math.abs(this.scaleY - scaleY) > .005) {
                   this.scaleX = scaleX;
                   this.scaleY = scaleY;
-                  result |= 8 /* UpdateFlag.Geometry */;
+                  result |= 16 /* UpdateFlag.Geometry */;
                   refresh = measureContent = true;
               }
           }
@@ -10205,13 +10214,13 @@
           if (this.paddingTop != paddingTop || this.paddingBottom != paddingBottom) {
               this.paddingTop = paddingTop;
               this.paddingBottom = paddingBottom;
-              result |= 8 /* UpdateFlag.Geometry */ | 2 /* UpdateFlag.Height */;
+              result |= 16 /* UpdateFlag.Geometry */ | 2 /* UpdateFlag.Height */;
           }
           if (this.editorWidth != view.scrollDOM.clientWidth) {
               if (oracle.lineWrapping)
                   measureContent = true;
               this.editorWidth = view.scrollDOM.clientWidth;
-              result |= 8 /* UpdateFlag.Geometry */;
+              result |= 16 /* UpdateFlag.Geometry */;
           }
           let scrollTop = view.scrollDOM.scrollTop * this.scaleY;
           if (this.scrollTop != scrollTop) {
@@ -10235,7 +10244,7 @@
           if (this.contentDOMWidth != contentWidth || this.editorHeight != view.scrollDOM.clientHeight) {
               this.contentDOMWidth = domRect.width;
               this.editorHeight = view.scrollDOM.clientHeight;
-              result |= 8 /* UpdateFlag.Geometry */;
+              result |= 16 /* UpdateFlag.Geometry */;
           }
           if (measureContent) {
               let lineHeights = view.docView.measureVisibleLineHeights(this.viewport);
@@ -10246,7 +10255,7 @@
                   refresh = lineHeight > 0 && oracle.refresh(whiteSpace, lineHeight, charWidth, textHeight, contentWidth / charWidth, lineHeights);
                   if (refresh) {
                       view.docView.minWidth = 0;
-                      result |= 8 /* UpdateFlag.Geometry */;
+                      result |= 16 /* UpdateFlag.Geometry */;
                   }
               }
               if (dTop > 0 && dBottom > 0)
@@ -10459,7 +10468,7 @@
               this.lineGapDeco = Decoration.set(gaps.map(gap => gap.draw(this, this.heightOracle.lineWrapping)));
           }
       }
-      computeVisibleRanges() {
+      computeVisibleRanges(changes) {
           let deco = this.stateDeco;
           if (this.lineGaps.length)
               deco = deco.concat(this.lineGapDeco);
@@ -10468,10 +10477,22 @@
               span(from, to) { ranges.push({ from, to }); },
               point() { }
           }, 20);
-          let changed = ranges.length != this.visibleRanges.length ||
-              this.visibleRanges.some((r, i) => r.from != ranges[i].from || r.to != ranges[i].to);
+          let changed = 0;
+          if (ranges.length != this.visibleRanges.length) {
+              changed = 8 /* UpdateFlag.ViewportMoved */ | 4 /* UpdateFlag.Viewport */;
+          }
+          else {
+              for (let i = 0; i < ranges.length && !(changed & 8 /* UpdateFlag.ViewportMoved */); i++) {
+                  let old = this.visibleRanges[i], nw = ranges[i];
+                  if (old.from != nw.from || old.to != nw.to) {
+                      changed |= 4 /* UpdateFlag.Viewport */;
+                      if (!(changes && changes.mapPos(old.from, -1) == nw.from && changes.mapPos(old.to, 1) == nw.to))
+                          changed |= 8 /* UpdateFlag.ViewportMoved */;
+                  }
+              }
+          }
           this.visibleRanges = ranges;
-          return changed ? 4 /* UpdateFlag.Viewport */ : 0;
+          return changed;
       }
       lineBlockAt(pos) {
           return (pos >= this.viewport.from && pos <= this.viewport.to &&
@@ -13086,7 +13107,7 @@
           return pieces(top).concat(between).concat(pieces(bottom));
       }
       function piece(left, top, right, bottom) {
-          return new RectangleMarker(className, left - base.left, top - base.top - 0.01 /* C.Epsilon */, right - left, bottom - top + 0.01 /* C.Epsilon */);
+          return new RectangleMarker(className, left - base.left, top - base.top, right - left, bottom - top);
       }
       function pieces({ top, bottom, horizontal }) {
           let pieces = [];
@@ -13510,7 +13531,7 @@
                       changeTo = Math.max(to, changeTo);
                   }
               });
-          if (update.viewportChanged || changeTo - changeFrom > 1000)
+          if (update.viewportMoved || changeTo - changeFrom > 1000)
               return this.createDeco(update.view);
           if (changeTo > -1)
               return this.updateRange(update.view, deco.map(update.changes), changeFrom, changeTo);
@@ -18478,7 +18499,7 @@
   // Compute the indentation for a given position from the syntax tree.
   function syntaxIndentation(cx, ast, pos) {
       let stack = ast.resolveStack(pos);
-      let inner = stack.node.enterUnfinishedNodesBefore(pos);
+      let inner = ast.resolveInner(pos, -1).resolve(pos, 0).enterUnfinishedNodesBefore(pos);
       if (inner != stack.node) {
           let add = [];
           for (let cur = inner; cur != stack.node; cur = cur.parent)
