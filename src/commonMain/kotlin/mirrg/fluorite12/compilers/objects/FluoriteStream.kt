@@ -74,3 +74,11 @@ fun Iterable<FluoriteStream>.concat() = FluoriteStream {
 suspend fun FluoriteStream.collect(block: suspend (FluoriteValue) -> Unit) = this.flowProvider(FlowCollector {
     block(it)
 })
+
+suspend fun FluoriteStream.toList(): List<FluoriteValue> {
+    val list = mutableListOf<FluoriteValue>()
+    this.collect {
+        list.add(it)
+    }
+    return list
+}
