@@ -423,3 +423,9 @@ $ flc '
 `OUT(value: VALUE): NULL`
 
 値をWebアプリケーションごとに決められた出力欄に出力します。
+
+## `WINDOW` windowオブジェクトの取得
+
+`WINDOW: JS_OBJECT | NULL`
+
+その実行環境から参照可能である場合、windowオブジェクトを返します。

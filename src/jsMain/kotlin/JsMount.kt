@@ -1,3 +1,4 @@
+import kotlinx.browser.window
 import mirrg.fluorite12.compilers.objects.FluoriteFunction
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteStream
@@ -17,6 +18,11 @@ fun createJsMount(out: suspend (FluoriteValue) -> Unit): Map<String, FluoriteVal
                     out(it)
                 }
             }
+            FluoriteNull
+        },
+        "WINDOW" to try {
+            FluoriteJsObject(window)
+        } catch (_: Throwable) {
             FluoriteNull
         },
     )
