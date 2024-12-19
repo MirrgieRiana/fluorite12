@@ -15,3 +15,4 @@
 - [組み込み定数・関数](BUILTIN.md)
 - [サンプル](SAMPLES.md)
 - [コマンドラインツール](CLI.md)
+- [JavaScript版](JS.md)
