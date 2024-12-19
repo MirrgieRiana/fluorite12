@@ -6,6 +6,7 @@ import mirrg.fluorite12.compilers.objects.collect
 
 fun createJsMount(out: suspend (FluoriteValue) -> Unit): Map<String, FluoriteValue> {
     return mapOf(
+        "JS_OBJECT" to FluoriteJsObject.fluoriteClass,
         "OUT" to FluoriteFunction { arguments ->
             arguments.forEach {
                 if (it is FluoriteStream) {

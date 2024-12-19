@@ -414,6 +414,10 @@ $ flc '
 
 # JavaScript版限定API
 
+## `JS_OBJECT` JavaScriptオブジェクトのクラス
+
+`JS_OBJECT` はJavaScriptのオブジェクト全般を表すクラスです。
+
 ## `OUT` コンソールに出力
 
 `OUT(value: VALUE): NULL`
