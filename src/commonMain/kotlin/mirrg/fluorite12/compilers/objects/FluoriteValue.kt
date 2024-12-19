@@ -1,6 +1,6 @@
 package mirrg.fluorite12.compilers.objects
 
-sealed interface FluoriteValue {
+interface FluoriteValue {
     companion object {
         // fluoriteクラスはlazyにしなければJSで初期化順序によるエラーが出る
         // https://youtrack.jetbrains.com/issue/KT-25796
