@@ -23,7 +23,7 @@ fun parse(src: String): String {
     return getter.code
 }
 
-suspend fun run(src: String): FluoriteValue {
+suspend fun eval(src: String): FluoriteValue {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
     val frame = Frame()
     val runner = frame.defineBuiltinMount(createCommonMount())
