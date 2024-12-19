@@ -1,5 +1,3 @@
-package mirrg.fluorite12
-
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.compilers.objects.FluoriteNull

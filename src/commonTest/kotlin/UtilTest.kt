@@ -1,5 +1,4 @@
-package mirrg.fluorite12
-
+import mirrg.fluorite12.removeExponent
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
