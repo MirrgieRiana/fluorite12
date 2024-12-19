@@ -38,11 +38,6 @@ jobs:
           cd build-dir
           bash gradlew build
 
-      - name: Playgroundのビルド
-        run: |
-          cd build-dir/playground
-          bash compile.sh
-
       - name: リポジトリのチェックアウト（リリース用）
         uses: actions/checkout@v4
         with:

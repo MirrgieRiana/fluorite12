@@ -69,3 +69,15 @@ kotlin {
     }
 
 }
+
+tasks.register<Exec>("compilePlayground") {
+    workingDir = file("playground")
+    commandLine("bash", "compile.sh")
+    standardOutput = System.out
+    errorOutput = System.err
+    dependsOn("jsBrowserProductionWebpack")
+}
+
+tasks.named("assemble") {
+    dependsOn("compilePlayground")
+}
