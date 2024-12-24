@@ -259,7 +259,7 @@ fun Frame.compileToGetter(node: Node): Getter {
             val runners = node.nodes.dropLast(1).flatMap { compileToRunner(it) }
             val getter = compileToGetter(node.nodes.last())
             if (runners.isEmpty()) return getter
-            return LinesGetter(runners, getter)
+            LinesGetter(runners, getter)
         }
 
         is RootNode -> compileToGetter(node.main)
