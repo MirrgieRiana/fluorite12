@@ -224,7 +224,7 @@ $ flc '
 生成された配列に対する変更は、元の配列には反映されません。
 
 ```shell
-$ flc '
+$ flc -q '
   array := ["zero", "one", "two", "three", "four"]
   new_array := array[]
 
@@ -232,8 +232,6 @@ $ flc '
 
   OUT << array
   OUT << new_array
-
-  ; ,
 '
 # [zero;one;two;three;four]
 # [zero;one;99999;three;four]

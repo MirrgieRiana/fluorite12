@@ -102,7 +102,7 @@ $ flc '
 代入先の変数はすでに宣言されている必要があります。
 
 ```shell
-$ flc '
+$ flc -q '
 
   x := 10
   OUT << x
@@ -110,7 +110,6 @@ $ flc '
   x = 123
   OUT << x
 
-  ; ,
 '
 # 10
 # 123
@@ -123,7 +122,7 @@ $ flc '
 `( )` など、スコープを生成する演算子内で宣言された変数は、そのスコープを抜けると破棄されます。
 
 ```shell
-$ flc '
+$ flc -q '
 
   x := "A (outer initial value)"
   OUT << x
@@ -140,8 +139,6 @@ $ flc '
   )
 
   OUT << x
-
-  ; ,
 '
 # A (outer initial value)
 # B (outer assigned value)
@@ -274,7 +271,7 @@ $ flc '
 マウントのスコープは、変数と同様に、マウント演算子によってマウントされてからその階層の括弧類を抜けるまでです。
 
 ```shell
-$ flc '
+$ flc -q '
   @{
     fruit: "apple"
   }
@@ -290,8 +287,6 @@ $ flc '
   )
 
   OUT << fruit
-
-  ; ,
 '
 # apple
 # banana

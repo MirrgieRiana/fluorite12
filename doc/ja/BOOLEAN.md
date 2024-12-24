@@ -127,7 +127,7 @@ $ flc '!1'
 | `condition \|\| else` | `condition` の論理値化が `FALSE` である場合 |
 
 ```shell
-$ flc '
+$ flc -q '
   check := value -> (
     value %% 2 && OUT("$value is divisible by 2")
     value %% 3 || OUT("$value is not divisible by 3")
@@ -135,8 +135,6 @@ $ flc '
 
   check(4)
   check(9)
-
-  ; ,
 '
 # 4 is divisible by 2
 # 4 is not divisible by 3
@@ -163,7 +161,7 @@ $ flc 'FALSE ? "Yes" : "No"'
 三項演算子も論理演算子と同様に不要な項は評価自体が行われないため、if文のように使うことができます。
 
 ```shell
-$ flc '
+$ flc -q '
   check := value -> (
     value %% 2 ? (
       OUT << "$value is even"
@@ -174,8 +172,6 @@ $ flc '
 
   check(4)
   check(9)
-
-  ; ,
 '
 # 4 is even
 # 9 is odd

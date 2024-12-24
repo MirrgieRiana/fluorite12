@@ -121,7 +121,7 @@ $ flc '"d" @ {a: 1; b: 2; c: 3}'
 含有演算子は、実際には右辺の値の `_@_` メソッドを呼び出し、論理値化したものを返す演算子です。
 
 ```shell
-$ flc '
+$ flc -q '
   Basket := {
     `_@_`: this, item -> item @ this.items
   }
@@ -131,8 +131,6 @@ $ flc '
   OUT << "Basket: $basket"
   "apple" @ basket && (OUT << "apple is in basket")
   "cherry" @ basket && (OUT << "cherry is in basket")
-
-  ; ,
 '
 # Basket: {items:[apple;orange;banana]}
 # apple is in basket
@@ -145,7 +143,7 @@ instanceOf演算子 `left ?= right` は、 `left` が `right` のインスタン
 より厳密には、オブジェクト `left` が `right` と同一のインスタンスか、 `left` の継承チェーンのどこかに `right` が存在するかを判定します。
 
 ```shell
-$ flc '
+$ flc -q '
   Animal := {}
   Human := Animal {}
   socrates := Human{}
@@ -167,8 +165,6 @@ $ flc '
 
   socrates ?= pythagoras && (OUT << "Socrates is Pythagoras")
   pythagoras ?= socrates && (OUT << "Pythagoras is Socrates")
-
-  ; ,
 '
 # Animal is Animal
 # Human is Human

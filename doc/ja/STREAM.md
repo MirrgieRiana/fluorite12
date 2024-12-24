@@ -249,12 +249,11 @@ $ flc '
 左辺が配列の要素の参照であった場合、その要素に右辺の値を代入します。
 
 ```shell
-$ flc '
+$ flc -q '
   array := [1, 2, 3]
   OUT(array)
   array(1) = 4
   OUT(array)
-  ; ,
 '
 # [1;2;3]
 # [1;4;3]
@@ -328,9 +327,8 @@ $ flc '
 使い方によっては可読性に貢献する可能性を秘めています。
 
 ```shell
-$ flc '
+$ flc -q '
   OUT << "Hello, World"
-  ; ,
 '
 # Hello, World
 ```
