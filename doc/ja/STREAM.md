@@ -251,9 +251,9 @@ $ flc '
 ```shell
 $ flc -q '
   array := [1, 2, 3]
-  OUT(array)
+  OUT << array
   array(1) = 4
-  OUT(array)
+  OUT << array
 '
 # [1;2;3]
 # [1;4;3]

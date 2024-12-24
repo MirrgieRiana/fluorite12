@@ -37,9 +37,9 @@ $ flc '
   a := 10
   (
     a := 20
-    OUT(a)
+    OUT << a
     a = 30
-    OUT(a)
+    OUT << a
   )
   a
 '
@@ -63,7 +63,7 @@ $ flc '
 ```shell
 $ flc '
   a := 10;
-  OUT(a);
+  OUT << a;
   a = 20;
   a
 '
@@ -100,7 +100,7 @@ $ flc ''
 ```shell
 $ flc '
   a := 10
-  OUT(a)
+  OUT << a
   ; ; ; a = 20; ; ;
   a
 '
