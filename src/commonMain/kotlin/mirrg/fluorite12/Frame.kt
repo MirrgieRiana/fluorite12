@@ -1,5 +1,8 @@
 package mirrg.fluorite12
 
+import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
+import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
+import mirrg.fluorite12.compilers.compileToGetter
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.operations.BuiltinMountRunner
@@ -81,4 +84,35 @@ fun Environment.getMounts(name: String, mountCounts: IntArray): Sequence<Fluorit
             currentFrameIndex--
         }
     }
+}
+
+
+class Evaluator {
+
+    private var currentFrame: Frame? = null
+    private var currentEnv: Environment? = null
+
+    suspend fun defineMounts(maps: List<Map<String, FluoriteValue>>) {
+        val frame = Frame(currentFrame)
+        currentFrame = frame
+        val runners = maps.map {
+            frame.defineBuiltinMount(it)
+        }
+        val env = Environment(currentEnv, frame.nextVariableIndex, frame.mountCount)
+        currentEnv = env
+        runners.forEach {
+            it.evaluate(env)
+        }
+    }
+
+    suspend fun get(src: String): FluoriteValue {
+        val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
+        val frame = Frame(currentFrame)
+        currentFrame = frame
+        val getter = frame.compileToGetter(parseResult.value)
+        val env = Environment(currentEnv, frame.nextVariableIndex, frame.mountCount)
+        currentEnv = env
+        return getter.evaluate(env)
+    }
+
 }

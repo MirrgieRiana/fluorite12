@@ -2,7 +2,7 @@ import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
-import mirrg.fluorite12.Environment
+import mirrg.fluorite12.Evaluator
 import mirrg.fluorite12.Fluorite12Grammar
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.compilers.compileToGetter
@@ -15,7 +15,6 @@ import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.toFluoriteString
-import mirrg.fluorite12.defineBuiltinMount
 import mirrg.fluorite12.mounts.createCommonMount
 
 fun parse(src: String): String {
@@ -26,13 +25,9 @@ fun parse(src: String): String {
 }
 
 suspend fun eval(src: String): FluoriteValue {
-    val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
-    val frame = Frame()
-    val runner = frame.defineBuiltinMount(createCommonMount())
-    val getter = frame.compileToGetter(parseResult.value)
-    val env = Environment(null, frame.nextVariableIndex, frame.mountCount)
-    runner.evaluate(env)
-    return getter.evaluate(env)
+    val evaluator = Evaluator()
+    evaluator.defineMounts(listOf(createCommonMount()))
+    return evaluator.get(src)
 }
 
 val FluoriteValue.int get() = (this as FluoriteInt).value
