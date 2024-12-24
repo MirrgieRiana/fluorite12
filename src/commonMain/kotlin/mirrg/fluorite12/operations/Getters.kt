@@ -193,9 +193,7 @@ class MethodAccessGetter(
         // レシーバのメソッドのチェック
         run {
             val function = receiver.getMethod(name)
-            if (function != null) {
-                return processFunction(function)
-            }
+            if (function != null) return processFunction(function)
         }
 
         // マウントのチェック
