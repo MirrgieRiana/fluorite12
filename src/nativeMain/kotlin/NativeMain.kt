@@ -9,6 +9,7 @@ fun main(args: Array<String>) {
     val list = args.toMutableList()
     var src: String? = null
     val arguments = mutableListOf<String>()
+    var quite = false
 
     try {
         run {
@@ -28,6 +29,13 @@ fun main(args: Array<String>) {
                 if (list.firstOrNull() == "-h") throw ShowUsage
                 if (list.firstOrNull() == "--help") throw ShowUsage
 
+                if (list.firstOrNull() == "-q") {
+                    if (quite) throw ShowUsage
+                    quite = true
+                    list.removeFirst()
+                    continue
+                }
+
                 if (list.isEmpty()) throw ShowUsage
 
                 src = list.removeFirst()
@@ -40,29 +48,34 @@ fun main(args: Array<String>) {
         println("Usage: flc [-h|--help] [-q] [--] <code> <arguments...>")
         println("Options:")
         println("  -h, --help               Show this help")
+        println("  -q                       Run script as a runner")
         return
     }
 
     runBlocking {
-        main(src!!, arguments)
+        main(src!!, arguments, quite)
     }
 }
 
 private object ShowUsage : Throwable()
 
-suspend fun main(src: String, arguments: List<String>) {
+suspend fun main(src: String, arguments: List<String>, quite: Boolean) {
     val evaluator = Evaluator()
     val defaultBuiltinMounts = listOf(
         createCommonMount(),
         createNativeMount(arguments),
     )
     evaluator.defineMounts(defaultBuiltinMounts)
-    val result = evaluator.get(src)
-    if (result is FluoriteStream) {
-        result.collect {
-            println(it.toFluoriteString())
-        }
+    if (quite) {
+        evaluator.run(src)
     } else {
-        println(result.toFluoriteString())
+        val result = evaluator.get(src)
+        if (result is FluoriteStream) {
+            result.collect {
+                println(it.toFluoriteString())
+            }
+        } else {
+            println(result.toFluoriteString())
+        }
     }
 }
