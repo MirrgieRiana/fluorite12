@@ -3,6 +3,7 @@ package mirrg.fluorite12
 import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import mirrg.fluorite12.compilers.compileToGetter
+import mirrg.fluorite12.compilers.compileToRunner
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.operations.BuiltinMountRunner
@@ -113,6 +114,18 @@ class Evaluator {
         val env = Environment(currentEnv, frame.nextVariableIndex, frame.mountCount)
         currentEnv = env
         return getter.evaluate(env)
+    }
+
+    suspend fun run(src: String) {
+        val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
+        val frame = Frame(currentFrame)
+        currentFrame = frame
+        val runners = frame.compileToRunner(parseResult.value)
+        val env = Environment(currentEnv, frame.nextVariableIndex, frame.mountCount)
+        currentEnv = env
+        runners.forEach {
+            it.evaluate(env)
+        }
     }
 
 }

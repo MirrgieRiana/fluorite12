@@ -6,6 +6,8 @@ import mirrg.fluorite12.IdentifierNode
 import mirrg.fluorite12.InfixNode
 import mirrg.fluorite12.LeftNode
 import mirrg.fluorite12.Node
+import mirrg.fluorite12.RootNode
+import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.defineVariable
 import mirrg.fluorite12.mount
 import mirrg.fluorite12.operations.AssignmentRunner
@@ -53,6 +55,10 @@ fun Frame.compileToRunner(node: Node): List<Runner> {
             val newMountIndex = mount()
             listOf(MountRunner(frameIndex, newMountIndex, getter))
         }
+
+        node is SemicolonsNode -> node.nodes.flatMap { compileToRunner(it) }
+
+        node is RootNode -> compileToRunner(node.main)
 
         else -> listOf(GetterRunner(compileToGetter(node))) // 式文
     }

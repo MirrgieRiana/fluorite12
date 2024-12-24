@@ -40,8 +40,8 @@ class JsTest {
                     return "" + this.arg1;
                 }
                 Obj;
-            <%);
-        """.let { evaluator.get(it) }
+            <%)
+        """.let { evaluator.run(it) }
 
         assertEquals(FluoriteNull, evaluator.get("Obj(123)"))
         assertEquals("123", evaluator.get("&Obj::new(123)").string)
