@@ -123,3 +123,14 @@ $ flc -q '
 ---
 
 `OUT` 関数自体は `NULL` を返します。
+
+---
+
+この関数はしばしば左実行パイプによって書かれます。
+
+```shell
+$ flc -q '
+  OUT << "Hello, world!"
+'
+# Hello, world!
+```
