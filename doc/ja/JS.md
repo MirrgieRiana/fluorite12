@@ -40,9 +40,9 @@ JavaScriptの関数は、fluorite12の関数のように呼び出すことがで
 
 引数と戻り値の間で暗黙の型変換が行われます。
 
-# JavaScript版限定組み込み関数
+# JavaScript版限定組み込み定数・関数
 
-JavaScript版fluorite12でのみ利用可能な関数です。
+JavaScript版fluorite12でのみ利用可能な定数および関数です。
 
 ## `JS_OBJECT` JavaScriptオブジェクトのクラス
 
