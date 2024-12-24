@@ -31,6 +31,12 @@ class JsTest {
         assertEquals(123, evalJs("JS('(function(a, b) { return a + b; })')(100; 23)").int) // JavaScriptの関数を呼び出せる
     }
 
+    @Test
+    fun await() = runTest {
+        assertEquals(123, evalJs("AWAIT(JS('new Promise(callback => callback(123))'))").int) // Promiseに対してAWAITするとサスペンドして取得する
+        assertEquals(123, evalJs("AWAIT(JS('async () => 123')())").int) // async関数を実行した結果も同様
+    }
+
 }
 
 private suspend fun evalJs(src: String): FluoriteValue {

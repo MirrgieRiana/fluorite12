@@ -79,3 +79,28 @@ JS('(function(a, b) {
 })(1, 2)')
 # 3
 ```
+
+## `AWAIT` Promiseの結果の取得
+
+`AWAIT(promise: JS_OBJECT): VALUE`
+
+第1引数のPromiseの結果をサスペンドして所得します。
+
+結果は暗黙の型変換が行われます。
+
+---
+
+Promiseはコンストラクタで明示的に生成するほか、async関数の呼び出しでも生成されます。
+
+```
+promise := JS('new Promise(callback => callback("apple"))')
+AWAIT(promise)
+# apple
+```
+
+```
+async_function := JS('async () => "apple"')
+promise := async_function()
+AWAIT(promise)
+# apple
+```
