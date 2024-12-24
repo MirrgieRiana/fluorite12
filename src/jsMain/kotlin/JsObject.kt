@@ -23,6 +23,11 @@ class FluoriteJsObject(val value: dynamic) : FluoriteValue {
                         val actualArguments = arguments.drop(1).map { it.toJsObject() }.toTypedArray()
                         convertToFluoriteValue(jsObject.value.apply(undefined, actualArguments))
                     },
+                    "new" to FluoriteFunction { arguments ->
+                        val jsObject = arguments[0] as FluoriteJsObject
+                        val actualArguments = arguments.drop(1).map { it.toJsObject() }.toTypedArray()
+                        convertToFluoriteValue(js("Reflect.construct")(jsObject.value, actualArguments))
+                    },
                 )
             )
         }

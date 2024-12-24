@@ -50,6 +50,28 @@ JavaScript版fluorite12でのみ利用可能な定数および関数です。
 
 `JS_OBJECT` はJavaScriptのオブジェクト全般を表すクラスです。
 
+### `::new(arguments)` JavaScriptコンストラクターの呼び出し
+
+`jsObject::new(argument: VALUE; ...): JS_OBJECT`
+
+JavaScriptの関数オブジェクトをコンストラクタとして呼び出します。
+
+各引数および戻り値は暗黙の型変換が行われます。
+
+```
+Basket := JS(%>
+  function Basket(item) {
+    this.item = item
+  }
+  Basket.prototype.toString = function() {
+    return "Basket[" + this.item + "]";
+  }
+  Basket;
+<%)
+Basket::new("apple")
+# Basket[apple]
+```
+
 ## `OUT` コンソールに出力
 
 `OUT(value: VALUE): NULL`

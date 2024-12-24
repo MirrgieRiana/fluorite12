@@ -1,6 +1,7 @@
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.Evaluator
+import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.mounts.createCommonMount
 import kotlin.test.Test
@@ -23,6 +24,27 @@ class JsTest {
     @Test
     fun functionCall() = runTest {
         assertEquals(123, evalJs("JS('(function(a, b) { return a + b; })')(100; 23)").int) // JavaScriptの関数を呼び出せる
+    }
+
+    @Test
+    fun new() = runTest {
+        val evaluator = Evaluator()
+        evaluator.defineMounts(defaultBuiltinMounts)
+
+        """
+            Obj := JS(%>
+                function Obj(arg1) {
+                    if (this !== undefined) this.arg1 = arg1;
+                }
+                Obj.prototype.toString = function() {
+                    return "" + this.arg1;
+                }
+                Obj;
+            <%);
+        """.let { evaluator.get(it) }
+
+        assertEquals(FluoriteNull, evaluator.get("Obj(123)"))
+        assertEquals("123", evaluator.get("&Obj::new(123)").string)
     }
 
     @Test
