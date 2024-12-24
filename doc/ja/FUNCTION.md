@@ -259,27 +259,27 @@ $ flc '
 
 レシーバに定義されていないメソッドの参照が行われた際、 `_::_` メソッドが呼び出されます。
 
-`_::_` メソッドは、レシーバとメソッド名を引数として受け取り、「引数を受け取ると結果を返す関数」もしくはNULLを返します。
+フォールバックメソッドは、レシーバとメソッド名を引数として受け取り、「引数を受け取ると結果を返す関数」もしくはNULLを返します。
+
+フォールバックメソッドがNULLを返した場合、フォールバックメソッドが定義されていない場合と同じ動作になります。
 
 ```shell
 $ flc -q '
   Obj := {
-    `_::_`: this, method -> () -> (
-      OUT << "$method$__ called"
-    )
+    `_::_`: this, method -> () -> "$method$__ called"
   }
   obj := Obj{}
 
-  obj::apple()
-  obj::banana(1)
-  obj::cherry(1; 2; 3)
+  OUT << obj::apple()
+  OUT << obj::banana(1)
+  OUT << obj::cherry(1; 2; 3)
 '
 # apple[] called
 # banana[1] called
 # cherry[1;2;3] called
 ```
 
----
+### フォールバックメソッドによるメソッド実装のスイッチ
 
 フォールバックメソッドは、次のようにメソッドの実装を切り替えるスイッチとして使うことができます。
 
@@ -291,25 +291,21 @@ $ flc -q '
       method == "banana" ? this::banana_impl :
       method == "cherry" ? this::cherry_impl :
                            NULL
-    apple_impl: this -> (
-      OUT << "apple[] called"
-    )
-    banana_impl: this, x -> (
-      OUT << "banana[$x] called"
-    )
-    cherry_impl: this, x, y, z -> (
-      OUT << "cherry[$x;$y;$z] called"
-    )
+    apple_impl : this          -> "apple[] called"
+    banana_impl: this, x       -> "banana[$x] called"
+    cherry_impl: this, x, y, z -> "cherry[$x;$y;$z] called"
   }
   obj := Obj{}
 
-  obj::apple()
-  obj::banana(1)
-  obj::cherry(1; 2; 3)
+  OUT << obj::apple()
+  OUT << obj::banana(1)
+  OUT << obj::cherry(1; 2; 3)
+  OUT << obj::durian(1; 2; 3; 4; 5; 6) !? (e => e)
 '
 # apple[] called
 # banana[1] called
 # cherry[1;2;3] called
+# Method not found: {}::durian
 ```
 
 # 名前付き引数
