@@ -18,7 +18,11 @@ class FluoriteJsObject(val value: dynamic) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-
+                    "_()" to FluoriteFunction { arguments ->
+                        val jsObject = arguments[0] as FluoriteJsObject
+                        val actualArguments = arguments.drop(1).map { it.toJsObject() }.toTypedArray()
+                        convertToFluoriteValue(jsObject.value.apply(undefined, actualArguments))
+                    },
                 )
             )
         }

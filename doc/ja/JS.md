@@ -33,3 +33,9 @@ JavaScript側のオブジェクトは、 `JS_OBJECT` クラスで表現されま
 | `null`            | `NULL`            |
 | `undefined`       | `NULL`            |
 | それ以外              | `JS_OBJECT`       |
+
+# 関数呼び出し
+
+JavaScriptの関数は、fluorite12の関数のように呼び出すことができます。
+
+引数と戻り値の間で暗黙の型変換が行われます。

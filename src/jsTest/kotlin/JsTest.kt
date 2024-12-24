@@ -26,6 +26,11 @@ class JsTest {
         assertEquals(123, evalJs("JS('100 + 23')").int) // JSでJavaScriptが実行できる
     }
 
+    @Test
+    fun functionCall() = runTest {
+        assertEquals(123, evalJs("JS('(function(a, b) { return a + b; })')(100; 23)").int) // JavaScriptの関数を呼び出せる
+    }
+
 }
 
 private suspend fun evalJs(src: String): FluoriteValue {
