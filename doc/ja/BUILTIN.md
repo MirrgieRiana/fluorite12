@@ -429,3 +429,23 @@ $ flc '
 `WINDOW: JS_OBJECT | NULL`
 
 その実行環境から参照可能である場合、windowオブジェクトを返します。
+
+## `JS` JavaScriptコードの実行
+
+`JS(code: STRING): VALUE`
+
+第1引数のJavaScriptコードを実行します。
+
+戻り値は暗黙の型変換が行われます。
+
+```
+JS('1 + 2')
+# 3
+```
+
+```
+JS('(function(a, b) {
+  return a + b;
+})(1, 2)')
+# 3
+```
