@@ -1,6 +1,8 @@
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import mirrg.fluorite12.Evaluator
 import mirrg.fluorite12.compilers.objects.FluoriteNull
+import mirrg.fluorite12.mounts.createCommonMount
 import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -1063,6 +1065,36 @@ class Fluorite12Test {
         // runTestを使うとdelayが即終了するので待機時間のテストは行わない
 
         assertEquals(FluoriteNull, eval("SLEEP(1000)")) // SLEEP で一定時間待つ
+    }
+
+    @Test
+    fun fallbackMethod() = runTest {
+        val evaluator = Evaluator()
+        evaluator.defineMounts(listOf(createCommonMount()))
+
+        // _::_ でフォールバックメソッドを定義する
+        """
+            Obj := {
+                `_::_`: this, method ->
+                    method == "apple"  ? (() -> "Fallback apple") :
+                    method == "banana" ? (x, y, z -> "Fallback", this, method, x, y, z, __ >> JOIN[" "]) :
+                    method == "cherry" ? (() -> !!"ERROR") :
+                    method == "durian" ? (() -> "Fallback durian") :
+                                         NULL
+                cherry: this -> "Method cherry"
+            }
+            @{
+                `::durian`: (Obj): this -> !!"ERROR"
+                `::elderberry`: (Obj): this -> "Mount elderberry"
+            }
+            obj := Obj{item: 123}
+        """.let { evaluator.run(it) }
+
+        assertEquals("Fallback apple", evaluator.get("obj::apple()").string) // 存在しないメソッドが呼び出された場合、フォールバックメソッドが呼ばれる
+        assertEquals("Fallback {item:123} banana 1 2 3 [1;2;3]", evaluator.get("obj::banana(1; 2; 3)").string) // 引数は委譲された関数の方にバラで渡される
+        assertEquals("Method cherry", evaluator.get("obj::cherry()").string) // メソッドが定義されている場合はフォールバックしない
+        assertEquals("Fallback durian", evaluator.get("obj::durian()").string) // フォールバックメソッドはマウントによる拡張関数に優先する
+        assertEquals("Mount elderberry", evaluator.get("obj::elderberry()").string) // フォールバックメソッドがNULLを返した場合、メソッドが定義されていない扱いになる
     }
 
 }

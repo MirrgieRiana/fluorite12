@@ -255,6 +255,63 @@ $ flc '
 | メソッド参照   | `receiver::method`                | `receiver` を挿入        |
 | 関数呼び出し   | `function(argument; ...)`         | 関数の実行                 |
 
+## フォールバックメソッド
+
+レシーバに定義されていないメソッドの参照が行われた際、 `_::_` メソッドが呼び出されます。
+
+`_::_` メソッドは、レシーバとメソッド名を引数として受け取り、「引数を受け取ると結果を返す関数」もしくはNULLを返します。
+
+```shell
+$ flc -q '
+  Obj := {
+    `_::_`: this, method -> () -> (
+      OUT << "$method$__ called"
+    )
+  }
+  obj := Obj{}
+
+  obj::apple()
+  obj::banana(1)
+  obj::cherry(1; 2; 3)
+'
+# apple[] called
+# banana[1] called
+# cherry[1;2;3] called
+```
+
+---
+
+フォールバックメソッドは、次のようにメソッドの実装を切り替えるスイッチとして使うことができます。
+
+```shell
+$ flc -q '
+  Obj := {
+    `_::_`: this, method ->
+      method == "apple"  ? this::apple_impl :
+      method == "banana" ? this::banana_impl :
+      method == "cherry" ? this::cherry_impl :
+                           NULL
+    apple_impl: this -> (
+      OUT << "apple[] called"
+    )
+    banana_impl: this, x -> (
+      OUT << "banana[$x] called"
+    )
+    cherry_impl: this, x, y, z -> (
+      OUT << "cherry[$x;$y;$z] called"
+    )
+  }
+  obj := Obj{}
+
+  obj::apple()
+  obj::banana(1)
+  obj::cherry(1; 2; 3)
+'
+# apple[] called
+# banana[1] called
+# cherry[1;2;3] called
+```
+
 # 名前付き引数
 
 名前付き引数専用の文法はありませんが、エントリー演算子を使って近いことが実現できます。
@@ -404,7 +461,8 @@ $ flc '
 
 1. 変数による拡張関数
 2. そのオブジェクトのメソッド
-3. マウントによる拡張関数
+3. そのオブジェクトのフォールバックメソッド
+4. マウントによる拡張関数
 
 変数による拡張関数がオブジェクトのメソッドよりも優先されることに注意してください。
 

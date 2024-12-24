@@ -26,7 +26,11 @@ fun FluoriteValue.instanceOf(clazz: FluoriteValue): Boolean {
     }
 }
 
-fun FluoriteValue.getMethod(name: String): FluoriteValue? {
+fun interface Callable {
+    suspend fun call(arguments: Array<FluoriteValue>): FluoriteValue
+}
+
+private fun FluoriteValue.getPureMethod(name: String): FluoriteValue? {
     var currentObject = parent
     while (true) {
         if (currentObject == null) return null
@@ -38,9 +42,23 @@ fun FluoriteValue.getMethod(name: String): FluoriteValue? {
     }
 }
 
+suspend fun FluoriteValue.getMethod(name: String): Callable? {
+    val method = getPureMethod(name) ?: run {
+        val fallbackMethod = getPureMethod("_::_") ?: return null
+        val actualMethod = this.callMethod(fallbackMethod, arrayOf(name.toFluoriteString()))
+        if (actualMethod == FluoriteNull) return null
+        return Callable { arguments ->
+            actualMethod.invoke(arguments)
+        }
+    }
+    return Callable { arguments ->
+        this.callMethod(method, arguments)
+    }
+}
+
 suspend fun FluoriteValue.callMethod(name: String, arguments: Array<FluoriteValue> = arrayOf()): FluoriteValue {
-    val method = this.getMethod(name) ?: throw RuntimeException("Method not found: $this::$name")
-    return callMethod(method, arguments)
+    val callable = this.getMethod(name) ?: throw RuntimeException("Method not found: $this::$name")
+    return callable.call(arguments)
 }
 
 suspend fun FluoriteValue.callMethod(method: FluoriteValue, arguments: Array<FluoriteValue> = arrayOf()): FluoriteValue {

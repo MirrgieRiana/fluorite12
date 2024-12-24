@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import mirrg.fluorite12.Environment
+import mirrg.fluorite12.compilers.objects.Callable
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
@@ -155,6 +156,17 @@ class MethodAccessGetter(
             }
         }
 
+        suspend fun processCallable(callable: Callable): FluoriteValue {
+            val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
+            return if (isBinding) {
+                FluoriteFunction { arguments2 ->
+                    callable.call(arguments + arguments2)
+                }
+            } else {
+                callable.call(arguments)
+            }
+        }
+
         suspend fun processEntry(entry: FluoriteArray): FluoriteValue? {
             if (entry.values.size == 2) {
                 val clazz = entry.values[0]
@@ -192,8 +204,8 @@ class MethodAccessGetter(
 
         // レシーバのメソッドのチェック
         run {
-            val function = receiver.getMethod(name)
-            if (function != null) return processFunction(function)
+            val callable = receiver.getMethod(name)
+            if (callable != null) return processCallable(callable)
         }
 
         // マウントのチェック
