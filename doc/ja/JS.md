@@ -2,11 +2,11 @@
 
 fluorite12はJavaScript上での動作をサポートしています。
 
-# JavaScriptオブジェクトの扱い
+## JavaScriptオブジェクトの扱い
 
 JavaScript側のオブジェクトは、 `JS_OBJECT` クラスで表現されます。
 
-# 暗黙の型変換
+## 暗黙の型変換
 
 関数呼び出しなどいくつかの状況では、fluorite12とJavaScriptの間で自動的に変換が行われます。
 
@@ -34,7 +34,9 @@ JavaScript側のオブジェクトは、 `JS_OBJECT` クラスで表現されま
 | `undefined`       | `NULL`            |
 | それ以外              | `JS_OBJECT`       |
 
-# 関数呼び出し
+# 各種機能
+
+## 関数呼び出し
 
 JavaScriptの関数は、fluorite12の関数のように呼び出すことができます。
 
