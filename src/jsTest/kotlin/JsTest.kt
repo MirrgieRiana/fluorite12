@@ -16,6 +16,12 @@ import kotlin.test.assertEquals
 class JsTest {
 
     @Test
+    fun window() = runTest {
+        // テスト環境では動作しない
+        //assertEquals("[object Window]", runJs("+WINDOW").string)
+    }
+
+    @Test
     fun js() = runTest {
         assertEquals(123, evalJs("JS('100 + 23')").int) // JSでJavaScriptが実行できる
     }
