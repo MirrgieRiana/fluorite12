@@ -21,7 +21,6 @@ import mirrg.fluorite12.NodeStringContent
 import mirrg.fluorite12.RawStringNode
 import mirrg.fluorite12.RightBracketsNode
 import mirrg.fluorite12.RightNode
-import mirrg.fluorite12.RootNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
@@ -261,8 +260,6 @@ fun Frame.compileToGetter(node: Node): Getter {
             if (runners.isEmpty()) return getter
             LinesGetter(runners, getter)
         }
-
-        is RootNode -> compileToGetter(node.main)
     }
 }
 
