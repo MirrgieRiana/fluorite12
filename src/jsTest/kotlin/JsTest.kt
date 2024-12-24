@@ -48,6 +48,11 @@ class JsTest {
     }
 
     @Test
+    fun async() = runTest {
+        assertEquals(123, evalJs("AWAIT(JS('Promise')::new(ASYNC(c -> c(123))))").int) // async関数を生成できる
+    }
+
+    @Test
     fun await() = runTest {
         assertEquals(123, evalJs("AWAIT(JS('new Promise(callback => callback(123))'))").int) // Promiseに対してAWAITするとサスペンドして取得する
         assertEquals(123, evalJs("AWAIT(JS('async () => 123')())").int) // async関数を実行した結果も同様

@@ -1,6 +1,9 @@
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.promise
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
@@ -59,6 +62,23 @@ fun FluoriteFunction.toJsFunction(): dynamic {
             throw IllegalStateException("Illegal suspension")
         }
         result
+    }
+}
+
+@OptIn(DelicateCoroutinesApi::class)
+fun FluoriteFunction.toJsAsyncFunction(): dynamic {
+    val js = """
+        (function(f) {
+            return eval("(async function() {" +
+                "return await f(arguments);" + // こうしないと下のjsマクロでawaitがシンタックスエラーになる
+            "})");
+        })
+    """
+    val functionCreator = js(js)
+    return functionCreator { arguments: Array<dynamic> ->
+        GlobalScope.promise {
+            this@toJsAsyncFunction.invoke(arguments.map { convertToFluoriteValue(it) }.toTypedArray()).toJsObject()
+        }
     }
 }
 

@@ -28,6 +28,11 @@ fun createJsMount(out: suspend (FluoriteValue) -> Unit): Map<String, FluoriteVal
         } catch (_: Throwable) {
             FluoriteNull
         },
+        "ASYNC" to FluoriteFunction { arguments ->
+            if (arguments.size != 1) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+            val function = arguments[0] as FluoriteFunction
+            FluoriteJsObject(function.toJsAsyncFunction())
+        },
         "AWAIT" to FluoriteFunction { arguments ->
             if (arguments.size != 1) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
             val promise = arguments[0] as FluoriteJsObject

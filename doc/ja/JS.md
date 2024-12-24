@@ -104,6 +104,24 @@ JS('(function(a, b) {
 # 3
 ```
 
+## `ASYNC` 非同期関数の生成
+
+`ASYNC(function: FUNCTION): JS_OBJECT`
+
+第1引数のfluorite12関数をJavaScriptのasync関数に変換します。
+
+暗黙の型変換においてfluorite12の関数は非asyncなJavaScript関数に変換されます。
+
+この関数を使うことで明示的にasync関数を生成することができます。
+
+```
+AWAIT(JS("Promise")::new(ASYNC(callback -> (
+  SLEEP(100)
+  callback(123)
+))))
+# 123
+```
+
 ## `AWAIT` Promiseの結果の取得
 
 `AWAIT(promise: JS_OBJECT): VALUE`
