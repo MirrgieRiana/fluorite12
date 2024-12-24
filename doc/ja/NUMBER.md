@@ -227,7 +227,7 @@ $ flc '
   Obj := {
     `_+_`: this, other -> this.value + other.value
   }
-  
+
   Obj{value: 100} + Obj{value: 23}
 '
 # 123
