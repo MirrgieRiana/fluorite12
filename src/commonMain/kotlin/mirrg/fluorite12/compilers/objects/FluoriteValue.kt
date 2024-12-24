@@ -1,5 +1,7 @@
 package mirrg.fluorite12.compilers.objects
 
+import mirrg.fluorite12.operations.FluoriteException
+
 interface FluoriteValue {
     companion object {
         // fluoriteクラスはlazyにしなければJSで初期化順序によるエラーが出る
@@ -57,7 +59,7 @@ suspend fun FluoriteValue.getMethod(name: String): Callable? {
 }
 
 suspend fun FluoriteValue.callMethod(name: String, arguments: Array<FluoriteValue> = arrayOf()): FluoriteValue {
-    val callable = this.getMethod(name) ?: throw RuntimeException("Method not found: $this::$name")
+    val callable = this.getMethod(name) ?: throw FluoriteException("Method not found: $this::$name".toFluoriteString())
     return callable.call(arguments)
 }
 

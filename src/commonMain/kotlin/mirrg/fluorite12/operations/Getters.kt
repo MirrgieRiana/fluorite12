@@ -214,7 +214,7 @@ class MethodAccessGetter(
             if (result != null) return result
         }
 
-        throw RuntimeException("Method not found: $this::$name")
+        throw FluoriteException("Method not found: $receiver::$name".toFluoriteString())
     }
 
     override val code get() = "MethodAccess[${receiverGetter.code};$variable;${mountCounts.joinToString { "$it" }};${name.escapeJsonString()};${argumentGetters.code};$isBinding]"
