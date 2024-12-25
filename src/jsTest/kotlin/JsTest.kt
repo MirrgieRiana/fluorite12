@@ -48,6 +48,12 @@ class JsTest {
     }
 
     @Test
+    fun methodCall() = runTest {
+        assertEquals(2000, evalJs("JS('new Date(946652400000)')::getFullYear()").int) // メソッド呼び出し
+        assertEquals(2, evalJs("JS('Math')::round(2.25)").int) // 引数のあるメソッド呼び出し
+    }
+
+    @Test
     fun async() = runTest {
         assertEquals(123, evalJs("AWAIT(JS('Promise')::new(ASYNC(c -> c(123))))").int) // async関数を生成できる
     }

@@ -42,6 +42,16 @@ JavaScriptの関数は、fluorite12の関数のように呼び出すことがで
 
 引数と戻り値の間で暗黙の型変換が行われます。
 
+## メソッド呼び出し
+
+`js_object::method(arguments)` によってJavaScriptオブジェクトのメソッドを呼び出すことができます。
+
+```
+date := JS("new Date(946652400000)")
+date::getFullYear()
+# 2000
+```
+
 # JavaScript版限定組み込み定数・関数
 
 JavaScript版fluorite12でのみ利用可能な定数および関数です。
