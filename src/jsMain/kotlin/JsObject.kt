@@ -10,11 +10,13 @@ import mirrg.fluorite12.compilers.objects.FluoriteDouble
 import mirrg.fluorite12.compilers.objects.FluoriteFunction
 import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteNull
+import mirrg.fluorite12.compilers.objects.FluoriteNumber
 import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.compilers.objects.toFluoriteBoolean
+import mirrg.fluorite12.compilers.objects.toFluoriteString
 
 class FluoriteJsObject(val value: dynamic) : FluoriteValue {
     companion object {
@@ -25,6 +27,30 @@ class FluoriteJsObject(val value: dynamic) : FluoriteValue {
                         val jsObject = arguments[0] as FluoriteJsObject
                         val actualArguments = arguments.drop(1).map { it.toJsObject() }.toTypedArray()
                         convertToFluoriteValue(jsObject.value.apply(undefined, actualArguments))
+                    },
+                    "_._" to FluoriteFunction { arguments ->
+                        if (arguments.size != 2) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+                        val jsObject = arguments[0] as FluoriteJsObject
+                        val key: dynamic = run {
+                            when (val key = arguments[1]) {
+                                is FluoriteNumber -> key.roundToInt()
+                                else -> key.toFluoriteString().value
+                            }
+                        }
+                        convertToFluoriteValue(jsObject.value[key])
+                    },
+                    "_._=" to FluoriteFunction { arguments ->
+                        if (arguments.size != 3) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+                        val jsObject = arguments[0] as FluoriteJsObject
+                        val key: dynamic = run {
+                            when (val key = arguments[1]) {
+                                is FluoriteNumber -> key.roundToInt()
+                                else -> key.toFluoriteString().value
+                            }
+                        }
+                        val value = arguments[2].toJsObject()
+                        jsObject.value[key] = value
+                        FluoriteNull
                     },
                     "_::_" to FluoriteFunction { arguments ->
                         val jsObject = arguments[0] as FluoriteJsObject

@@ -22,6 +22,17 @@ class JsTest {
     }
 
     @Test
+    fun property() = runTest {
+        val evaluator = Evaluator()
+        evaluator.defineMounts(defaultBuiltinMounts)
+
+        evaluator.run("obj := JS('({a: 100})')")
+
+        assertEquals(100, evaluator.get("obj.a").int) // プロパティを取得できる
+        assertEquals(123, evaluator.get("obj.b = obj.a + 23; obj.b").int) // プロパティを設定できる
+    }
+
+    @Test
     fun functionCall() = runTest {
         assertEquals(123, evalJs("JS('(function(a, b) { return a + b; })')(100; 23)").int) // JavaScriptの関数を呼び出せる
     }

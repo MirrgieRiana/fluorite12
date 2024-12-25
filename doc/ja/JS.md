@@ -42,6 +42,19 @@ JavaScriptの関数は、fluorite12の関数のように呼び出すことがで
 
 引数と戻り値の間で暗黙の型変換が行われます。
 
+## プロパティアクセス
+
+`js_object.property` によってJavaScriptのプロパティを取得できます。
+
+`js_object.property = value` によって代入もできます。
+
+```
+obj := JS('({a: 100})')
+obj.b = obj.a + 23
+obj.b
+# 123
+```
+
 ## メソッド呼び出し
 
 `js_object::method(arguments)` によってJavaScriptオブジェクトのメソッドを呼び出すことができます。
