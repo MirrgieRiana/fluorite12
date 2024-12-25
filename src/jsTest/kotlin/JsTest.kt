@@ -60,8 +60,24 @@ class JsTest {
 
     @Test
     fun methodCall() = runTest {
-        assertEquals(2000, evalJs("JS('new Date(946652400000)')::getFullYear()").int) // メソッド呼び出し
-        assertEquals(2, evalJs("JS('Math')::round(2.25)").int) // 引数のあるメソッド呼び出し
+        val evaluator = Evaluator()
+        evaluator.defineMounts(defaultBuiltinMounts)
+
+        """
+            obj := JS(%>
+                ({
+                    method1: function() {
+                        return 100;
+                    },
+                    method2: function(argument1) {
+                        return 100 + argument1;
+                    }
+                })
+            <%)
+        """.let { evaluator.run(it) }
+
+        assertEquals(100, evaluator.get("obj::method1()").int) // メソッド呼び出し
+        assertEquals(123, evaluator.get("obj::method2(23)").int) // 引数のあるメソッド呼び出し
     }
 
     @Test
