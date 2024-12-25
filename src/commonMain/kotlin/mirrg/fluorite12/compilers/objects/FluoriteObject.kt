@@ -7,6 +7,18 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
         val fluoriteClass: FluoriteObject by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "_._" to FluoriteFunction { arguments ->
+                        val obj = arguments[0] as FluoriteObject
+                        val key = arguments[1].toFluoriteString().value
+                        obj.map[key] ?: FluoriteNull
+                    },
+                    "_._=" to FluoriteFunction { arguments ->
+                        val obj = arguments[0] as FluoriteObject
+                        val key = arguments[1].toFluoriteString().value
+                        val value = arguments[2]
+                        obj.map[key] = value
+                        FluoriteNull
+                    },
                     "_()" to FluoriteFunction { arguments ->
                         val obj = arguments[0] as FluoriteObject
                         when (arguments.size) {

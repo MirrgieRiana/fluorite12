@@ -7,6 +7,14 @@ class FluoriteString(val value: String) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "_._" to FluoriteFunction { arguments ->
+                        val string = arguments[0] as FluoriteString
+                        val index = arguments[1].toFluoriteNumber().roundToInt()
+                        string.value.getOrNull(index)?.toString()?.toFluoriteString() ?: FluoriteNull
+                    },
+                    "_._=" to FluoriteFunction { arguments ->
+                        throw IllegalArgumentException("Cannot set item to string") // TODO
+                    },
                     "_()" to FluoriteFunction { arguments ->
                         val string = (arguments[0] as FluoriteString).value
                         when (arguments.size) {

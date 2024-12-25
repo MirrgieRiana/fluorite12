@@ -5,6 +5,18 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
+                    "_._" to FluoriteFunction { arguments ->
+                        val array = arguments[0] as FluoriteArray
+                        val index = arguments[1].toFluoriteNumber().roundToInt()
+                        array.values.getOrNull(index) ?: FluoriteNull
+                    },
+                    "_._=" to FluoriteFunction { arguments ->
+                        val array = arguments[0] as FluoriteArray
+                        val index = arguments[1].toFluoriteNumber().roundToInt()
+                        val value = arguments[2]
+                        array.values[index] = value
+                        FluoriteNull
+                    },
                     "_()" to FluoriteFunction { arguments ->
                         val array = arguments[0] as FluoriteArray
                         when (arguments.size) {

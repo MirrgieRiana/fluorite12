@@ -8,6 +8,7 @@
 - [文字列](STRING.md)
 - [比較](COMPARISON.md)
 - [論理値・条件分岐](BOOLEAN.md)
+- [プロパティアクセス](PROPERTY.md)
 - [配列](ARRAY.md)
 - [オブジェクト](OBJECT.md)
 - [関数](FUNCTION.md)

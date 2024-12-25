@@ -313,17 +313,11 @@ class ThrowGetter(private val getter: Getter) : Getter {
     override val code get() = "Throw[${getter.code}]"
 }
 
-// TODO to method
 class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val receiver = receiverGetter.evaluate(env)
         val key = keyGetter.evaluate(env)
-        return when (receiver) {
-            is FluoriteString -> receiver.value.getOrNull(key.toFluoriteNumber().roundToInt())?.toString()?.toFluoriteString() ?: FluoriteNull
-            is FluoriteArray -> receiver.values.getOrNull(key.toFluoriteNumber().roundToInt()) ?: FluoriteNull
-            is FluoriteObject -> receiver.map[key.toFluoriteString().value] ?: FluoriteNull
-            else -> throw IllegalArgumentException("Unknown operator: ${receiver::class} . ${key::class}")
-        }
+        return receiver.callMethod("_._", arrayOf(key))
     }
 
     override val code get() = "ItemAccess[${receiverGetter.code};${keyGetter.code}]"
