@@ -48,6 +48,8 @@ JavaScriptの関数は、fluorite12の関数のように呼び出すことがで
 
 `js_object.property = value` によって代入もできます。
 
+どちらも暗黙の型変換が行われます。
+
 ```
 obj := JS('({a: 100})')
 obj.b = obj.a + 23
@@ -58,6 +60,8 @@ obj.b
 ## メソッド呼び出し
 
 `js_object::method(arguments)` によってJavaScriptオブジェクトのメソッドを呼び出すことができます。
+
+引数および戻り値は暗黙の型変換が行われます。
 
 ```
 date := JS("new Date(946652400000)")
@@ -133,7 +137,7 @@ JS('(function(a, b) {
 
 第1引数のfluorite12関数をJavaScriptのasync関数に変換します。
 
-暗黙の型変換においてfluorite12の関数は非asyncなJavaScript関数に変換されます。
+通常、fluorite12の関数は暗黙の型変換によって非asyncなJavaScript関数に変換されます。
 
 この関数を使うことで明示的にasync関数を生成することができます。
 
