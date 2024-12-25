@@ -13526,7 +13526,7 @@
           let changeFrom = 1e9, changeTo = -1;
           if (update.docChanged)
               update.changes.iterChanges((_f, _t, from, to) => {
-                  if (to > update.view.viewport.from && from < update.view.viewport.to) {
+                  if (to >= update.view.viewport.from && from <= update.view.viewport.to) {
                       changeFrom = Math.min(from, changeFrom);
                       changeTo = Math.max(to, changeTo);
                   }
@@ -18502,7 +18502,7 @@
       let inner = ast.resolveInner(pos, -1).resolve(pos, 0).enterUnfinishedNodesBefore(pos);
       if (inner != stack.node) {
           let add = [];
-          for (let cur = inner; cur != stack.node; cur = cur.parent)
+          for (let cur = inner; cur && !(cur.from == stack.node.from && cur.type == stack.node.type); cur = cur.parent)
               add.push(cur);
           for (let i = add.length - 1; i >= 0; i--)
               stack = { node: add[i], next: stack };

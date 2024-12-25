@@ -84,29 +84,39 @@
 
         updateUrlWithSrc();
 
+        function clearOutput() {
+            document.getElementById("output").value = "";
+            highlight(document.getElementById("output"));
+        }
+
+        function addOutput(string) {
+            const original = document.getElementById("output").value;
+            if (original == "") {
+                document.getElementById("output").value = string;
+            } else {
+                document.getElementById("output").value = original + "\n" + string;
+            }
+            highlight(document.getElementById("output"));
+        }
+
         const src = window.input.state.doc.toString();
+        clearOutput();
         try {
             const result = fluorite12.parse(src);
-            console.log(result);
             if (!result.success) {
-                document.getElementById("output").value = "" + result.error;
-                highlight(document.getElementById("output"));
+                console.log(result);
+                addOutput(result.error);
                 return;
             }
-            const output = [];
             const value = await fluorite12.evaluate(result.node, async value => {
                 console.log(value);
-                output.push(await fluorite12.stringify(value));
+                addOutput(await fluorite12.stringify(value));
             });
-            console.log(value);
-            output.push(await fluorite12.stringify(value));
-            document.getElementById("output").value = output.join("\n");
-            highlight(document.getElementById("output"));
             await fluorite12.log(value);
+            addOutput(await fluorite12.stringify(value));
         } catch (e) {
-            document.getElementById("output").value = "" + e;
-            highlight(document.getElementById("output"));
             console.log(e);
+            addOutput("" + e);
         }
     }
     function setParam(key, value) {
