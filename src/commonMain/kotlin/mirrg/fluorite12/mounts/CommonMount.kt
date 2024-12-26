@@ -264,6 +264,24 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("SLEEP(milliseconds: NUMBER): NULL")
             }
         },
+        "GENERATE" to FluoriteFunction { arguments ->
+            if (arguments.size != 1) usage("GENERATE(generator: (yield: (value: VALUE) -> NULL) -> NULL | STREAM): STREAM<VALUE>")
+            val generator = arguments[0]
+            FluoriteStream {
+                val yieldFunction = FluoriteFunction { arguments2 ->
+                    if (arguments2.size != 1) usage("yield(value: VALUE): NULL")
+                    val value = arguments2[0]
+                    emit(value)
+                    FluoriteNull
+                }
+                val result = generator.invoke(arrayOf(yieldFunction))
+                if (result is FluoriteStream) {
+                    result.collect {
+                        // イテレーションは行うがその結果は握りつぶす
+                    }
+                }
+            }
+        },
     )
 }
 
