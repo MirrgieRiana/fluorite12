@@ -164,7 +164,7 @@ $ flc '
 # 3
 ```
 
-## 素数判定
+# 素数判定
 
 ```shell
 $ flc -q '
@@ -181,4 +181,29 @@ $ flc -q '
 #    -   -   -  23   -   -   -   -   -  29
 #    -  31   -   -   -   -   -  37   -   -
 #    -  41   -  43   -   -   -  47   -   -
+```
+
+# [Canvasにレンダリングするサンプル](https://mirrgieriana.github.io/fluorite12/playground/?s=eJx1UG1rwjAQ%2Ft5fcWSI7cDaioLUth%2B2CRP2xhT8OGpzalhsJUl9gf34JU3rhG0hhCd39zx3zx0ZVVuIEhgEgbNFttmq9rc6fzBqPvrtpbCcvTy8Ln1a5tUOCxVFG1RTjgbfnWfUZdSzFJeUldpXini%2BBigeF89PkEAnjSk7aLGkzUPOMykTsipPJI37OpvGnV8arCiuNfKsOGSylrGQwNF4SEjcSSzUZQSsFxttfJmwVGeOpqWgKCII9yeQJdcOb8b1mRAzQ65OxngzStPHqy3fl4XCk3LJgBLPcQLwfQgDe%2BALGCQpuA7A%2FGk6fXMHgaexlosigRLVQmSFXJdi517iOcdMvGOu3GAC%2BurV18%2BlQBkOzxS6oUmFVylRKhNn0IdwHMAtDP9g9Wpa74fnrxnnc7MIvdLuilfYbVkmU88y0pSR7Xbd0pdKlJ94IQukDdfnrMBlvf4Ehq2eLf9H0XO%2BAT1rupg%3D&d=71.02)
+
+```
+width := 200
+height := 200
+by_id := id -> WINDOW.document::getElementById(id)
+by_id("output").outerHTML = %><div id="output" class="box"></div><%
+by_id("output").innerHTML = %><canvas id="canvas" width="<%= width %>" height="<%= height %>" style="border: 1px solid #888888;"><%
+ctx := by_id("canvas")::getContext("2d")
+
+0 .. 10000000 | i => (
+  SLEEP(20)
+  ctx::resetTransform()
+  ctx::clearRect(0; 0; 200; 200)
+  ctx::translate(100; 100)
+  ctx::rotate(i / 180 * 4)
+  ctx::translate(-100; -100)
+  ctx.fillStyle = 'blue'
+  ctx::fillRect(50; 50; 100; 100)
+  ctx.strokeStyle = 'red'
+  ctx.lineWidth = 4
+  ctx::strokeRect(50; 50; 100; 100)
+)
 ```
