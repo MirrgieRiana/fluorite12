@@ -183,7 +183,33 @@ $ flc -q '
 #    -  41   -  43   -   -   -  47   -   -
 ```
 
-# [Canvasにレンダリングするサンプル](https://mirrgieriana.github.io/fluorite12/playground/?s=eJx1UG1rwjAQ%2Ft5fcWSI7cDaioLUth%2B2CRP2xhT8OGpzalhsJUl9gf34JU3rhG0hhCd39zx3zx0ZVVuIEhgEgbNFttmq9rc6fzBqPvrtpbCcvTy8Ln1a5tUOCxVFG1RTjgbfnWfUZdSzFJeUldpXini%2BBigeF89PkEAnjSk7aLGkzUPOMykTsipPJI37OpvGnV8arCiuNfKsOGSylrGQwNF4SEjcSSzUZQSsFxttfJmwVGeOpqWgKCII9yeQJdcOb8b1mRAzQ65OxngzStPHqy3fl4XCk3LJgBLPcQLwfQgDe%2BALGCQpuA7A%2FGk6fXMHgaexlosigRLVQmSFXJdi517iOcdMvGOu3GAC%2BurV18%2BlQBkOzxS6oUmFVylRKhNn0IdwHMAtDP9g9Wpa74fnrxnnc7MIvdLuilfYbVkmU88y0pSR7Xbd0pdKlJ94IQukDdfnrMBlvf4Ehq2eLf9H0XO%2BAT1rupg%3D&d=71.02)
+# [HTML上でテーブルを表示](https://mirrgieriana.github.io/fluorite12/playground/?s=eJxdkctOwzAURPf9ilFQJEAkacUK57FAIFGJxwap6yQ2iYWpI8dpEwH%2FjlM3NelufOdo7uh6s359eNuEVJbdF9tqQiqmHwUb9f2wppee7HTTae8qNIKpp%2FeXZ6TwswWQUL4Dp%2BmEoNWDYKlXSEWZCkopRN60jGBSMWrGq1oTrJZLP4bcMfUh5D4YCNpSGSr2xmATfYiyGriwC6DpjdM1vo82sOdU1wS3rI9Ps2nVbGirmf1Nj1YKTlGIvPx0gGa9DnLBq62pbW7A1OT92mLRv2aJzgvXMvFTrBCGuMMPeqSZvdLR1Mo9ztjhjLU8zUaox7Xx%2FSyJzGAWMEuPXLxzbL3o8FWR%2BatskfiLP%2BeugP4%3D&d=53.63)
+
+```
+WINDOW.document::getElementById("output").outerHTML = %>
+  <div id="output" style="border-collapse: collapse; height: 100%; overflow-y: scroll;">
+    <style>
+      #output td, #output th {
+        width: 3ex;
+        height: 3ex;
+        border: 1px solid black;
+        text-align: center;
+      }
+    </style>
+    <table>
+      <%= 1 .. 9 | x => %>
+        <tr>
+          <%= 1 .. 9 | y => %>
+            <td><%= x * y %></td>
+          <% %>
+        </tr>
+      <% %>
+    <table/>
+  </div>
+<%
+```
+
+# [Canvas上でアニメーション](https://mirrgieriana.github.io/fluorite12/playground/?s=eJx1UG1rwjAQ%2Ft5fcWSI7cDaioLUth%2B2CRP2xhT8OGpzalhsJUl9gf34JU3rhG0hhCd39zx3zx0ZVVuIEhgEgbNFttmq9rc6fzBqPvrtpbCcvTy8Ln1a5tUOCxVFG1RTjgbfnWfUZdSzFJeUldpXini%2BBigeF89PkEAnjSk7aLGkzUPOMykTsipPJI37OpvGnV8arCiuNfKsOGSylrGQwNF4SEjcSSzUZQSsFxttfJmwVGeOpqWgKCII9yeQJdcOb8b1mRAzQ65OxngzStPHqy3fl4XCk3LJgBLPcQLwfQgDe%2BALGCQpuA7A%2FGk6fXMHgaexlosigRLVQmSFXJdi517iOcdMvGOu3GAC%2BurV18%2BlQBkOzxS6oUmFVylRKhNn0IdwHMAtDP9g9Wpa74fnrxnnc7MIvdLuilfYbVkmU88y0pSR7Xbd0pdKlJ94IQukDdfnrMBlvf4Ehq2eLf9H0XO%2BAT1rupg%3D&d=71.02)
 
 ```
 width := 200
