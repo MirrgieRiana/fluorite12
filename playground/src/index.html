@@ -70,6 +70,8 @@
                 <td style="padding: 0.1em;">
                     <input type="button" value="Run (F9, Ctrl+Enter)" onclick="run();">
                     <input type="button" value="🔗" title="Update URL" onclick="updateUrlWithSrc();">
+                    <input type="checkbox" id="quiet_mode" onchange="updateUrlWithQuietMode();">
+                    <label title="Quiet mode" for="quiet_mode">Quiet mode</label>
                 </td>
                 <td style="padding: 0.1em; text-align: right;">
                     <a href="https://github.com/MirrgieRiana/fluorite12" target="_blank">About fluorite12</a>
@@ -102,18 +104,14 @@
         const src = window.input.state.doc.toString();
         clearOutput();
         try {
-            const result = fluorite12.parse(src);
-            if (!result.success) {
-                console.log(result);
-                addOutput(result.error);
-                return;
-            }
-            const value = await fluorite12.evaluate(result.node, async value => {
-                console.log(value);
+            const value = await fluorite12.evaluate(src, document.getElementById("quiet_mode").checked, async value => {
+                await fluorite12.log(value);
                 addOutput(await fluorite12.stringify(value));
             });
-            await fluorite12.log(value);
-            addOutput(await fluorite12.stringify(value));
+            if (value !== undefined) {
+                await fluorite12.log(value);
+                addOutput(await fluorite12.stringify(value));
+            }
         } catch (e) {
             console.log(e);
             addOutput("" + e);
@@ -121,7 +119,11 @@
     }
     function setParam(key, value) {
         const url = new URL(window.location.href);
-        url.searchParams.set(key, value);
+        if (value === null) {
+            url.searchParams.delete(key);
+        } else {
+            url.searchParams.set(key, value);
+        }
         history.replaceState(null, "", url.toString());
     }
     function updateUrlWithSrc() {
@@ -130,6 +132,14 @@
         const deflateUtf8Src = deflate(utf8Src);
         const base64DeflateUtf8Src = btoa([...deflateUtf8Src].map(n => String.fromCharCode(n)).join(""));
         setParam("s", base64DeflateUtf8Src);
+    }
+    function getQuietModeFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const quietMode = params.get("q");
+        return quietMode === "1";
+    }
+    function updateUrlWithQuietMode() {
+        setParam("q", document.getElementById("quiet_mode").checked ? "1" : null);
     }
     function getDividerPositionFromUrl() {
         const params = new URLSearchParams(window.location.search);
@@ -204,6 +214,7 @@
         };
     }
 
+    document.getElementById("quiet_mode").checked = getQuietModeFromUrl();
     makeDividerLayout(document.getElementById("container"), getDividerPositionFromUrl())
         .onDragEnd(dividerPosition => updateUrlWithDividerPosition(dividerPosition));
 </script>

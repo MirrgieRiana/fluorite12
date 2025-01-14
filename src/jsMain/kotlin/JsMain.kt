@@ -1,51 +1,28 @@
-import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
-import com.github.h0tk3y.betterParse.parser.ErrorResult
-import com.github.h0tk3y.betterParse.parser.Parsed
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
-import mirrg.fluorite12.Environment
-import mirrg.fluorite12.Fluorite12Grammar
-import mirrg.fluorite12.Frame
-import mirrg.fluorite12.Node
-import mirrg.fluorite12.compilers.compileToGetter
+import mirrg.fluorite12.Evaluator
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
-import mirrg.fluorite12.defineBuiltinMount
 import mirrg.fluorite12.mounts.createCommonMount
 import kotlin.js.Promise
 
 @Suppress("unused")
-@JsName("parse")
-fun parse(src: String): Any {
-    return when (val result = Fluorite12Grammar().tryParseToEnd(src)) {
-        is Parsed -> object {
-            val success = true
-            val node = result.value
-        }
-
-        is ErrorResult -> object {
-            val success = false
-            val error = result
-        }
-    }
-}
-
-@Suppress("unused")
 @JsName("evaluate")
-fun evaluate(node: Node, out: suspend (FluoriteValue) -> Unit) = GlobalScope.promise {
-    val frame = Frame()
-    val runners = listOf(
-        frame.defineBuiltinMount(createCommonMount()),
-        frame.defineBuiltinMount(createJsMount(out)),
+fun evaluate(src: String, quiet: Boolean, out: suspend (FluoriteValue) -> Unit) = GlobalScope.promise {
+    val evaluator = Evaluator()
+    val defaultBuiltinMounts = listOf(
+        createCommonMount(),
+        createJsMount(out),
     )
-    val getter = frame.compileToGetter(node)
-    val env = Environment(null, frame.nextVariableIndex, frame.mountCount)
-    runners.forEach {
-        it.evaluate(env)
+    evaluator.defineMounts(defaultBuiltinMounts)
+    if (quiet) {
+        evaluator.run(src)
+        undefined
+    } else {
+        evaluator.get(src)
     }
-    getter.evaluate(env)
 }
 
 @Suppress("unused")
