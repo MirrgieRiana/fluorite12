@@ -9,7 +9,7 @@ fun main(args: Array<String>) {
     val list = args.toMutableList()
     var src: String? = null
     val arguments = mutableListOf<String>()
-    var quite = false
+    var quiet = false
 
     try {
         run {
@@ -30,8 +30,8 @@ fun main(args: Array<String>) {
                 if (list.firstOrNull() == "--help") throw ShowUsage
 
                 if (list.firstOrNull() == "-q") {
-                    if (quite) throw ShowUsage
-                    quite = true
+                    if (quiet) throw ShowUsage
+                    quiet = true
                     list.removeFirst()
                     continue
                 }
@@ -53,20 +53,20 @@ fun main(args: Array<String>) {
     }
 
     runBlocking {
-        main(src!!, arguments, quite)
+        main(src!!, arguments, quiet)
     }
 }
 
 private object ShowUsage : Throwable()
 
-suspend fun main(src: String, arguments: List<String>, quite: Boolean) {
+suspend fun main(src: String, arguments: List<String>, quiet: Boolean) {
     val evaluator = Evaluator()
     val defaultBuiltinMounts = listOf(
         createCommonMount(),
         createNativeMount(arguments),
     )
     evaluator.defineMounts(defaultBuiltinMounts)
-    if (quite) {
+    if (quiet) {
         evaluator.run(src)
     } else {
         val result = evaluator.get(src)
