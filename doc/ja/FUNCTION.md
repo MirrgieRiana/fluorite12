@@ -308,6 +308,33 @@ $ flc -q '
 # Method not found: {}::durian
 ```
 
+# クロージャ付き関数呼び出し
+
+クロージャ付き関数呼び出し `function ( arguments => block )` は、関数 `function` に `block` 部分を関数として渡すことで呼び出します。
+
+`block` 部分には文も記述できます。
+
+イベントリスナーの登録などで用いると、可読性に貢献する可能性があります。
+
+```shell
+$ flc -q '
+  register := listener -> (
+    event := {x: 100; y: 200}
+    listener(event)
+  )
+
+  register ( event =>
+    string := "X: $(event.x), Y: $(event.y)"
+    OUT << string
+  )
+'
+# X: 100, Y: 200
+```
+
+## バリエーション
+
+クロージャ付き関数呼び出しは、メソッド呼び出しや関数の部分適用としても書くことができます。
+
 # 名前付き引数
 
 名前付き引数専用の文法はありませんが、エントリー演算子を使って近いことが実現できます。

@@ -1116,4 +1116,26 @@ class Fluorite12Test {
         """.let { assertEquals("[1;2;3]", eval(it).array()) }
     }
 
+    @Test
+    fun arrowInvoke() = runTest {
+        val evaluator = Evaluator()
+        evaluator.defineMounts(listOf(createCommonMount()))
+
+        // _::_ でフォールバックメソッドを定義する
+        """
+            register := listener -> listener(23)
+            
+            Obj := {
+                register: this, listener -> listener(this.x + 3)
+            }
+            obj := Obj{x: 20}
+        """.let { evaluator.run(it) }
+
+        assertEquals(123, evaluator.get("register ( event => 100 + event )").int) // クロージャ付き関数呼び出し
+        assertEquals(123, evaluator.get("register [ event => 100 + event ]()").int) // クロージャ付き関数の部分適用
+        assertEquals(123, evaluator.get("obj::register ( event => 100 + event )").int) // クロージャ付きメソッド呼び出し
+        assertEquals(123, evaluator.get("obj::register [ event => 100 + event ]()").int) // クロージャ付きメソッドの部分適用
+
+        assertEquals(123, evaluator.get("register ( event => 9; 9; 9; 100 + event )").int) // クロージャは ; を文の区切りとして解釈する
+    }
 }
