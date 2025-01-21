@@ -144,7 +144,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val lAlphabet by lA or lB or lC or lD or lE or lF or lG or lH or lI or lJ or lK or lL or lM or lN or lO or lP or lQ or lR or lS or lT or lU or lV or lW or lX or lY or lZ
     val number by zero or nonZero
 
-    val identifier: Parser<Node> by (uAlphabet or lAlphabet or underscore) * zeroOrMore(uAlphabet or lAlphabet or underscore or number) map {
+    val identifier: Parser<Node> by (uAlphabet or lAlphabet or underscore or other) * zeroOrMore(uAlphabet or lAlphabet or underscore or other or number) map {
         IdentifierNode(
             listOf(),
             listOf(it.t1, *it.t2.toTypedArray()),

@@ -885,6 +885,22 @@ class Fluorite12Test {
     }
 
     @Test
+    fun identifier() = runTest {
+        assertEquals(123, eval("abc := 123; abc").int) // 英数字
+
+        assertEquals(123, eval("_ := 123; _").int) // アンダースコア1個
+        assertEquals(123, eval("__ := 123; __").int) // アンダースコア2個
+
+        assertEquals(123, eval("あ := 123; あ").int) // 全角文字
+        assertEquals(123, eval("亜 := 123; 亜").int) // 漢字
+        assertEquals(123, eval("아 := 123; 아").int) // ハングル文字
+        assertEquals(123, eval("√ := 123; √").int) // 全角記号
+        assertEquals(123, eval("　:=123;　").int) // 全角空白
+        assertEquals(123, eval("\uD83C\uDF70 := 123; \uD83C\uDF70").int) // 絵文字 🍰
+        assertEquals(123, eval("surströmming := 123; surströmming").int) // ラテン文字とマルチバイト文字の混在
+    }
+
+    @Test
     fun quotedIdentifier() = runTest {
         assertEquals(123, eval("abc := 123; `abc`").int) // 識別子とクォート識別子は同じ
         assertEquals(123, eval("`a` := 123; a").int) // 逆でもよい
