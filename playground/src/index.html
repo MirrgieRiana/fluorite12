@@ -72,6 +72,8 @@
                     <input type="button" value="🔗" title="Update URL" onclick="updateUrlWithSrc();">
                     <input type="checkbox" id="quiet_mode" onchange="updateUrlWithQuietMode();">
                     <label title="Quiet mode" for="quiet_mode">Quiet mode</label>
+                    <input type="checkbox" id="auto_run" onchange="updateUrlWithAutoRun();">
+                    <label title="Auto run" for="auto_run">Auto run</label>
                 </td>
                 <td style="padding: 0.1em; text-align: right;">
                     <a href="https://github.com/MirrgieRiana/fluorite12" target="_blank" style="text-decoration: none;">About fluorite12<img src="icon.svg" style="height: 0.8em;"></a>
@@ -140,6 +142,14 @@
     }
     function updateUrlWithQuietMode() {
         setParam("q", document.getElementById("quiet_mode").checked ? "1" : null);
+    }
+    function getAutoRunFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const autoRun = params.get("r");
+        return autoRun === "1";
+    }
+    function updateUrlWithAutoRun() {
+        setParam("r", document.getElementById("auto_run").checked ? "1" : null);
     }
     function getDividerPositionFromUrl() {
         const params = new URLSearchParams(window.location.search);
@@ -215,8 +225,13 @@
     }
 
     document.getElementById("quiet_mode").checked = getQuietModeFromUrl();
+    document.getElementById("auto_run").checked = getAutoRunFromUrl();
     makeDividerLayout(document.getElementById("container"), getDividerPositionFromUrl())
         .onDragEnd(dividerPosition => updateUrlWithDividerPosition(dividerPosition));
+
+    if (document.getElementById("auto_run").checked) {
+        window.addEventListener("load", () => setTimeout(async () => run(), 0));
+    }
 </script>
 <script src="editor.bundle.js"></script>
 </body>
