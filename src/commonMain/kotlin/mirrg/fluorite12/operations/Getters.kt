@@ -294,8 +294,7 @@ class FromJsonGetter(private val getter: Getter) : Getter {
                 data.isString -> data.content.toFluoriteString()
                 data.content == "true" -> FluoriteBoolean.TRUE
                 data.content == "false" -> FluoriteBoolean.FALSE
-                "." !in data.content -> FluoriteInt(data.content.toInt())
-                else -> FluoriteDouble(data.content.toDouble())
+                else -> data.content.toFluoriteNumber()
             }
 
             else -> throw IllegalArgumentException()

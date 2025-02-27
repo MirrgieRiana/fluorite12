@@ -91,3 +91,18 @@ class FluoriteDouble(val value: Double) : FluoriteNumber {
     override fun negate() = FluoriteDouble(-value)
     override fun roundToInt() = value.roundToInt()
 }
+
+fun String.toFluoriteNumber(): FluoriteNumber {
+    return when {
+        "." !in this -> when (val int = this.toInt()) {
+            0 -> FluoriteInt.ZERO
+            1 -> FluoriteInt.ONE
+            else -> FluoriteInt(int)
+        }
+
+        else -> when (val double = this.toDouble()) {
+            0.0 -> FluoriteDouble.ZERO
+            else -> FluoriteDouble(double)
+        }
+    }
+}

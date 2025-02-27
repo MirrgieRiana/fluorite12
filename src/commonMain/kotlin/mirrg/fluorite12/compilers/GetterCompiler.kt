@@ -1,5 +1,6 @@
 package mirrg.fluorite12.compilers
 
+import com.ionspin.kotlin.bignum.integer.toBigInteger
 import mirrg.fluorite12.ArrowBracketsNode
 import mirrg.fluorite12.BracketsNode
 import mirrg.fluorite12.BracketsType
@@ -25,9 +26,8 @@ import mirrg.fluorite12.RightBracketsNode
 import mirrg.fluorite12.RightNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
-import mirrg.fluorite12.compilers.objects.FluoriteDouble
-import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteString
+import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.defineVariable
 import mirrg.fluorite12.getMountCounts
 import mirrg.fluorite12.getVariable
@@ -110,11 +110,11 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
         }
 
-        is IntegerNode -> LiteralGetter(FluoriteInt(node.string.toInt()))
+        is IntegerNode -> LiteralGetter(node.string.toFluoriteNumber())
 
-        is HexadecimalNode -> LiteralGetter(FluoriteInt(node.string.toInt(16)))
+        is HexadecimalNode -> LiteralGetter(node.string.toBigInteger(base = 16).toString().toFluoriteNumber())
 
-        is FloatNode -> LiteralGetter(FluoriteDouble(node.string.toDouble()))
+        is FloatNode -> LiteralGetter(node.string.toFluoriteNumber())
 
         is RawStringNode -> LiteralGetter(FluoriteString(node.node.string))
 
@@ -396,9 +396,9 @@ private fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter
 
 private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
     return when (main) {
-        is IntegerNode -> LiteralGetter(FluoriteInt("-${main.string}".toInt()))
-        is HexadecimalNode -> LiteralGetter(FluoriteInt("-${main.string}".toInt(16)))
-        is FloatNode -> LiteralGetter(FluoriteDouble("-${main.string}".toDouble()))
+        is IntegerNode -> LiteralGetter("-${main.string}".toFluoriteNumber())
+        is HexadecimalNode -> LiteralGetter("-${main.string}".toBigInteger(base = 16).toString().toFluoriteNumber())
+        is FloatNode -> LiteralGetter("-${main.string}".toFluoriteNumber())
         else -> ToNegativeNumberGetter(compileToGetter(main))
     }
 }

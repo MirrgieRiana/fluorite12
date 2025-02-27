@@ -81,18 +81,7 @@ class FluoriteString(val value: String) : FluoriteValue {
                     },
                     "+_" to FluoriteFunction { arguments ->
                         val string = (arguments[0] as FluoriteString).value
-                        if (string.all { c -> c in '0'..'9' }) {
-                            when (val int = string.toInt()) {
-                                0 -> FluoriteInt.ZERO
-                                1 -> FluoriteInt.ONE
-                                else -> FluoriteInt(int)
-                            }
-                        } else {
-                            when (val double = string.toDouble()) {
-                                0.0 -> FluoriteDouble.ZERO
-                                else -> FluoriteDouble(double)
-                            }
-                        }
+                        string.toFluoriteNumber()
                     },
                     "?_" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
                     "&_" to FluoriteFunction { it[0] as FluoriteString },
