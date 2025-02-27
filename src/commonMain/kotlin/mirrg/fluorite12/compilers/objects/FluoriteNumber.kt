@@ -1,14 +1,16 @@
 package mirrg.fluorite12.compilers.objects
 
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import kotlin.math.roundToInt
 
 interface FluoriteNumber : FluoriteValue {
-    val value: Number
+    fun toInt(): Int
+    fun toDouble(): Double
     fun negate(): FluoriteNumber
     fun roundToInt(): Int
 }
 
-class FluoriteInt(override val value: Int) : FluoriteNumber {
+class FluoriteInt(val value: Int) : FluoriteNumber {
     companion object {
         val fluoriteClass by lazy {
             FluoriteObject(
@@ -44,11 +46,13 @@ class FluoriteInt(override val value: Int) : FluoriteNumber {
     override fun equals(other: Any?) = other is FluoriteInt && value == other.value
     override fun hashCode() = value
     override val parent get() = fluoriteClass
+    override fun toInt() = value
+    override fun toDouble() = value.toDouble()
     override fun negate() = FluoriteInt(-value)
     override fun roundToInt() = value
 }
 
-class FluoriteDouble(override val value: Double) : FluoriteNumber {
+class FluoriteDouble(val value: Double) : FluoriteNumber {
     companion object {
         val fluoriteClass by lazy {
             FluoriteObject(
@@ -82,6 +86,8 @@ class FluoriteDouble(override val value: Double) : FluoriteNumber {
     override fun equals(other: Any?) = other is FluoriteDouble && value == other.value
     override fun hashCode() = value.hashCode()
     override val parent get() = fluoriteClass
+    override fun toInt() = value.toBigDecimal().intValue(true)
+    override fun toDouble() = value
     override fun negate() = FluoriteDouble(-value)
     override fun roundToInt() = value.roundToInt()
 }

@@ -66,7 +66,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         },
         "SQRT" to FluoriteFunction { arguments ->
             when (arguments.size) {
-                1 -> FluoriteDouble(sqrt((arguments[0] as FluoriteNumber).value.toDouble()))
+                1 -> FluoriteDouble(sqrt((arguments[0] as FluoriteNumber).toDouble()))
                 else -> usage("SQRT(number: NUMBER): NUMBER")
             }
         },
@@ -183,7 +183,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 if (stream is FluoriteStream) {
                     var sum = 0.0
                     stream.collect { value ->
-                        sum += (value as FluoriteNumber).value.toDouble()
+                        sum += (value as FluoriteNumber).toDouble()
                     }
                     if (sum.toInt().toDouble() == sum) {
                         FluoriteInt(sum.toInt())
@@ -258,7 +258,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         "SLEEP" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 val time = arguments[0] as FluoriteNumber
-                delay(time.value.toLong())
+                delay(time.toInt().toLong())
                 FluoriteNull
             } else {
                 usage("SLEEP(milliseconds: NUMBER): NULL")

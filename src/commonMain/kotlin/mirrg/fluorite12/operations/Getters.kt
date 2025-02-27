@@ -376,11 +376,11 @@ class TimesGetter(private val leftGetter: Getter, private val rightGetter: Gette
                 else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
             }
 
-            is FluoriteString -> left.value.repeat((right as FluoriteNumber).value.toInt()).toFluoriteString()
+            is FluoriteString -> left.value.repeat((right as FluoriteNumber).toInt()).toFluoriteString()
 
             is FluoriteArray -> {
                 val list = mutableListOf<FluoriteValue>()
-                repeat((right as FluoriteNumber).value.toInt()) {
+                repeat((right as FluoriteNumber).toInt()) {
                     list += left.values
                 }
                 FluoriteArray(list)
@@ -492,7 +492,7 @@ class PowerGetter(private val leftGetter: Getter, private val rightGetter: Gette
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val left = leftGetter.evaluate(env) as FluoriteNumber
         val right = rightGetter.evaluate(env) as FluoriteNumber
-        return FluoriteDouble(left.value.toDouble().pow(right.value.toDouble()))
+        return FluoriteDouble(left.toDouble().pow(right.toDouble()))
     }
 
     override val code get() = "Power[${leftGetter.code};${rightGetter.code}]"

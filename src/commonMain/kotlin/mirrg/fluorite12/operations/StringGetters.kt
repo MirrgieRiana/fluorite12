@@ -35,7 +35,7 @@ private suspend fun Formatter.format(value: FluoriteValue): String {
         if (FormatterFlag.SIGNED in this.flags && FormatterFlag.SPACE_FOR_SIGN in this.flags) throw RuntimeException("Invalid format: ${this.string}")
         if (this.conversion != FormatterConversion.FLOAT) {
             if (this.precision != null) throw RuntimeException("Invalid format: ${this.string}")
-            val int = (value as FluoriteNumber).value.toInt()
+            val int = (value as FluoriteNumber).toInt()
             if (this.conversion == FormatterConversion.DECIMAL) {
                 when {
                     int < 0 -> Pair("-", (-int).toString())
@@ -52,7 +52,7 @@ private suspend fun Formatter.format(value: FluoriteValue): String {
                 }
             }
         } else {
-            val double = (value as FluoriteNumber).value.toDouble()
+            val double = (value as FluoriteNumber).toDouble()
             fun String.precision(): String {
                 if (precision == null) return this // 精度の指定がなければ何もしない
                 val index = this.indexOf('.')
