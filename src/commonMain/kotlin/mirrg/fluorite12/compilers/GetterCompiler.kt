@@ -382,7 +382,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 private fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter {
     return when (text) {
         "+" -> ToNumberGetter(compileToGetter(main))
-        "-" -> ToNegativeNumberGetter(compileToGetter(main))
+        "-" -> compileUnaryMinusToGetter(main)
         "?" -> ToBooleanGetter(compileToGetter(main))
         "!" -> ToNegativeBooleanGetter(compileToGetter(main))
         "&" -> ToStringGetter(compileToGetter(main))
@@ -391,6 +391,15 @@ private fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter
         "$*" -> FromJsonGetter(compileToGetter(main))
         "!!" -> ThrowGetter(compileToGetter(main))
         else -> throw IllegalArgumentException("Unknown operator: Unary $text")
+    }
+}
+
+private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
+    return when (main) {
+        is IntegerNode -> LiteralGetter(FluoriteInt("-${main.string}".toInt()))
+        is HexadecimalNode -> LiteralGetter(FluoriteInt("-${main.string}".toInt(16)))
+        is FloatNode -> LiteralGetter(FluoriteDouble("-${main.string}".toDouble()))
+        else -> ToNegativeNumberGetter(compileToGetter(main))
     }
 }
 
