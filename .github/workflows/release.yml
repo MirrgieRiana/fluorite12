@@ -50,6 +50,7 @@ jobs:
           mv release-dir/.git tmp92758927523654
           rsync -av --delete build-dir/release/ release-dir/
           rsync -av --delete build-dir/build/bin/ release-dir/bin/
+          rsync -av --delete build-dir/doc/ release-dir/doc/
           rsync -av --delete build-dir/playground/build/out/ release-dir/playground/
           chmod a+x release-dir/*.sh
           mv tmp92758927523654 release-dir/.git
