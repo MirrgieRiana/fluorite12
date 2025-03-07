@@ -1552,13 +1552,13 @@
       static cursor(pos, assoc = 0, bidiLevel, goalColumn) {
           return SelectionRange.create(pos, pos, (assoc == 0 ? 0 : assoc < 0 ? 8 /* RangeFlag.AssocBefore */ : 16 /* RangeFlag.AssocAfter */) |
               (bidiLevel == null ? 7 : Math.min(6, bidiLevel)) |
-              ((goalColumn !== null && goalColumn !== undefined ? goalColumn : 16777215 /* RangeFlag.NoGoalColumn */) << 6 /* RangeFlag.GoalColumnOffset */));
+              ((goalColumn !== null && goalColumn !== void 0 ? goalColumn : 16777215 /* RangeFlag.NoGoalColumn */) << 6 /* RangeFlag.GoalColumnOffset */));
       }
       /**
       Create a selection range.
       */
       static range(anchor, head, goalColumn, bidiLevel) {
-          let flags = ((goalColumn !== null && goalColumn !== undefined ? goalColumn : 16777215 /* RangeFlag.NoGoalColumn */) << 6 /* RangeFlag.GoalColumnOffset */) |
+          let flags = ((goalColumn !== null && goalColumn !== void 0 ? goalColumn : 16777215 /* RangeFlag.NoGoalColumn */) << 6 /* RangeFlag.GoalColumnOffset */) |
               (bidiLevel == null ? 7 : Math.min(6, bidiLevel));
           return head < anchor ? SelectionRange.create(head, anchor, 32 /* RangeFlag.Inverted */ | 16 /* RangeFlag.AssocAfter */ | flags)
               : SelectionRange.create(anchor, head, (head > anchor ? 8 /* RangeFlag.AssocBefore */ : 0) | flags);
@@ -1695,7 +1695,7 @@
                   depDoc = true;
               else if (dep == "selection")
                   depSel = true;
-              else if ((((_a = addresses[dep.id]) !== null && _a !== undefined ? _a : 1) & 1) == 0)
+              else if ((((_a = addresses[dep.id]) !== null && _a !== void 0 ? _a : 1) & 1) == 0)
                   depAddrs.push(addresses[dep.id]);
           }
           return {
@@ -1835,7 +1835,7 @@
       }
       create(state) {
           let init = state.facet(initField).find(i => i.field == this);
-          return ((init === null || init === undefined ? undefined : init.create) || this.createF)(state);
+          return ((init === null || init === void 0 ? void 0 : init.create) || this.createF)(state);
       }
       /**
       @internal
@@ -1856,6 +1856,11 @@
                   return 1 /* SlotStatus.Changed */;
               },
               reconfigure: (state, oldState) => {
+                  let init = state.facet(initField), oldInit = oldState.facet(initField), reInit;
+                  if ((reInit = init.find(i => i.field == this)) && reInit != oldInit.find(i => i.field == this)) {
+                      state.values[idx] = reInit.create(state);
+                      return 1 /* SlotStatus.Changed */;
+                  }
                   if (oldState.config.address[this.id] != null) {
                       state.values[idx] = oldState.field(this);
                       return 0;
@@ -1993,7 +1998,7 @@
               address[field.id] = dynamicSlots.length << 1;
               dynamicSlots.push(a => field.slot(a));
           }
-          let oldFacets = oldState === null || oldState === undefined ? undefined : oldState.config.facets;
+          let oldFacets = oldState === null || oldState === void 0 ? void 0 : oldState.config.facets;
           for (let id in facets) {
               let providers = facets[id], facet = providers[0].facet;
               let oldProviders = oldFacets && oldFacets[id] || [];
@@ -2449,7 +2454,7 @@
       }
       return {
           changes,
-          selection: b.selection ? b.selection.map(mapForB) : (_a = a.selection) === null || _a === undefined ? undefined : _a.map(mapForA),
+          selection: b.selection ? b.selection.map(mapForB) : (_a = a.selection) === null || _a === void 0 ? void 0 : _a.map(mapForA),
           effects: StateEffect.mapEffects(a.effects, mapForA).concat(StateEffect.mapEffects(b.effects, mapForB)),
           annotations: a.annotations.length ? a.annotations.concat(b.annotations) : b.annotations,
           scrollIntoView: a.scrollIntoView || b.scrollIntoView
@@ -3589,7 +3594,7 @@
           for (let i = 0; i < set.chunk.length; i++) {
               let known = inA.get(set.chunk[i]);
               if (known != null && (textDiff ? textDiff.mapPos(known) : known) == set.chunkPos[i] &&
-                  !(textDiff === null || textDiff === undefined ? undefined : textDiff.touchesRange(known, known + set.chunk[i].length)))
+                  !(textDiff === null || textDiff === void 0 ? void 0 : textDiff.touchesRange(known, known + set.chunk[i].length)))
                   shared.add(set.chunk[i]);
           }
       return shared;
@@ -4377,14 +4382,14 @@
               let moveX = 0, moveY = 0;
               if (y == "nearest") {
                   if (rect.top < bounding.top) {
-                      moveY = -(bounding.top - rect.top + yMargin);
+                      moveY = rect.top - (bounding.top + yMargin);
                       if (side > 0 && rect.bottom > bounding.bottom + moveY)
-                          moveY = rect.bottom - bounding.bottom + moveY + yMargin;
+                          moveY = rect.bottom - bounding.bottom + yMargin;
                   }
                   else if (rect.bottom > bounding.bottom) {
                       moveY = rect.bottom - bounding.bottom + yMargin;
                       if (side < 0 && (rect.top - moveY) < bounding.top)
-                          moveY = -(bounding.top + moveY - rect.top + yMargin);
+                          moveY = rect.top - (bounding.top + yMargin);
                   }
               }
               else {
@@ -4396,14 +4401,14 @@
               }
               if (x == "nearest") {
                   if (rect.left < bounding.left) {
-                      moveX = -(bounding.left - rect.left + xMargin);
+                      moveX = rect.left - (bounding.left + xMargin);
                       if (side > 0 && rect.right > bounding.right + moveX)
-                          moveX = rect.right - bounding.right + moveX + xMargin;
+                          moveX = rect.right - bounding.right + xMargin;
                   }
                   else if (rect.right > bounding.right) {
                       moveX = rect.right - bounding.right + xMargin;
                       if (side < 0 && rect.left < bounding.left + moveX)
-                          moveX = -(bounding.left + moveX - rect.left + xMargin);
+                          moveX = rect.left - (bounding.left + xMargin);
                   }
               }
               else {
@@ -4438,6 +4443,10 @@
               }
               if (top)
                   break;
+              if (rect.top < bounding.top || rect.bottom > bounding.bottom ||
+                  rect.left < bounding.left || rect.right > bounding.right)
+                  rect = { left: Math.max(rect.left, bounding.left), right: Math.min(rect.right, bounding.right),
+                      top: Math.max(rect.top, bounding.top), bottom: Math.min(rect.bottom, bounding.bottom) };
               cur = cur.assignedSlot || cur.parentNode;
           }
           else if (cur.nodeType == 11) { // A shadow root
@@ -4886,7 +4895,7 @@
       if (toI < children.length) {
           let after = children[toI];
           // Make sure the end of the child after the update is preserved in `after`
-          if (after && (toOff < after.length || after.breakAfter && (last === null || last === undefined ? undefined : last.breakAfter))) {
+          if (after && (toOff < after.length || after.breakAfter && (last === null || last === void 0 ? void 0 : last.breakAfter))) {
               // If we're splitting a child, separate part of it to avoid that
               // being mangled when updating the child before the update.
               if (fromI == toI) {
@@ -4906,7 +4915,7 @@
                   insert.push(after);
               }
           }
-          else if (after === null || after === undefined ? undefined : after.breakAfter) {
+          else if (after === null || after === void 0 ? void 0 : after.breakAfter) {
               // The element at `toI` is entirely covered by this range.
               // Preserve its line break, if any.
               if (last)
@@ -5607,7 +5616,7 @@
           return this == other ||
               other instanceof MarkDecoration &&
                   this.tagName == other.tagName &&
-                  (this.class || ((_a = this.attrs) === null || _a === undefined ? undefined : _a.class)) == (other.class || ((_b = other.attrs) === null || _b === undefined ? undefined : _b.class)) &&
+                  (this.class || ((_a = this.attrs) === null || _a === void 0 ? void 0 : _a.class)) == (other.class || ((_b = other.attrs) === null || _b === void 0 ? void 0 : _b.class)) &&
                   attrsEq(this.attrs, other.attrs, "class");
       }
       range(from, to = from) {
@@ -5670,7 +5679,7 @@
           start = spec.inclusive;
       if (end == null)
           end = spec.inclusive;
-      return { start: start !== null && start !== undefined ? start : block, end: end !== null && end !== undefined ? end : block };
+      return { start: start !== null && start !== void 0 ? start : block, end: end !== null && end !== void 0 ? end : block };
   }
   function widgetsEq(a, b) {
       return a == b || !!(a && b && a.compare(b));
@@ -5785,7 +5794,7 @@
           while (last && ContentView.get(last) instanceof MarkView)
               last = last.lastChild;
           if (!last || !this.length ||
-              last.nodeName != "BR" && ((_a = ContentView.get(last)) === null || _a === undefined ? undefined : _a.isEditable) == false &&
+              last.nodeName != "BR" && ((_a = ContentView.get(last)) === null || _a === void 0 ? void 0 : _a.isEditable) == false &&
                   (!browser.ios || !this.children.some(ch => ch instanceof TextView))) {
               let hack = document.createElement("BR");
               hack.cmIgnore = true;
@@ -6566,7 +6575,7 @@
   function moveVisually(line, order, dir, start, forward) {
       var _a;
       let startIndex = start.head - line.from;
-      let spanI = BidiSpan.find(order, startIndex, (_a = start.bidiLevel) !== null && _a !== undefined ? _a : -1, start.assoc);
+      let spanI = BidiSpan.find(order, startIndex, (_a = start.bidiLevel) !== null && _a !== void 0 ? _a : -1, start.assoc);
       let span = order[spanI], spanEnd = span.side(forward, dir);
       // End of span
       if (startIndex == spanEnd) {
@@ -6767,7 +6776,7 @@
       }
       destroy(view) {
           var _a;
-          if ((_a = this.value) === null || _a === undefined ? undefined : _a.destroy) {
+          if ((_a = this.value) === null || _a === void 0 ? void 0 : _a.destroy) {
               try {
                   this.value.destroy();
               }
@@ -7031,7 +7040,7 @@
           this.updateEditContextFormatting(update);
           let readCompositionAt = -1;
           if (this.view.inputState.composing >= 0 && !this.view.observer.editContext) {
-              if ((_a = this.domChanged) === null || _a === undefined ? undefined : _a.newSel)
+              if ((_a = this.domChanged) === null || _a === void 0 ? void 0 : _a.newSel)
                   readCompositionAt = this.domChanged.newSel.head;
               else if (!touchesComposition(update.changes, this.hasComposition) && !update.selectionSet)
                   readCompositionAt = update.state.selection.main.head;
@@ -7814,7 +7823,7 @@
       // There's visible editor content under the point, so we can try
       // using caret(Position|Range)FromPoint as a shortcut
       let node, offset = -1;
-      if (element && ((_a = view.docView.nearest(element)) === null || _a === undefined ? undefined : _a.isEditable) != false) {
+      if (element && ((_a = view.docView.nearest(element)) === null || _a === void 0 ? void 0 : _a.isEditable) != false) {
           if (doc.caretPositionFromPoint) {
               let pos = doc.caretPositionFromPoint(x, y);
               if (pos)
@@ -7846,7 +7855,7 @@
       let nearest = view.docView.nearest(node);
       if (!nearest)
           return null;
-      if (nearest.isWidget && ((_b = nearest.dom) === null || _b === undefined ? undefined : _b.nodeType) == 1) {
+      if (nearest.isWidget && ((_b = nearest.dom) === null || _b === void 0 ? void 0 : _b.nodeType) == 1) {
           let rect = nearest.dom.getBoundingClientRect();
           return coords.y < rect.top || coords.y <= rect.bottom && coords.x <= (rect.left + rect.right) / 2
               ? nearest.posAtStart : nearest.posAtEnd;
@@ -7970,7 +7979,7 @@
           startY = (dir < 0 ? line.top : line.bottom) + docTop;
       }
       let resolvedGoal = rect.left + goal;
-      let dist = distance !== null && distance !== undefined ? distance : (view.viewState.heightOracle.textHeight >> 1);
+      let dist = distance !== null && distance !== void 0 ? distance : (view.viewState.heightOracle.textHeight >> 1);
       for (let extra = 0;; extra += 10) {
           let curY = startY + (dist + extra) * dir;
           let pos = posAtCoords(view, { x: resolvedGoal, y: curY }, false, dir);
@@ -8451,7 +8460,10 @@
               return;
           if (event.type == "keydown" && this.keydown(event))
               return;
-          this.runHandlers(event.type, event);
+          if (this.view.updateState != 0 /* UpdateState.Idle */)
+              Promise.resolve().then(() => this.runHandlers(event.type, event));
+          else
+              this.runHandlers(event.type, event);
       }
       runHandlers(type, event) {
           let handlers = this.handlers[type];
@@ -9207,7 +9219,7 @@
       // In EditContext mode, we must handle insertReplacementText events
       // directly, to make spell checking corrections work
       if (event.inputType == "insertReplacementText" && view.observer.editContext) {
-          let text = (_a = event.dataTransfer) === null || _a === undefined ? undefined : _a.getData("text/plain"), ranges = event.getTargetRanges();
+          let text = (_a = event.dataTransfer) === null || _a === void 0 ? void 0 : _a.getData("text/plain"), ranges = event.getTargetRanges();
           if (text && ranges.length) {
               let r = ranges[0];
               let from = view.posAtDOM(r.startContainer, r.startOffset), to = view.posAtDOM(r.endContainer, r.endOffset);
@@ -9226,13 +9238,13 @@
       if (browser.chrome && browser.android && (pending = PendingKeys.find(key => key.inputType == event.inputType))) {
           view.observer.delayAndroidKey(pending.key, pending.keyCode);
           if (pending.key == "Backspace" || pending.key == "Delete") {
-              let startViewHeight = ((_b = window.visualViewport) === null || _b === undefined ? undefined : _b.height) || 0;
+              let startViewHeight = ((_b = window.visualViewport) === null || _b === void 0 ? void 0 : _b.height) || 0;
               setTimeout(() => {
                   var _a;
                   // Backspacing near uneditable nodes on Chrome Android sometimes
                   // closes the virtual keyboard. This tries to crudely detect
                   // that and refocus to get it back.
-                  if ((((_a = window.visualViewport) === null || _a === undefined ? undefined : _a.height) || 0) > startViewHeight + 10 && view.hasFocus) {
+                  if ((((_a = window.visualViewport) === null || _a === void 0 ? void 0 : _a.height) || 0) > startViewHeight + 10 && view.hasFocus) {
                       view.contentDOM.blur();
                       view.focus();
                   }
@@ -10986,7 +10998,7 @@
           if (typeof ResizeObserver == "function") {
               this.resizeScroll = new ResizeObserver(() => {
                   var _a;
-                  if (((_a = this.view.docView) === null || _a === undefined ? undefined : _a.lastUpdate) < Date.now() - 75)
+                  if (((_a = this.view.docView) === null || _a === void 0 ? void 0 : _a.lastUpdate) < Date.now() - 75)
                       this.onResize();
               });
               this.resizeScroll.observe(view.scrollDOM);
@@ -11206,7 +11218,7 @@
                   // this isn't coming right after another change, in which case
                   // it is probably part of a weird chain of updates, and should
                   // be ignored if it returns the DOM to its previous state.
-                  force: this.lastChange < Date.now() - 50 || !!((_a = this.delayedAndroidKey) === null || _a === undefined ? undefined : _a.force)
+                  force: this.lastChange < Date.now() - 50 || !!((_a = this.delayedAndroidKey) === null || _a === void 0 ? void 0 : _a.force)
               };
       }
       clearDelayedAndroidKey() {
@@ -11349,9 +11361,9 @@
       destroy() {
           var _a, _b, _c;
           this.stop();
-          (_a = this.intersection) === null || _a === undefined ? undefined : _a.disconnect();
-          (_b = this.gapIntersection) === null || _b === undefined ? undefined : _b.disconnect();
-          (_c = this.resizeScroll) === null || _c === undefined ? undefined : _c.disconnect();
+          (_a = this.intersection) === null || _a === void 0 ? void 0 : _a.disconnect();
+          (_b = this.gapIntersection) === null || _b === void 0 ? void 0 : _b.disconnect();
+          (_c = this.resizeScroll) === null || _c === void 0 ? void 0 : _c.disconnect();
           for (let dom of this.scrollTargets)
               dom.removeEventListener("scroll", this.onScroll);
           this.removeWindowListeners(this.win);
@@ -11554,8 +11566,11 @@
           return !abort;
       }
       update(update) {
-          let reverted = this.pendingContextChange;
-          if (this.composing && (this.composing.drifted || update.transactions.some(tr => !tr.isUserEvent("input.type") && tr.changes.touchesRange(this.from, this.to)))) {
+          let reverted = this.pendingContextChange, startSel = update.startState.selection.main;
+          if (this.composing &&
+              (this.composing.drifted ||
+                  (!update.changes.touchesRange(startSel.from, startSel.to) &&
+                      update.transactions.some(tr => !tr.isUserEvent("input.type") && tr.changes.touchesRange(this.from, this.to))))) {
               this.composing.drifted = true;
               this.composing.editorBase = update.changes.mapPos(this.composing.editorBase);
           }
@@ -11737,7 +11752,7 @@
           this.updateAttrs();
           this.updateState = 0 /* UpdateState.Idle */;
           this.requestMeasure();
-          if ((_a = document.fonts) === null || _a === undefined ? undefined : _a.ready)
+          if ((_a = document.fonts) === null || _a === void 0 ? void 0 : _a.ready)
               document.fonts.ready.then(() => this.requestMeasure());
       }
       dispatch(...input) {
@@ -12407,7 +12422,7 @@
           // or closing, which leads us to ignore selection changes from the
           // context menu because it looks like the editor isn't focused.
           // This kludges around that.
-          return (this.dom.ownerDocument.hasFocus() || browser.safari && ((_a = this.inputState) === null || _a === undefined ? undefined : _a.lastContextMenu) > Date.now() - 3e4) &&
+          return (this.dom.ownerDocument.hasFocus() || browser.safari && ((_a = this.inputState) === null || _a === void 0 ? void 0 : _a.lastContextMenu) > Date.now() - 3e4) &&
               this.root.activeElement == this.contentDOM;
       }
       /**
@@ -12563,7 +12578,7 @@
           var _a;
           let content = dom.querySelector(".cm-content");
           let cView = content && ContentView.get(content) || ContentView.get(dom);
-          return ((_a = cView === null || cView === undefined ? undefined : cView.rootView) === null || _a === undefined ? undefined : _a.view) || null;
+          return ((_a = cView === null || cView === void 0 ? void 0 : cView.rootView) === null || _a === void 0 ? void 0 : _a.view) || null;
       }
   }
   /**
@@ -12899,7 +12914,7 @@
           let binding = scopeObj[full] || (scopeObj[full] = {
               preventDefault: false,
               stopPropagation: false,
-              run: ((_b = (_a = scopeObj._any) === null || _a === undefined ? undefined : _a.run) === null || _b === undefined ? undefined : _b.slice()) || []
+              run: ((_b = (_a = scopeObj._any) === null || _a === void 0 ? void 0 : _a.run) === null || _b === void 0 ? void 0 : _b.slice()) || []
           });
           if (command)
               binding.run.push(command);
@@ -13146,7 +13161,7 @@
               else
                   horizontal.push(!ltr && toOpen ? leftSide : toCoords.left, !ltr && fromOpen ? rightSide : fromCoords.right);
           }
-          let start = from !== null && from !== undefined ? from : line.from, end = to !== null && to !== undefined ? to : line.to;
+          let start = from !== null && from !== void 0 ? from : line.from, end = to !== null && to !== void 0 ? to : line.to;
           // Split the range by visible range and document line
           for (let r of view.visibleRanges)
               if (r.to > start && r.from < end) {
@@ -13388,7 +13403,7 @@
           let cursorPos = update.state.field(dropCursorPos);
           if (cursorPos == null) {
               if (this.cursor != null) {
-                  (_a = this.cursor) === null || _a === undefined ? undefined : _a.remove();
+                  (_a = this.cursor) === null || _a === void 0 ? void 0 : _a.remove();
                   this.cursor = null;
               }
           }
@@ -13614,7 +13629,7 @@
       var _a;
       if (_supportsTabSize == null && typeof document != "undefined" && document.body) {
           let styles = document.body.style;
-          _supportsTabSize = ((_a = styles.tabSize) !== null && _a !== undefined ? _a : styles.MozTabSize) != null;
+          _supportsTabSize = ((_a = styles.tabSize) !== null && _a !== void 0 ? _a : styles.MozTabSize) != null;
       }
       return _supportsTabSize || false;
   }
@@ -13888,7 +13903,7 @@
       });
       return [
           plugin,
-          EditorView.contentAttributes.of(view => { var _a; return ((_a = view.plugin(plugin)) === null || _a === undefined ? undefined : _a.isDown) ? showCrosshair : null; })
+          EditorView.contentAttributes.of(view => { var _a; return ((_a = view.plugin(plugin)) === null || _a === void 0 ? void 0 : _a.isDown) ? showCrosshair : null; })
       ];
   }
 
@@ -13939,7 +13954,7 @@
           for (let t of this.tooltipViews)
               if (tooltipViews.indexOf(t) < 0) {
                   this.removeTooltipView(t);
-                  (_a = t.destroy) === null || _a === undefined ? undefined : _a.call(t);
+                  (_a = t.destroy) === null || _a === void 0 ? void 0 : _a.call(t);
               }
           if (above) {
               newAbove.forEach((val, i) => above[i] = val);
@@ -13952,16 +13967,16 @@
       }
   }
   function windowSpace(view) {
-      let { win } = view;
-      return { top: 0, left: 0, bottom: win.innerHeight, right: win.innerWidth };
+      let docElt = view.dom.ownerDocument.documentElement;
+      return { top: 0, left: 0, bottom: docElt.clientHeight, right: docElt.clientWidth };
   }
   const tooltipConfig = /*@__PURE__*/Facet.define({
       combine: values => {
           var _a, _b, _c;
           return ({
-              position: browser.ios ? "absolute" : ((_a = values.find(conf => conf.position)) === null || _a === undefined ? undefined : _a.position) || "fixed",
-              parent: ((_b = values.find(conf => conf.parent)) === null || _b === undefined ? undefined : _b.parent) || null,
-              tooltipSpace: ((_c = values.find(conf => conf.tooltipSpace)) === null || _c === undefined ? undefined : _c.tooltipSpace) || windowSpace,
+              position: browser.ios ? "absolute" : ((_a = values.find(conf => conf.position)) === null || _a === void 0 ? void 0 : _a.position) || "fixed",
+              parent: ((_b = values.find(conf => conf.parent)) === null || _b === void 0 ? void 0 : _b.parent) || null,
+              tooltipSpace: ((_c = values.find(conf => conf.tooltipSpace)) === null || _c === void 0 ? void 0 : _c.tooltipSpace) || windowSpace,
           });
       }
   });
@@ -14074,12 +14089,12 @@
           this.view.win.removeEventListener("resize", this.measureSoon);
           for (let tooltipView of this.manager.tooltipViews) {
               tooltipView.dom.remove();
-              (_a = tooltipView.destroy) === null || _a === undefined ? undefined : _a.call(tooltipView);
+              (_a = tooltipView.destroy) === null || _a === void 0 ? void 0 : _a.call(tooltipView);
           }
           if (this.parent)
               this.container.remove();
-          (_b = this.resizeObserver) === null || _b === undefined ? undefined : _b.disconnect();
-          (_c = this.intersectionObserver) === null || _c === undefined ? undefined : _c.disconnect();
+          (_b = this.resizeObserver) === null || _b === void 0 ? void 0 : _b.disconnect();
+          (_c = this.intersectionObserver) === null || _c === void 0 ? void 0 : _c.disconnect();
           clearTimeout(this.measureTimeout);
       }
       readMeasure() {
@@ -14150,7 +14165,7 @@
               }
               let arrow = tooltip.arrow ? tView.dom.querySelector(".cm-tooltip-arrow") : null;
               let arrowHeight = arrow ? 7 /* Arrow.Size */ : 0;
-              let width = size.right - size.left, height = (_a = knownHeight.get(tView)) !== null && _a !== undefined ? _a : size.bottom - size.top;
+              let width = size.right - size.left, height = (_a = knownHeight.get(tView)) !== null && _a !== void 0 ? _a : size.bottom - size.top;
               let offset = tView.offset || noOffset, ltr = this.view.textDirection == Direction.LTR;
               let left = size.width > space.right - space.left
                   ? (ltr ? space.left : space.right - size.width)
@@ -14333,7 +14348,7 @@
       destroy() {
           var _a;
           for (let t of this.manager.tooltipViews)
-              (_a = t.destroy) === null || _a === undefined ? undefined : _a.call(t);
+              (_a = t.destroy) === null || _a === void 0 ? void 0 : _a.call(t);
       }
       passProp(name) {
           let value = undefined;
@@ -14359,7 +14374,7 @@
           return null;
       return {
           pos: Math.min(...tooltips.map(t => t.pos)),
-          end: Math.max(...tooltips.map(t => { var _a; return (_a = t.end) !== null && _a !== undefined ? _a : t.pos; })),
+          end: Math.max(...tooltips.map(t => { var _a; return (_a = t.end) !== null && _a !== void 0 ? _a : t.pos; })),
           create: HoverTooltipHost.create,
           above: tooltips[0].above,
           arrow: tooltips.some(t => t.arrow),
@@ -14425,7 +14440,7 @@
               side = (lastMove.x < posCoords.left ? -rtl : rtl);
           }
           let open = this.source(view, pos, side);
-          if (open === null || open === undefined ? undefined : open.then) {
+          if (open === null || open === void 0 ? void 0 : open.then) {
               let pending = this.pending = { pos };
               open.then(result => {
                   if (this.pending == pending) {
@@ -14451,7 +14466,7 @@
               this.hoverTimeout = setTimeout(this.checkHover, this.hoverTime);
           let { active, tooltip } = this;
           if (active.length && tooltip && !isInTooltip(tooltip.dom, event) || this.pending) {
-              let { pos } = active[0] || this.pending, end = (_b = (_a = active[0]) === null || _a === undefined ? undefined : _a.end) !== null && _b !== undefined ? _b : pos;
+              let { pos } = active[0] || this.pending, end = (_b = (_a = active[0]) === null || _a === void 0 ? void 0 : _a.end) !== null && _b !== void 0 ? _b : pos;
               if ((pos == end ? this.view.posAtCoords(this.lastMove) != pos
                   : !isOverRange(this.view, pos, end, event.clientX, event.clientY))) {
                   this.view.dispatch({ effects: this.setHover.of([]) });
@@ -15857,7 +15872,7 @@
       // Must go up out of overlays when those do not overlap with pos
       if (overlays)
           for (let scan = node, parent = scan.parent; parent; scan = parent, parent = scan.parent) {
-              if (scan instanceof TreeNode && scan.index < 0 && ((_a = parent.enter(pos, side, mode)) === null || _a === undefined ? undefined : _a.from) != scan.from)
+              if (scan instanceof TreeNode && scan.index < 0 && ((_a = parent.enter(pos, side, mode)) === null || _a === void 0 ? void 0 : _a.from) != scan.from)
                   node = parent;
           }
       for (;;) {
@@ -16675,7 +16690,7 @@
       let children = [], positions = [];
       while (cursor.pos > 0)
           takeNode(data.start || 0, data.bufferStart || 0, children, positions, -1, 0);
-      let length = (_a = data.length) !== null && _a !== undefined ? _a : (children.length ? positions[0] + children[0].length : 0);
+      let length = (_a = data.length) !== null && _a !== void 0 ? _a : (children.length ? positions[0] + children[0].length : 0);
       return new Tree(types[data.topID], children.reverse(), positions.reverse(), length);
   }
   const nodeSizeCache = new WeakMap;
@@ -16956,7 +16971,7 @@
           let name = typeof nameOrParent == "string" ? nameOrParent : "?";
           if (nameOrParent instanceof Tag)
               parent = nameOrParent;
-          if (parent === null || parent === undefined ? undefined : parent.base)
+          if (parent === null || parent === void 0 ? void 0 : parent.base)
               throw new Error("Can not derive from a modified tag");
           let tag = new Tag(name, [], null, []);
           tag.set.push(tag);
@@ -17843,7 +17858,7 @@
       */
       findRegions(state) {
           let lang = state.facet(language);
-          if ((lang === null || lang === undefined ? undefined : lang.data) == this.data)
+          if ((lang === null || lang === void 0 ? void 0 : lang.data) == this.data)
               return [{ from: 0, to: state.doc.length }];
           if (!lang || !lang.allowsNesting)
               return [];
@@ -18012,7 +18027,7 @@
       work(until, upto) {
           if (upto != null && upto >= this.state.doc.length)
               upto = undefined;
-          if (this.tree != Tree.empty && this.isDone(upto !== null && upto !== undefined ? upto : this.state.doc.length)) {
+          if (this.tree != Tree.empty && this.isDone(upto !== null && upto !== void 0 ? upto : this.state.doc.length)) {
               this.takeTree();
               return true;
           }
@@ -18031,10 +18046,10 @@
                   let done = this.parse.advance();
                   if (done) {
                       this.fragments = this.withoutTempSkipped(TreeFragment.addTree(done, this.fragments, this.parse.stoppedAt != null));
-                      this.treeLen = (_a = this.parse.stoppedAt) !== null && _a !== undefined ? _a : this.state.doc.length;
+                      this.treeLen = (_a = this.parse.stoppedAt) !== null && _a !== void 0 ? _a : this.state.doc.length;
                       this.tree = done;
                       this.parse = null;
-                      if (this.treeLen < (upto !== null && upto !== undefined ? upto : this.state.doc.length))
+                      if (this.treeLen < (upto !== null && upto !== void 0 ? upto : this.state.doc.length))
                           this.parse = this.startParse();
                       else
                           return true;
@@ -18236,7 +18251,7 @@
           }, 100 /* Work.MinPause */);
           return () => idle < 0 ? clearTimeout(timeout) : cancelIdleCallback(idle);
       };
-  const isInputPending = typeof navigator != "undefined" && ((_a = navigator.scheduling) === null || _a === undefined ? undefined : _a.isInputPending)
+  const isInputPending = typeof navigator != "undefined" && ((_a = navigator.scheduling) === null || _a === void 0 ? void 0 : _a.isInputPending)
       ? () => navigator.scheduling.isInputPending() : null;
   const parseWorker = /*@__PURE__*/ViewPlugin.fromClass(class ParseWorker {
       constructor(view) {
@@ -18648,7 +18663,7 @@
   }
   function delimitedStrategy(context, align, units, closing, closedAt) {
       let after = context.textAfter, space = after.match(/^\s*/)[0].length;
-      let closed = closedAt == context.pos + space;
+      let closed = closing && after.slice(space, space + closing.length) == closing || closedAt == context.pos + space;
       let aligned = bracketedAligned(context) ;
       if (aligned)
           return closed ? context.column(aligned.from) : context.column(aligned.to);
@@ -18840,7 +18855,7 @@
   function findFold(state, from, to) {
       var _a;
       let found = null;
-      (_a = state.field(foldState, false)) === null || _a === undefined ? undefined : _a.between(from, to, (from, to) => {
+      (_a = state.field(foldState, false)) === null || _a === void 0 ? void 0 : _a.between(from, to, (from, to) => {
           if (!found || found.from > from)
               found = { from, to };
       });
@@ -19040,7 +19055,7 @@
           markers,
           gutter({
               class: "cm-foldGutter",
-              markers(view) { var _a; return ((_a = view.plugin(markers)) === null || _a === undefined ? undefined : _a.markers) || RangeSet.empty; },
+              markers(view) { var _a; return ((_a = view.plugin(markers)) === null || _a === void 0 ? void 0 : _a.markers) || RangeSet.empty; },
               initialSpacer() {
                   return new FoldMarker(fullConfig, false);
               },
@@ -19150,7 +19165,7 @@
               ext.push(EditorView.styleModule.of(highlighter.module));
           themeType = highlighter.themeType;
       }
-      if (options === null || options === undefined ? undefined : options.fallback)
+      if (options === null || options === void 0 ? void 0 : options.fallback)
           ext.push(fallbackHighlighter.of(highlighter));
       else if (themeType)
           ext.push(highlighterFacet.computeN([EditorView.darkTheme], state => {
@@ -19345,7 +19360,7 @@
   }
   function matchMarkedBrackets(_state, _pos, dir, token, handle, matching, brackets) {
       let parent = token.parent, firstToken = { from: handle.from, to: handle.to };
-      let depth = 0, cursor = parent === null || parent === undefined ? undefined : parent.cursor();
+      let depth = 0, cursor = parent === null || parent === void 0 ? void 0 : parent.cursor();
       if (cursor && (dir < 0 ? cursor.childBefore(token.from) : cursor.childAfter(token.to)))
           do {
               if (dir < 0 ? cursor.to <= token.from : cursor.from >= token.to) {
@@ -19470,9 +19485,7 @@
   }
   ({
       rtl: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "rtl" }, bidiIsolate: Direction.RTL }),
-      ltr: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "ltr" }, bidiIsolate: Direction.LTR }),
-      auto: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "auto" }, bidiIsolate: null })
-  });
+      ltr: /*@__PURE__*/Decoration.mark({ class: "cm-iso", inclusive: true, attributes: { dir: "ltr" }, bidiIsolate: Direction.LTR })});
 
   /**
   Comment or uncomment the current selection. Will use line comments
@@ -19791,9 +19804,9 @@
       toJSON() {
           var _a, _b, _c;
           return {
-              changes: (_a = this.changes) === null || _a === undefined ? undefined : _a.toJSON(),
-              mapped: (_b = this.mapped) === null || _b === undefined ? undefined : _b.toJSON(),
-              startSelection: (_c = this.startSelection) === null || _c === undefined ? undefined : _c.toJSON(),
+              changes: (_a = this.changes) === null || _a === void 0 ? void 0 : _a.toJSON(),
+              mapped: (_b = this.mapped) === null || _b === void 0 ? void 0 : _b.toJSON(),
+              startSelection: (_c = this.startSelection) === null || _c === void 0 ? void 0 : _c.toJSON(),
               selectionsAfter: this.selectionsAfter.map(s => s.toJSON())
           };
       }
@@ -20084,10 +20097,10 @@
       if (selfScroll) {
           for (let source of view.state.facet(EditorView.scrollMargins)) {
               let margins = source(view);
-              if (margins === null || margins === undefined ? undefined : margins.top)
-                  marginTop = Math.max(margins === null || margins === undefined ? undefined : margins.top, marginTop);
-              if (margins === null || margins === undefined ? undefined : margins.bottom)
-                  marginBottom = Math.max(margins === null || margins === undefined ? undefined : margins.bottom, marginBottom);
+              if (margins === null || margins === void 0 ? void 0 : margins.top)
+                  marginTop = Math.max(margins === null || margins === void 0 ? void 0 : margins.top, marginTop);
+              if (margins === null || margins === void 0 ? void 0 : margins.bottom)
+                  marginBottom = Math.max(margins === null || margins === void 0 ? void 0 : margins.bottom, marginBottom);
           }
           height = view.scrollDOM.clientHeight - marginTop - marginBottom;
       }
@@ -21094,8 +21107,8 @@
           this.value = empty;
           if (/\\[sWDnr]|\n|\r|\[\^/.test(query))
               return new MultilineRegExpCursor(text, query, options, from, to);
-          this.re = new RegExp(query, baseFlags + ((options === null || options === undefined ? undefined : options.ignoreCase) ? "i" : ""));
-          this.test = options === null || options === undefined ? undefined : options.test;
+          this.re = new RegExp(query, baseFlags + ((options === null || options === void 0 ? void 0 : options.ignoreCase) ? "i" : ""));
+          this.test = options === null || options === void 0 ? void 0 : options.test;
           this.iter = text.iter();
           let startLine = text.lineAt(from);
           this.curLineStart = startLine.from;
@@ -21185,8 +21198,8 @@
           this.done = false;
           this.value = empty;
           this.matchPos = toCharEnd(text, from);
-          this.re = new RegExp(query, baseFlags + ((options === null || options === undefined ? undefined : options.ignoreCase) ? "i" : ""));
-          this.test = options === null || options === undefined ? undefined : options.test;
+          this.re = new RegExp(query, baseFlags + ((options === null || options === void 0 ? void 0 : options.ignoreCase) ? "i" : ""));
+          this.test = options === null || options === void 0 ? void 0 : options.test;
           this.flat = FlattenedDoc.get(text, from, this.chunkEnd(from + 5000 /* Chunk.Base */));
       }
       chunkEnd(pos) {
@@ -21263,7 +21276,15 @@
               event.preventDefault();
               go();
           }
-      }, crelt("label", view.state.phrase("Go to line"), ": ", input), " ", crelt("button", { class: "cm-button", type: "submit" }, view.state.phrase("go")));
+      }, crelt("label", view.state.phrase("Go to line"), ": ", input), " ", crelt("button", { class: "cm-button", type: "submit" }, view.state.phrase("go")), crelt("button", {
+          name: "close",
+          onclick: () => {
+              view.dispatch({ effects: dialogEffect.of(false) });
+              view.focus();
+          },
+          "aria-label": view.state.phrase("close"),
+          type: "button"
+      }, ["×"]));
       function go() {
           let match = /^([+-])?(\d+)?(:\d+)?(%)?$/.exec(input.value);
           if (!match)
@@ -21327,7 +21348,17 @@
   const baseTheme$1$1 = /*@__PURE__*/EditorView.baseTheme({
       ".cm-panel.cm-gotoLine": {
           padding: "2px 6px 4px",
-          "& label": { fontSize: "80%" }
+          position: "relative",
+          "& label": { fontSize: "80%" },
+          "& [name=close]": {
+              position: "absolute",
+              top: "0", bottom: "0",
+              right: "4px",
+              backgroundColor: "inherit",
+              border: "none",
+              font: "inherit",
+              padding: "0"
+          }
       }
   });
 
@@ -21661,10 +21692,18 @@
               this.prevMatchInRange(state, curTo, state.doc.length);
       }
       getReplacement(result) {
-          return this.spec.unquote(this.spec.replace).replace(/\$([$&\d+])/g, (m, i) => i == "$" ? "$"
-              : i == "&" ? result.match[0]
-                  : i != "0" && +i < result.match.length ? result.match[i]
-                      : m);
+          return this.spec.unquote(this.spec.replace).replace(/\$([$&]|\d+)/g, (m, i) => {
+              if (i == "&")
+                  return result.match[0];
+              if (i == "$")
+                  return "$";
+              for (let l = i.length; l > 0; l--) {
+                  let n = +i.slice(0, l);
+                  if (n > 0 && n < result.match.length)
+                      return result.match[n] + i.slice(l);
+              }
+              return m;
+          });
       }
       matchAll(state, limit) {
           let cursor = regexpCursor(this.spec, state, 0, state.doc.length), ranges = [];
@@ -21886,11 +21925,11 @@
           return fallback;
       let config = state.facet(searchConfigFacet);
       return new SearchQuery({
-          search: ((_a = fallback === null || fallback === undefined ? undefined : fallback.literal) !== null && _a !== undefined ? _a : config.literal) ? selText : selText.replace(/\n/g, "\\n"),
-          caseSensitive: (_b = fallback === null || fallback === undefined ? undefined : fallback.caseSensitive) !== null && _b !== undefined ? _b : config.caseSensitive,
-          literal: (_c = fallback === null || fallback === undefined ? undefined : fallback.literal) !== null && _c !== undefined ? _c : config.literal,
-          regexp: (_d = fallback === null || fallback === undefined ? undefined : fallback.regexp) !== null && _d !== undefined ? _d : config.regexp,
-          wholeWord: (_e = fallback === null || fallback === undefined ? undefined : fallback.wholeWord) !== null && _e !== undefined ? _e : config.wholeWord
+          search: ((_a = fallback === null || fallback === void 0 ? void 0 : fallback.literal) !== null && _a !== void 0 ? _a : config.literal) ? selText : selText.replace(/\n/g, "\\n"),
+          caseSensitive: (_b = fallback === null || fallback === void 0 ? void 0 : fallback.caseSensitive) !== null && _b !== void 0 ? _b : config.caseSensitive,
+          literal: (_c = fallback === null || fallback === void 0 ? void 0 : fallback.literal) !== null && _c !== void 0 ? _c : config.literal,
+          regexp: (_d = fallback === null || fallback === void 0 ? void 0 : fallback.regexp) !== null && _d !== void 0 ? _d : config.regexp,
+          wholeWord: (_e = fallback === null || fallback === void 0 ? void 0 : fallback.wholeWord) !== null && _e !== void 0 ? _e : config.wholeWord
       });
   }
   function getSearchInput(view) {
@@ -22275,7 +22314,7 @@
       let addStart = start && source[0] != "^", addEnd = source[source.length - 1] != "$";
       if (!addStart && !addEnd)
           return expr;
-      return new RegExp(`${addStart ? "^" : ""}(?:${source})${addEnd ? "$" : ""}`, (_a = expr.flags) !== null && _a !== undefined ? _a : (expr.ignoreCase ? "i" : ""));
+      return new RegExp(`${addStart ? "^" : ""}(?:${source})${addEnd ? "$" : ""}`, (_a = expr.flags) !== null && _a !== void 0 ? _a : (expr.ignoreCase ? "i" : ""));
   }
   /**
   This annotation is added to transactions that are produced by
@@ -22659,7 +22698,7 @@
                   this.showOptions(options, cState.id);
               }
               this.updateSel();
-              if (disabled != ((_a = prevState.open) === null || _a === undefined ? undefined : _a.disabled))
+              if (disabled != ((_a = prevState.open) === null || _a === void 0 ? void 0 : _a.disabled))
                   this.dom.classList.toggle("cm-tooltip-autocomplete-disabled", !!disabled);
           }
       }
@@ -22752,8 +22791,8 @@
           let selRect = sel.getBoundingClientRect();
           let space = this.space;
           if (!space) {
-              let win = this.dom.ownerDocument.defaultView || window;
-              space = { left: 0, top: 0, right: win.innerWidth, bottom: win.innerHeight };
+              let docElt = this.dom.ownerDocument.documentElement;
+              space = { left: 0, top: 0, right: docElt.clientWidth, bottom: docElt.clientHeight };
           }
           if (selRect.top > Math.min(space.bottom, listRect.bottom) - 10 ||
               selRect.bottom < Math.max(space.top, listRect.top) + 10)
@@ -22778,6 +22817,11 @@
           ul.setAttribute("role", "listbox");
           ul.setAttribute("aria-expanded", "true");
           ul.setAttribute("aria-label", this.view.state.phrase("Completions"));
+          ul.addEventListener("mousedown", e => {
+              // Prevent focus change when clicking the scrollbar
+              if (e.target == ul)
+                  e.preventDefault();
+          });
           let curSection = null;
           for (let i = range.from; i < range.to; i++) {
               let { completion, match } = options[i], { section } = completion;
@@ -22878,7 +22922,7 @@
           }
       if (sections) {
           let sectionOrder = Object.create(null), pos = 0;
-          let cmp = (a, b) => { var _a, _b; return ((_a = a.rank) !== null && _a !== undefined ? _a : 1e9) - ((_b = b.rank) !== null && _b !== undefined ? _b : 1e9) || (a.name < b.name ? -1 : 1); };
+          let cmp = (a, b) => { var _a, _b; return ((_a = a.rank) !== null && _a !== void 0 ? _a : 1e9) - ((_b = b.rank) !== null && _b !== void 0 ? _b : 1e9) || (a.name < b.name ? -1 : 1); };
           for (let s of sections.sort(cmp)) {
               pos -= 1e5;
               sectionOrder[s.name] = pos;
@@ -23084,7 +23128,7 @@
               return new ActiveResult(this.source, this.explicit, limit, result, from, to);
           if (result.update &&
               (result = result.update(result, from, to, new CompletionContext(tr.state, pos, false))))
-              return new ActiveResult(this.source, this.explicit, limit, result, result.from, (_a = result.to) !== null && _a !== undefined ? _a : cur(tr.state));
+              return new ActiveResult(this.source, this.explicit, limit, result, result.from, (_a = result.to) !== null && _a !== void 0 ? _a : cur(tr.state));
           return new ActiveSource(this.source, 1 /* State.Pending */, this.explicit);
       }
       map(mapping) {
@@ -23301,7 +23345,7 @@
               if (query.done) {
                   let pos = cur(query.updates.length ? query.updates[0].startState : this.view.state);
                   let limit = Math.min(pos, query.done.from + (query.active.explicit ? 0 : 1));
-                  let active = new ActiveResult(query.active.source, query.active.explicit, limit, query.done, query.done.from, (_a = query.done.to) !== null && _a !== undefined ? _a : pos);
+                  let active = new ActiveResult(query.active.source, query.active.explicit, limit, query.done, query.done.from, (_a = query.done.to) !== null && _a !== void 0 ? _a : pos);
                   // Replay the transactions that happened since the start of
                   // the request and see if that preserves the result
                   for (let tr of query.updates)
@@ -23533,7 +23577,7 @@
   function closeBrackets() {
       return [inputHandler, bracketState];
   }
-  const definedClosing = "()[]{}<>";
+  const definedClosing = "()[]{}<>«»»«［］｛｝";
   function closing(ch) {
       for (let i = 0; i < definedClosing.length; i += 2)
           if (definedClosing.charCodeAt(i) == ch)
@@ -24020,7 +24064,7 @@
   function renderDiagnostic(view, diagnostic, inPanel) {
       var _a;
       let keys = inPanel ? assignKeys(diagnostic.actions) : [];
-      return crelt("li", { class: "cm-diagnostic cm-diagnostic-" + diagnostic.severity }, crelt("span", { class: "cm-diagnosticText" }, diagnostic.renderMessage ? diagnostic.renderMessage(view) : diagnostic.message), (_a = diagnostic.actions) === null || _a === undefined ? undefined : _a.map((action, i) => {
+      return crelt("li", { class: "cm-diagnostic cm-diagnostic-" + diagnostic.severity }, crelt("span", { class: "cm-diagnosticText" }, diagnostic.renderMessage ? diagnostic.renderMessage(view) : diagnostic.message), (_a = diagnostic.actions) === null || _a === void 0 ? void 0 : _a.map((action, i) => {
           let fired = false, click = (e) => {
               e.preventDefault();
               if (fired)
@@ -25789,17 +25833,10 @@
     Z_OK:               0,
     Z_STREAM_END:       1,
     Z_NEED_DICT:        2,
-    Z_ERRNO:           -1,
     Z_STREAM_ERROR:    -2,
     Z_DATA_ERROR:      -3,
     Z_MEM_ERROR:       -4,
     Z_BUF_ERROR:       -5,
-    //Z_VERSION_ERROR: -6,
-
-    /* compression levels */
-    Z_NO_COMPRESSION:         0,
-    Z_BEST_SPEED:             1,
-    Z_BEST_COMPRESSION:       9,
     Z_DEFAULT_COMPRESSION:   -1,
 
 
@@ -25809,9 +25846,6 @@
     Z_FIXED:                  4,
     Z_DEFAULT_STRATEGY:       0,
 
-    /* Possible values of the data_type field (though see inflate()) */
-    Z_BINARY:                 0,
-    Z_TEXT:                   1,
     //Z_ASCII:                1, // = Z_TEXT (deprecated)
     Z_UNKNOWN:                2,
 
@@ -28490,51 +28524,10 @@
 
     return deflator.result;
   }
-
-
-  /**
-   * deflateRaw(data[, options]) -> Uint8Array
-   * - data (Uint8Array|ArrayBuffer|String): input data to compress.
-   * - options (Object): zlib deflate options.
-   *
-   * The same as [[deflate]], but creates raw data, without wrapper
-   * (header and adler32 crc).
-   **/
-  function deflateRaw$1(input, options) {
-    options = options || {};
-    options.raw = true;
-    return deflate$1(input, options);
-  }
-
-
-  /**
-   * gzip(data[, options]) -> Uint8Array
-   * - data (Uint8Array|ArrayBuffer|String): input data to compress.
-   * - options (Object): zlib deflate options.
-   *
-   * The same as [[deflate]], but create gzip wrapper instead of
-   * deflate one.
-   **/
-  function gzip$1(input, options) {
-    options = options || {};
-    options.gzip = true;
-    return deflate$1(input, options);
-  }
-
-
-  var Deflate_1$1 = Deflate$1;
   var deflate_2 = deflate$1;
-  var deflateRaw_1$1 = deflateRaw$1;
-  var gzip_1$1 = gzip$1;
-  var constants$1 = constants$2;
 
   var deflate_1$1 = {
-  	Deflate: Deflate_1$1,
-  	deflate: deflate_2,
-  	deflateRaw: deflateRaw_1$1,
-  	gzip: gzip_1$1,
-  	constants: constants$1
-  };
+  	deflate: deflate_2};
 
   // (C) 1995-2013 Jean-loup Gailly and Mark Adler
   // (C) 2014-2017 Vitaly Puzrin and Andrey Tupitsin
@@ -31233,50 +31226,14 @@
 
     return inflator.result;
   }
-
-
-  /**
-   * inflateRaw(data[, options]) -> Uint8Array|String
-   * - data (Uint8Array|ArrayBuffer): input data to decompress.
-   * - options (Object): zlib inflate options.
-   *
-   * The same as [[inflate]], but creates raw data, without wrapper
-   * (header and adler32 crc).
-   **/
-  function inflateRaw$1(input, options) {
-    options = options || {};
-    options.raw = true;
-    return inflate$1(input, options);
-  }
-
-
-  /**
-   * ungzip(data[, options]) -> Uint8Array|String
-   * - data (Uint8Array|ArrayBuffer): input data to decompress.
-   * - options (Object): zlib inflate options.
-   *
-   * Just shortcut to [[inflate]], because it autodetects format
-   * by header.content. Done for convenience.
-   **/
-
-
-  var Inflate_1$1 = Inflate$1;
   var inflate_2 = inflate$1;
-  var inflateRaw_1$1 = inflateRaw$1;
-  var ungzip$1 = inflate$1;
-  var constants = constants$2;
 
   var inflate_1$1 = {
-  	Inflate: Inflate_1$1,
-  	inflate: inflate_2,
-  	inflateRaw: inflateRaw_1$1,
-  	ungzip: ungzip$1,
-  	constants: constants
-  };
+  	inflate: inflate_2};
 
-  const { Deflate, deflate, deflateRaw, gzip } = deflate_1$1;
+  const { deflate} = deflate_1$1;
 
-  const { Inflate, inflate, inflateRaw, ungzip } = inflate_1$1;
+  const { inflate} = inflate_1$1;
   var deflate_1 = deflate;
   var inflate_1 = inflate;
 
