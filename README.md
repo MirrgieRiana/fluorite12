@@ -66,7 +66,7 @@ Download the `flc` binary to the `./fluorite12`, and register it in `/usr/local/
 
 # DOCUMENTATION
 
-- [Japanese](doc/ja/INDEX.md)
+- [Japanese](https://mirrgieriana.github.io/fluorite12/doc/ja/INDEX)
 
 ---
 
