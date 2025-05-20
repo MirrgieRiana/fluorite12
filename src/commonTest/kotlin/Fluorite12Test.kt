@@ -1,3 +1,4 @@
+import com.ionspin.kotlin.bignum.integer.toBigInteger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.Evaluator
@@ -77,6 +78,20 @@ class Fluorite12Test {
 
         assertEquals(-10, eval("-10").int) // 負の整数が書ける
         assertEquals(-1.1, eval("-1.1").double, 0.001) // 負の小数が書ける
+
+        // 大きな桁の整数リテラル
+        assertEquals("-1000000000000000000000000000000000".toBigInteger(), eval("-1000000000000000000000000000000000").big)
+        assertEquals("-9223372036854775809".toBigInteger(), eval("-9223372036854775809").big)
+        assertEquals("-9223372036854775808".toLong(), eval("-9223372036854775808").long)
+        assertEquals("-9223372036854775807".toLong(), eval("-9223372036854775807").long)
+        assertEquals("-2147483649".toLong(), eval("-2147483649").long)
+        assertEquals("-2147483648".toInt(), eval("-2147483648").int)
+        assertEquals("-2147483647".toInt(), eval("-2147483647").int)
+        assertEquals("2147483647".toInt(), eval("2147483647").int)
+        assertEquals("2147483648".toLong(), eval("2147483648").long)
+        assertEquals("9223372036854775807".toLong(), eval("9223372036854775807").long)
+        assertEquals("9223372036854775808".toBigInteger(), eval("9223372036854775808").big)
+        assertEquals("1000000000000000000000000000000000".toBigInteger(), eval("1000000000000000000000000000000000").big)
     }
 
     @Test
@@ -277,6 +292,8 @@ class Fluorite12Test {
 
 
         assertEquals(123, eval("+{`+_`: this -> 123}{}").int) // オブジェクトの数値化はTO_NUMBERメソッドでオーバーライドできる
+
+        assertEquals("1000000000000000000000000000000000000".toBigInteger(), eval("+'1000000000000000000000000000000000000'").big) // 大きな数の数値化
     }
 
     @Test

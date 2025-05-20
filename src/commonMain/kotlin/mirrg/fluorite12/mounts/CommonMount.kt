@@ -2,10 +2,12 @@ package mirrg.fluorite12.mounts
 
 import kotlinx.coroutines.delay
 import mirrg.fluorite12.compilers.objects.FluoriteArray
+import mirrg.fluorite12.compilers.objects.FluoriteBig
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
 import mirrg.fluorite12.compilers.objects.FluoriteFunction
 import mirrg.fluorite12.compilers.objects.FluoriteInt
+import mirrg.fluorite12.compilers.objects.FluoriteLong
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteNumber
 import mirrg.fluorite12.compilers.objects.FluoriteObject
@@ -30,6 +32,8 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         "VALUE" to FluoriteValue.fluoriteClass,
         "NULL_CLASS" to FluoriteNull.fluoriteClass,
         "INT" to FluoriteInt.fluoriteClass,
+        "LONG" to FluoriteLong.fluoriteClass,
+        "BIG" to FluoriteBig.fluoriteClass,
         "DOUBLE" to FluoriteDouble.fluoriteClass,
         "BOOLEAN" to FluoriteBoolean.fluoriteClass,
         "STRING" to FluoriteString.fluoriteClass,
@@ -258,7 +262,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         "SLEEP" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 val time = arguments[0] as FluoriteNumber
-                delay(time.toInt().toLong())
+                delay(time.toLong())
                 FluoriteNull
             } else {
                 usage("SLEEP(milliseconds: NUMBER): NULL")

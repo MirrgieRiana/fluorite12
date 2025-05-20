@@ -7,9 +7,11 @@ import mirrg.fluorite12.Fluorite12Grammar
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.compilers.compileToGetter
 import mirrg.fluorite12.compilers.objects.FluoriteArray
+import mirrg.fluorite12.compilers.objects.FluoriteBig
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
 import mirrg.fluorite12.compilers.objects.FluoriteInt
+import mirrg.fluorite12.compilers.objects.FluoriteLong
 import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
@@ -31,6 +33,8 @@ suspend fun eval(src: String): FluoriteValue {
 }
 
 val FluoriteValue.int get() = (this as FluoriteInt).value
+val FluoriteValue.long get() = (this as FluoriteLong).value
+val FluoriteValue.big get() = (this as FluoriteBig).value
 val FluoriteValue.double get() = (this as FluoriteDouble).value
 val FluoriteValue.boolean get() = (this as FluoriteBoolean).value
 val FluoriteValue.string get() = (this as FluoriteString).value
