@@ -16,7 +16,7 @@ class ArrowBracketsNode(val type: BracketsType, val left: TokenMatch, val argume
 class BracketsNode(val type: BracketsType, val left: TokenMatch, val main: Node, val right: TokenMatch) : Node()
 class RightArrowBracketsNode(val type: BracketsType, val main: Node, val left: TokenMatch, val arguments: Node, val arrow: List<TokenMatch>, val body: Node, val right: TokenMatch) : Node()
 class RightBracketsNode(val type: BracketsType, val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()
-class RightNode(val left: Node, val right: List<TokenMatch>) : Node()
+class RightNode(val type: UnaryOperatorType, val left: Node, val right: List<TokenMatch>) : Node()
 class LeftNode(val type: UnaryOperatorType, val left: List<TokenMatch>, val right: Node) : Node()
 class InfixNode(val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
 class ComparisonsNode(val nodes: List<Node>, val operators: List<List<TokenMatch>>) : Node()

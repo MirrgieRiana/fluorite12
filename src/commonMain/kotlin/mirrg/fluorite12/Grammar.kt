@@ -260,15 +260,15 @@ class Fluorite12Grammar : Grammar<Node>() {
         -b * +period * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
         -b * +(colon * colon) * -b * factor map { { main -> InfixNode(main, it.t1, it.t2) } },
 
-        -b * +(period * plus) map { { main -> RightNode(main, it) } },
-        -b * +(period * minus) map { { main -> RightNode(main, it) } },
-        -b * +(period * question) map { { main -> RightNode(main, it) } },
-        -b * +(period * exclamation * exclamation) map { { main -> RightNode(main, it) } },
-        -b * +(period * exclamation) map { { main -> RightNode(main, it) } },
-        -b * +(period * ampersand) map { { main -> RightNode(main, it) } },
-        -b * +(period * dollar * sharp) map { { main -> RightNode(main, it) } },
-        -b * +(period * dollar * ampersand) map { { main -> RightNode(main, it) } },
-        -b * +(period * dollar * asterisk) map { { main -> RightNode(main, it) } },
+        -b * +(period * plus) map { { main -> RightNode(UnaryOperatorType.PLUS, main, it) } },
+        -b * +(period * minus) map { { main -> RightNode(UnaryOperatorType.MINUS, main, it) } },
+        -b * +(period * question) map { { main -> RightNode(UnaryOperatorType.QUESTION, main, it) } },
+        -b * +(period * exclamation * exclamation) map { { main -> RightNode(UnaryOperatorType.EXCLAMATION_EXCLAMATION, main, it) } },
+        -b * +(period * exclamation) map { { main -> RightNode(UnaryOperatorType.EXCLAMATION, main, it) } },
+        -b * +(period * ampersand) map { { main -> RightNode(UnaryOperatorType.AMPERSAND, main, it) } },
+        -b * +(period * dollar * sharp) map { { main -> RightNode(UnaryOperatorType.DOLLAR_SHARP, main, it) } },
+        -b * +(period * dollar * ampersand) map { { main -> RightNode(UnaryOperatorType.DOLLAR_AMPERSAND, main, it) } },
+        -b * +(period * dollar * asterisk) map { { main -> RightNode(UnaryOperatorType.DOLLAR_ASTERISK, main, it) } },
     )
     val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
     val pow: Parser<Node> by right * optional(-s * +circumflex * -b * cachedParser { left }) map {

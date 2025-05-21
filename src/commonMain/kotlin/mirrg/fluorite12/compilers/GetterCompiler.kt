@@ -167,25 +167,7 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
         }
 
-        is RightNode -> when {
-            node.right.text.startsWith(".") -> compileUnaryOperatorToGetter(run {
-                when (node.right.text.drop(1)) {
-                    "+" -> LeftOperatorType.PLUS
-                    "-" -> LeftOperatorType.MINUS
-                    "?" -> LeftOperatorType.QUESTION
-                    "!" -> LeftOperatorType.EXCLAMATION
-                    "&" -> LeftOperatorType.AMPERSAND
-                    "$#" -> LeftOperatorType.DOLLAR_SHARP
-                    "$&" -> LeftOperatorType.DOLLAR_AMPERSAND
-                    "$*" -> LeftOperatorType.DOLLAR_ASTERISK
-                    "@" -> LeftOperatorType.AT
-                    "!!" -> LeftOperatorType.EXCLAMATION_EXCLAMATION
-                    else -> throw IllegalArgumentException("Unknown operator: A ${node.right.text}")
-                }
-            }, node.left)
-
-            else -> throw IllegalArgumentException("Unknown operator: A ${node.right.text}")
-        }
+        is RightNode -> compileUnaryOperatorToGetter(node.type, node.left)
 
         is RightArrowBracketsNode -> when (node.type) {
             BracketsType.ROUND -> {
