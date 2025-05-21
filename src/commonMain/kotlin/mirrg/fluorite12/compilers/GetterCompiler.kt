@@ -15,6 +15,7 @@ import mirrg.fluorite12.Frame
 import mirrg.fluorite12.HexadecimalNode
 import mirrg.fluorite12.IdentifierNode
 import mirrg.fluorite12.InfixNode
+import mirrg.fluorite12.InfixOperatorType
 import mirrg.fluorite12.IntegerNode
 import mirrg.fluorite12.LeftNode
 import mirrg.fluorite12.LiteralStringContent
@@ -171,7 +172,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is RightArrowBracketsNode -> when (node.type) {
             BracketsType.ROUND -> {
-                if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
+                if (node.main is InfixNode && node.main.type == InfixOperatorType.COLON_COLON) { // メソッド呼出し
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
                     val receiverGetter = compileToGetter(node.main.left)
                     val name = node.main.right.string
@@ -225,7 +226,7 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
 
             BracketsType.SQUARE -> {
-                if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
+                if (node.main is InfixNode && node.main.type == InfixOperatorType.COLON_COLON) { // メソッド呼出し
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
                     val receiverGetter = compileToGetter(node.main.left)
                     val name = node.main.right.string
@@ -283,7 +284,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is RightBracketsNode -> when (node.type) {
             BracketsType.ROUND -> {
-                if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
+                if (node.main is InfixNode && node.main.type == InfixOperatorType.COLON_COLON) { // メソッド呼出し
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
                     val receiverGetter = compileToGetter(node.main.left)
                     val name = node.main.right.string
@@ -309,7 +310,7 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
 
             BracketsType.SQUARE -> {
-                if (node.main is InfixNode && node.main.operator.text == "::") { // メソッド呼出し
+                if (node.main is InfixNode && node.main.type == InfixOperatorType.COLON_COLON) { // メソッド呼出し
                     if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
                     val receiverGetter = compileToGetter(node.main.left)
                     val name = node.main.right.string
@@ -344,7 +345,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is LeftNode -> compileUnaryOperatorToGetter(node.type, node.right)
 
-        is InfixNode -> compileInfixOperatorToGetter(node.operator.text, node.left, node.right)
+        is InfixNode -> compileInfixOperatorToGetter(node.type, node.left, node.right)
 
         is ComparisonsNode -> {
             val termGetters = node.nodes.map { compileToGetter(it) }
@@ -401,9 +402,9 @@ private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
     }
 }
 
-private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: Node): Getter {
-    return when (text) {
-        "." -> {
+private fun Frame.compileInfixOperatorToGetter(type: InfixOperatorType, left: Node, right: Node): Getter {
+    return when (type) {
+        InfixOperatorType.PERIOD -> {
             val receiverGetter = compileToGetter(left)
             val nameGetter = when (right) {
                 is IdentifierNode -> LiteralGetter(FluoriteString(right.string))
@@ -412,7 +413,7 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             ItemAccessGetter(receiverGetter, nameGetter)
         }
 
-        "::" -> {
+        InfixOperatorType.COLON_COLON -> {
             if (right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: $right")
             val receiverGetter = compileToGetter(left)
             val name = right.string
@@ -421,22 +422,22 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true)
         }
 
-        "+" -> PlusGetter(compileToGetter(left), compileToGetter(right))
-        "&" -> StringConcatenationGetter(listOf(ConversionStringGetter(compileToGetter(left)), ConversionStringGetter(compileToGetter(right))))
-        "-" -> MinusGetter(compileToGetter(left), compileToGetter(right))
-        "*" -> TimesGetter(compileToGetter(left), compileToGetter(right))
-        "/" -> DivGetter(compileToGetter(left), compileToGetter(right))
-        "%%" -> DivisibleGetter(compileToGetter(left), compileToGetter(right))
-        "%" -> ModGetter(compileToGetter(left), compileToGetter(right))
-        "^" -> PowerGetter(compileToGetter(left), compileToGetter(right))
-        ".." -> RangeGetter(compileToGetter(left), compileToGetter(right))
-        "<=>" -> SpaceshipGetter(compileToGetter(left), compileToGetter(right))
-        "~" -> ExclusiveRangeGetter(compileToGetter(left), compileToGetter(right))
-        "&&" -> AndGetter(compileToGetter(left), compileToGetter(right))
-        "||" -> OrGetter(compileToGetter(left), compileToGetter(right))
-        "?:" -> ElvisGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.PLUS -> PlusGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.AMPERSAND -> StringConcatenationGetter(listOf(ConversionStringGetter(compileToGetter(left)), ConversionStringGetter(compileToGetter(right))))
+        InfixOperatorType.MINUS -> MinusGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.ASTERISK -> TimesGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.SLASH -> DivGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.PERCENT_PERCENT -> DivisibleGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.PERCENT -> ModGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.CIRCUMFLEX -> PowerGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.PERIOD_PERIOD -> RangeGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.LESS_EQUAL_GREATER -> SpaceshipGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.TILDE -> ExclusiveRangeGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.AMPERSAND_AMPERSAND -> AndGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.PIPE_PIPE -> OrGetter(compileToGetter(left), compileToGetter(right))
+        InfixOperatorType.QUESTION_COLON -> ElvisGetter(compileToGetter(left), compileToGetter(right))
 
-        "!?" -> {
+        InfixOperatorType.EXCLAMATION_QUESTION -> {
             val (name, rightNode) = if (right is ArrowBracketsNode && right.type == BracketsType.ROUND) {
                 require(right.arguments is IdentifierNode)
                 Pair(right.arguments.string, right.body)
@@ -452,7 +453,7 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             }
         }
 
-        ":" -> {
+        InfixOperatorType.COLON -> {
             val leftGetter = when (left) {
                 is IdentifierNode -> LiteralGetter(FluoriteString(left.string))
                 else -> compileToGetter(left)
@@ -460,13 +461,13 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             EntryGetter(leftGetter, compileToGetter(right))
         }
 
-        "=" -> {
+        InfixOperatorType.EQUAL -> {
             val setter = compileToSetter(left)
             val getter = compileToGetter(right)
             AssignmentGetter(setter, getter)
         }
 
-        "->" -> {
+        InfixOperatorType.MINUS_GREATER -> {
             val commasNode = if (left is BracketsNode && left.type == BracketsType.ROUND) {
                 left.main
             } else {
@@ -489,9 +490,9 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
         }
 
-        "|" -> {
+        InfixOperatorType.PIPE -> {
             val streamGetter = compileToGetter(left)
-            val (variable, contentNode) = if (right is InfixNode && right.operator.text == "=>") {
+            val (variable, contentNode) = if (right is InfixNode && right.type == InfixOperatorType.EQUAL_GREATER) {
                 require(right.left is IdentifierNode)
                 Pair(right.left.string, right.right)
             } else {
@@ -503,18 +504,18 @@ private fun Frame.compileInfixOperatorToGetter(text: String, left: Node, right: 
             PipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
         }
 
-        ">>" -> {
+        InfixOperatorType.GREATER_GREATER -> {
             val valueGetter = compileToGetter(left)
             val functionGetter = compileToGetter(right)
             FunctionInvocationGetter(functionGetter, listOf(valueGetter))
         }
 
-        "<<" -> {
+        InfixOperatorType.LESS_LESS -> {
             val valueGetter = compileToGetter(right)
             val functionGetter = compileToGetter(left)
             FunctionInvocationGetter(functionGetter, listOf(valueGetter))
         }
 
-        else -> throw IllegalArgumentException("Unknown operator: A $text B")
+        else -> throw IllegalArgumentException("Unknown operator: A $type B")
     }
 }

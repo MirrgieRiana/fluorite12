@@ -18,7 +18,7 @@ class RightArrowBracketsNode(val type: BracketsType, val main: Node, val left: T
 class RightBracketsNode(val type: BracketsType, val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()
 class RightNode(val type: UnaryOperatorType, val left: Node, val right: List<TokenMatch>) : Node()
 class LeftNode(val type: UnaryOperatorType, val left: List<TokenMatch>, val right: Node) : Node()
-class InfixNode(val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
+class InfixNode(val type: InfixOperatorType, val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
 class ComparisonsNode(val nodes: List<Node>, val operators: List<List<TokenMatch>>) : Node()
 class ConditionNode(val condition: Node, val question: TokenMatch, val ok: Node, val colon: TokenMatch, val ng: Node) : Node()
 class CommasNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
@@ -41,6 +41,34 @@ enum class UnaryOperatorType {
     DOLLAR_ASTERISK,
     AT,
     EXCLAMATION_EXCLAMATION,
+}
+
+enum class InfixOperatorType {
+    PERIOD,
+    COLON_COLON,
+    PLUS,
+    AMPERSAND,
+    MINUS,
+    ASTERISK,
+    SLASH,
+    PERCENT_PERCENT,
+    PERCENT,
+    CIRCUMFLEX,
+    PERIOD_PERIOD,
+    LESS_EQUAL_GREATER,
+    TILDE,
+    AMPERSAND_AMPERSAND,
+    PIPE_PIPE,
+    QUESTION_COLON,
+    EXCLAMATION_QUESTION,
+    COLON,
+    EQUAL,
+    MINUS_GREATER,
+    PIPE,
+    GREATER_GREATER,
+    LESS_LESS,
+    COLON_EQUAL,
+    EQUAL_GREATER,
 }
 
 sealed class StringContent

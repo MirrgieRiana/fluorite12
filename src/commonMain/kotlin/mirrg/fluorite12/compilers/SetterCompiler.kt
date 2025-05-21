@@ -4,6 +4,7 @@ import mirrg.fluorite12.BracketsType
 import mirrg.fluorite12.Frame
 import mirrg.fluorite12.IdentifierNode
 import mirrg.fluorite12.InfixNode
+import mirrg.fluorite12.InfixOperatorType
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.RightBracketsNode
 import mirrg.fluorite12.compilers.objects.FluoriteString
@@ -13,7 +14,6 @@ import mirrg.fluorite12.operations.ItemAccessSetter
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.Setter
 import mirrg.fluorite12.operations.VariableSetter
-import mirrg.fluorite12.text
 
 fun Frame.compileToSetter(node: Node): Setter {
     return when {
@@ -28,7 +28,7 @@ fun Frame.compileToSetter(node: Node): Setter {
             else -> throw IllegalArgumentException("Illegal setter: ${node::class}")
         }
 
-        node is InfixNode && node.operator.text == "." -> {
+        node is InfixNode && node.type == InfixOperatorType.PERIOD -> {
             val receiverGetter = compileToGetter(node.left)
             val keyGetter = when (node.right) {
                 is IdentifierNode -> LiteralGetter(FluoriteString(node.right.string))
