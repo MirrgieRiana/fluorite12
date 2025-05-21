@@ -10,6 +10,7 @@ import kotlin.js.Promise
 
 @Suppress("unused")
 @JsName("evaluate")
+@JsExport
 fun evaluate(src: String, quiet: Boolean, out: suspend (FluoriteValue) -> Unit) = GlobalScope.promise {
     val evaluator = Evaluator()
     val defaultBuiltinMounts = listOf(
@@ -27,6 +28,7 @@ fun evaluate(src: String, quiet: Boolean, out: suspend (FluoriteValue) -> Unit) 
 
 @Suppress("unused")
 @JsName("log")
+@JsExport
 fun log(value: FluoriteValue) = GlobalScope.promise {
     if (value is FluoriteStream) {
         value.collect {
@@ -39,6 +41,7 @@ fun log(value: FluoriteValue) = GlobalScope.promise {
 
 @Suppress("unused")
 @JsName("stringify")
+@JsExport
 fun stringify(value: FluoriteValue): Promise<String> = GlobalScope.promise {
     suspend fun f(value: FluoriteValue): String {
         return if (value is FluoriteStream) {

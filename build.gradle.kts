@@ -15,9 +15,6 @@ kotlin {
     jvm()
     js {
         browser {
-            dceTask {
-                keep("fluorite12.parse", "fluorite12.evaluate", "fluorite12.log", "fluorite12.stringify")
-            }
             testTask {
                 useMocha {
                     timeout = "10s"
@@ -76,7 +73,7 @@ tasks.register<Exec>("compilePlayground") {
     commandLine("bash", "compile.sh")
     standardOutput = System.out
     errorOutput = System.err
-    dependsOn("jsBrowserProductionWebpack")
+    dependsOn(":playground:browserProductionWebpack")
 }
 
 tasks.named("assemble") {

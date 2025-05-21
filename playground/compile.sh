@@ -4,14 +4,13 @@ cd "$(dirname "$0")" || exit
 
 # Clean build directory
 echo "[INFO ] Cleaning build directory..."
-rm -rf build || exit
-mkdir -p build || exit
+rm -rf build/out || exit
+mkdir -p build/out || exit
 
 # Compile editor
 echo "[INFO ] Installing npm packages..."
 npm install || exit
 echo "[INFO ] Compiling editor..."
-mkdir -p build/out || exit
 node_modules/.bin/rollup \
   editor.mjs \
   -f iife \
@@ -25,4 +24,4 @@ rsync -av src/ build/out || exit
 
 # Copy fluorite12
 echo "[INFO ] Copying fluorite12..."
-rsync -av ../build/distributions/ build/out || exit
+rsync -av build/kotlin-webpack/js/productionExecutable/ build/out || exit
