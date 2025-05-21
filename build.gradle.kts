@@ -82,3 +82,11 @@ tasks.register<Exec>("compilePlayground") {
 tasks.named("assemble") {
     dependsOn("compilePlayground")
 }
+
+allprojects {
+    tasks.register("downloadDependencies") {
+        doLast {
+            configurations.filter { it.isCanBeResolved }.forEach { it.resolve() }
+        }
+    }
+}
