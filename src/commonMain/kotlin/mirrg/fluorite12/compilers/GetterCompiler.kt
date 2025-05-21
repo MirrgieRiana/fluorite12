@@ -17,6 +17,7 @@ import mirrg.fluorite12.IdentifierNode
 import mirrg.fluorite12.InfixNode
 import mirrg.fluorite12.IntegerNode
 import mirrg.fluorite12.LeftNode
+import mirrg.fluorite12.LeftOperatorType
 import mirrg.fluorite12.LiteralStringContent
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.NodeStringContent
@@ -167,7 +168,22 @@ fun Frame.compileToGetter(node: Node): Getter {
         }
 
         is RightNode -> when {
-            node.right.text.startsWith(".") -> compileUnaryOperatorToGetter(node.right.text.drop(1), node.left)
+            node.right.text.startsWith(".") -> compileUnaryOperatorToGetter(run {
+                when (node.right.text.drop(1)) {
+                    "+" -> LeftOperatorType.PLUS
+                    "-" -> LeftOperatorType.MINUS
+                    "?" -> LeftOperatorType.QUESTION
+                    "!" -> LeftOperatorType.EXCLAMATION
+                    "&" -> LeftOperatorType.AMPERSAND
+                    "$#" -> LeftOperatorType.DOLLAR_SHARP
+                    "$&" -> LeftOperatorType.DOLLAR_AMPERSAND
+                    "$*" -> LeftOperatorType.DOLLAR_ASTERISK
+                    "@" -> LeftOperatorType.AT
+                    "!!" -> LeftOperatorType.EXCLAMATION_EXCLAMATION
+                    else -> throw IllegalArgumentException("Unknown operator: A ${node.right.text}")
+                }
+            }, node.left)
+
             else -> throw IllegalArgumentException("Unknown operator: A ${node.right.text}")
         }
 
@@ -344,7 +360,7 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
         }
 
-        is LeftNode -> compileUnaryOperatorToGetter(node.left.text, node.right)
+        is LeftNode -> compileUnaryOperatorToGetter(node.type, node.right)
 
         is InfixNode -> compileInfixOperatorToGetter(node.operator.text, node.left, node.right)
 
@@ -379,18 +395,18 @@ fun Frame.compileToGetter(node: Node): Getter {
     }
 }
 
-private fun Frame.compileUnaryOperatorToGetter(text: String, main: Node): Getter {
-    return when (text) {
-        "+" -> ToNumberGetter(compileToGetter(main))
-        "-" -> compileUnaryMinusToGetter(main)
-        "?" -> ToBooleanGetter(compileToGetter(main))
-        "!" -> ToNegativeBooleanGetter(compileToGetter(main))
-        "&" -> ToStringGetter(compileToGetter(main))
-        "$#" -> GetLengthGetter(compileToGetter(main))
-        "$&" -> ToJsonGetter(compileToGetter(main))
-        "$*" -> FromJsonGetter(compileToGetter(main))
-        "!!" -> ThrowGetter(compileToGetter(main))
-        else -> throw IllegalArgumentException("Unknown operator: Unary $text")
+private fun Frame.compileUnaryOperatorToGetter(type: LeftOperatorType, main: Node): Getter {
+    return when (type) {
+        LeftOperatorType.PLUS -> ToNumberGetter(compileToGetter(main))
+        LeftOperatorType.MINUS -> compileUnaryMinusToGetter(main)
+        LeftOperatorType.QUESTION -> ToBooleanGetter(compileToGetter(main))
+        LeftOperatorType.EXCLAMATION -> ToNegativeBooleanGetter(compileToGetter(main))
+        LeftOperatorType.AMPERSAND -> ToStringGetter(compileToGetter(main))
+        LeftOperatorType.DOLLAR_SHARP -> GetLengthGetter(compileToGetter(main))
+        LeftOperatorType.DOLLAR_AMPERSAND -> ToJsonGetter(compileToGetter(main))
+        LeftOperatorType.DOLLAR_ASTERISK -> FromJsonGetter(compileToGetter(main))
+        LeftOperatorType.EXCLAMATION_EXCLAMATION -> ThrowGetter(compileToGetter(main))
+        else -> throw IllegalArgumentException("Unknown operator: $type")
     }
 }
 

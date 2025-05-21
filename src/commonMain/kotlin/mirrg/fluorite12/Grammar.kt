@@ -280,16 +280,16 @@ class Fluorite12Grammar : Grammar<Node>() {
         }
     }
     val leftOperator: Parser<(Node) -> Node> by OrCombinator(
-        +(plus) map { { main -> LeftNode(it, main) } },
-        +(minus) map { { main -> LeftNode(it, main) } },
-        +(question) map { { main -> LeftNode(it, main) } },
-        +(exclamation * exclamation) map { { main -> LeftNode(it, main) } },
-        +(exclamation) map { { main -> LeftNode(it, main) } },
-        +(ampersand) map { { main -> LeftNode(it, main) } },
-        +(dollar * sharp) map { { main -> LeftNode(it, main) } },
-        +(dollar * ampersand) map { { main -> LeftNode(it, main) } },
-        +(dollar * asterisk) map { { main -> LeftNode(it, main) } },
-        +(atSign) map { { main -> LeftNode(it, main) } },
+        +(plus) map { { main -> LeftNode(LeftOperatorType.PLUS, it, main) } },
+        +(minus) map { { main -> LeftNode(LeftOperatorType.MINUS, it, main) } },
+        +(question) map { { main -> LeftNode(LeftOperatorType.QUESTION, it, main) } },
+        +(exclamation * exclamation) map { { main -> LeftNode(LeftOperatorType.EXCLAMATION_EXCLAMATION, it, main) } },
+        +(exclamation) map { { main -> LeftNode(LeftOperatorType.EXCLAMATION, it, main) } },
+        +(ampersand) map { { main -> LeftNode(LeftOperatorType.AMPERSAND, it, main) } },
+        +(dollar * sharp) map { { main -> LeftNode(LeftOperatorType.DOLLAR_SHARP, it, main) } },
+        +(dollar * ampersand) map { { main -> LeftNode(LeftOperatorType.DOLLAR_AMPERSAND, it, main) } },
+        +(dollar * asterisk) map { { main -> LeftNode(LeftOperatorType.DOLLAR_ASTERISK, it, main) } },
+        +(atSign) map { { main -> LeftNode(LeftOperatorType.AT, it, main) } },
     )
     val left: Parser<Node> by zeroOrMore(leftOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
