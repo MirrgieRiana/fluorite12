@@ -17,7 +17,6 @@ import mirrg.fluorite12.IdentifierNode
 import mirrg.fluorite12.InfixNode
 import mirrg.fluorite12.IntegerNode
 import mirrg.fluorite12.LeftNode
-import mirrg.fluorite12.LeftOperatorType
 import mirrg.fluorite12.LiteralStringContent
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.NodeStringContent
@@ -27,6 +26,7 @@ import mirrg.fluorite12.RightBracketsNode
 import mirrg.fluorite12.RightNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
+import mirrg.fluorite12.UnaryOperatorType
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.defineVariable
@@ -395,17 +395,17 @@ fun Frame.compileToGetter(node: Node): Getter {
     }
 }
 
-private fun Frame.compileUnaryOperatorToGetter(type: LeftOperatorType, main: Node): Getter {
+private fun Frame.compileUnaryOperatorToGetter(type: UnaryOperatorType, main: Node): Getter {
     return when (type) {
-        LeftOperatorType.PLUS -> ToNumberGetter(compileToGetter(main))
-        LeftOperatorType.MINUS -> compileUnaryMinusToGetter(main)
-        LeftOperatorType.QUESTION -> ToBooleanGetter(compileToGetter(main))
-        LeftOperatorType.EXCLAMATION -> ToNegativeBooleanGetter(compileToGetter(main))
-        LeftOperatorType.AMPERSAND -> ToStringGetter(compileToGetter(main))
-        LeftOperatorType.DOLLAR_SHARP -> GetLengthGetter(compileToGetter(main))
-        LeftOperatorType.DOLLAR_AMPERSAND -> ToJsonGetter(compileToGetter(main))
-        LeftOperatorType.DOLLAR_ASTERISK -> FromJsonGetter(compileToGetter(main))
-        LeftOperatorType.EXCLAMATION_EXCLAMATION -> ThrowGetter(compileToGetter(main))
+        UnaryOperatorType.PLUS -> ToNumberGetter(compileToGetter(main))
+        UnaryOperatorType.MINUS -> compileUnaryMinusToGetter(main)
+        UnaryOperatorType.QUESTION -> ToBooleanGetter(compileToGetter(main))
+        UnaryOperatorType.EXCLAMATION -> ToNegativeBooleanGetter(compileToGetter(main))
+        UnaryOperatorType.AMPERSAND -> ToStringGetter(compileToGetter(main))
+        UnaryOperatorType.DOLLAR_SHARP -> GetLengthGetter(compileToGetter(main))
+        UnaryOperatorType.DOLLAR_AMPERSAND -> ToJsonGetter(compileToGetter(main))
+        UnaryOperatorType.DOLLAR_ASTERISK -> FromJsonGetter(compileToGetter(main))
+        UnaryOperatorType.EXCLAMATION_EXCLAMATION -> ThrowGetter(compileToGetter(main))
         else -> throw IllegalArgumentException("Unknown operator: $type")
     }
 }

@@ -280,16 +280,16 @@ class Fluorite12Grammar : Grammar<Node>() {
         }
     }
     val leftOperator: Parser<(Node) -> Node> by OrCombinator(
-        +(plus) map { { main -> LeftNode(LeftOperatorType.PLUS, it, main) } },
-        +(minus) map { { main -> LeftNode(LeftOperatorType.MINUS, it, main) } },
-        +(question) map { { main -> LeftNode(LeftOperatorType.QUESTION, it, main) } },
-        +(exclamation * exclamation) map { { main -> LeftNode(LeftOperatorType.EXCLAMATION_EXCLAMATION, it, main) } },
-        +(exclamation) map { { main -> LeftNode(LeftOperatorType.EXCLAMATION, it, main) } },
-        +(ampersand) map { { main -> LeftNode(LeftOperatorType.AMPERSAND, it, main) } },
-        +(dollar * sharp) map { { main -> LeftNode(LeftOperatorType.DOLLAR_SHARP, it, main) } },
-        +(dollar * ampersand) map { { main -> LeftNode(LeftOperatorType.DOLLAR_AMPERSAND, it, main) } },
-        +(dollar * asterisk) map { { main -> LeftNode(LeftOperatorType.DOLLAR_ASTERISK, it, main) } },
-        +(atSign) map { { main -> LeftNode(LeftOperatorType.AT, it, main) } },
+        +(plus) map { { main -> LeftNode(UnaryOperatorType.PLUS, it, main) } },
+        +(minus) map { { main -> LeftNode(UnaryOperatorType.MINUS, it, main) } },
+        +(question) map { { main -> LeftNode(UnaryOperatorType.QUESTION, it, main) } },
+        +(exclamation * exclamation) map { { main -> LeftNode(UnaryOperatorType.EXCLAMATION_EXCLAMATION, it, main) } },
+        +(exclamation) map { { main -> LeftNode(UnaryOperatorType.EXCLAMATION, it, main) } },
+        +(ampersand) map { { main -> LeftNode(UnaryOperatorType.AMPERSAND, it, main) } },
+        +(dollar * sharp) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_SHARP, it, main) } },
+        +(dollar * ampersand) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_AMPERSAND, it, main) } },
+        +(dollar * asterisk) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_ASTERISK, it, main) } },
+        +(atSign) map { { main -> LeftNode(UnaryOperatorType.AT, it, main) } },
     )
     val left: Parser<Node> by zeroOrMore(leftOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
