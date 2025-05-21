@@ -3,4 +3,4 @@
 /.idea
 /kotlin-js-store
 *.hprof
-/openjdk17.tar.gz
+/openjdk17/
