@@ -269,6 +269,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         -b * +(period * dollar * sharp) map { { main -> UnaryDollarSharpNode(it, main, Side.RIGHT) } },
         -b * +(period * dollar * ampersand) map { { main -> UnaryDollarAmpersandNode(it, main, Side.RIGHT) } },
         -b * +(period * dollar * asterisk) map { { main -> UnaryDollarAsteriskNode(it, main, Side.RIGHT) } },
+        -b * +(period * at) map { { main -> UnaryAtNode(it, main, Side.RIGHT) } },
     )
     val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
     val pow: Parser<Node> by right * optional(-s * +circumflex * -b * cachedParser { left }) map {
