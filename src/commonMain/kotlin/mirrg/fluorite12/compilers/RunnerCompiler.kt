@@ -7,6 +7,7 @@ import mirrg.fluorite12.InfixNode
 import mirrg.fluorite12.InfixOperatorType
 import mirrg.fluorite12.LeftNode
 import mirrg.fluorite12.Node
+import mirrg.fluorite12.RightNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.UnaryOperatorType
 import mirrg.fluorite12.defineVariable
@@ -52,6 +53,12 @@ fun Frame.compileToRunner(node: Node): List<Runner> {
 
         node is LeftNode && node.type == UnaryOperatorType.AT -> {
             val getter = compileToGetter(node.right)
+            val newMountIndex = mount()
+            listOf(MountRunner(frameIndex, newMountIndex, getter))
+        }
+
+        node is RightNode && node.type == UnaryOperatorType.AT -> {
+            val getter = compileToGetter(node.left)
             val newMountIndex = mount()
             listOf(MountRunner(frameIndex, newMountIndex, getter))
         }
