@@ -5,6 +5,7 @@ import mirrg.fluorite12.ArrowBracketsNode
 import mirrg.fluorite12.BracketsNode
 import mirrg.fluorite12.BracketsType
 import mirrg.fluorite12.CommasNode
+import mirrg.fluorite12.ComparisonOperatorType
 import mirrg.fluorite12.ComparisonsNode
 import mirrg.fluorite12.ConditionNode
 import mirrg.fluorite12.EmbeddedStringNode
@@ -350,16 +351,15 @@ fun Frame.compileToGetter(node: Node): Getter {
         is ComparisonsNode -> {
             val termGetters = node.nodes.map { compileToGetter(it) }
             val operators: List<Comparator> = node.operators.map {
-                when (it.text) {
-                    "==" -> EqualComparator
-                    "!=" -> NotEqualComparator
-                    ">" -> GreaterComparator
-                    "<" -> LessComparator
-                    ">=" -> GreaterEqualComparator
-                    "<=" -> LessEqualComparator
-                    "?=" -> InstanceOfComparator
-                    "@" -> ContainsComparator
-                    else -> throw IllegalArgumentException("Unknown operator: A ${it.text} B")
+                when (it.second) {
+                    ComparisonOperatorType.EQUAL -> EqualComparator
+                    ComparisonOperatorType.EXCLAMATION_EQUAL -> NotEqualComparator
+                    ComparisonOperatorType.GREATER -> GreaterComparator
+                    ComparisonOperatorType.LESS -> LessComparator
+                    ComparisonOperatorType.GREATER_EQUAL -> GreaterEqualComparator
+                    ComparisonOperatorType.LESS_EQUAL -> LessEqualComparator
+                    ComparisonOperatorType.QUESTION_EQUAL -> InstanceOfComparator
+                    ComparisonOperatorType.AT -> ContainsComparator
                 }
             }
             ComparisonChainGetter(termGetters, operators)

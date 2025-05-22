@@ -19,7 +19,7 @@ class RightBracketsNode(val type: BracketsType, val main: Node, val left: TokenM
 class RightNode(val type: UnaryOperatorType, val left: Node, val right: List<TokenMatch>) : Node()
 class LeftNode(val type: UnaryOperatorType, val left: List<TokenMatch>, val right: Node) : Node()
 class InfixNode(val type: InfixOperatorType, val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
-class ComparisonsNode(val nodes: List<Node>, val operators: List<List<TokenMatch>>) : Node()
+class ComparisonsNode(val nodes: List<Node>, val operators: List<Pair<List<TokenMatch>, ComparisonOperatorType>>) : Node()
 class ConditionNode(val condition: Node, val question: TokenMatch, val ok: Node, val colon: TokenMatch, val ng: Node) : Node()
 class CommasNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
 class SemicolonsNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
@@ -69,6 +69,17 @@ enum class InfixOperatorType {
     LESS_LESS,
     COLON_EQUAL,
     EQUAL_GREATER,
+}
+
+enum class ComparisonOperatorType {
+    EQUAL,
+    EXCLAMATION_EQUAL,
+    GREATER,
+    LESS,
+    GREATER_EQUAL,
+    LESS_EQUAL,
+    QUESTION_EQUAL,
+    AT,
 }
 
 sealed class StringContent

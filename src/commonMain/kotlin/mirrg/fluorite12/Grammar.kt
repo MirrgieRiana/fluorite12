@@ -313,15 +313,15 @@ class Fluorite12Grammar : Grammar<Node>() {
     val range: Parser<Node> by leftAssociative(add, -s * rangeOperator * -b) { left, operator, right -> InfixNode(operator.second, left, operator.first, right) }
     val spaceshipOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by +(less * equal * greater) map { Pair(it, InfixOperatorType.LESS_EQUAL_GREATER) }
     val spaceship: Parser<Node> by leftAssociative(range, -s * spaceshipOperator * -b) { left, operator, right -> InfixNode(operator.second, left, operator.first, right) }
-    val comparisonOperator: Parser<List<TokenMatch>> by OrCombinator(
-        +(equal * equal), // ==
-        +(exclamation * equal), // !=
-        +(greater * equal), // >=
-        +(greater * -NotParser(greater)), // >
-        +(less * equal), // <=
-        +(less * -NotParser(less)), // <
-        +(question * equal), // ?=
-        +atSign, // @
+    val comparisonOperator: Parser<Pair<List<TokenMatch>, ComparisonOperatorType>> by OrCombinator(
+        +(equal * equal) map { Pair(it, ComparisonOperatorType.EQUAL) }, // ==
+        +(exclamation * equal) map { Pair(it, ComparisonOperatorType.EXCLAMATION_EQUAL) }, // !=
+        +(greater * equal) map { Pair(it, ComparisonOperatorType.GREATER_EQUAL) }, // >=
+        +(greater * -NotParser(greater)) map { Pair(it, ComparisonOperatorType.GREATER) }, // >
+        +(less * equal) map { Pair(it, ComparisonOperatorType.LESS_EQUAL) }, // <=
+        +(less * -NotParser(less)) map { Pair(it, ComparisonOperatorType.LESS) }, // <
+        +(question * equal) map { Pair(it, ComparisonOperatorType.QUESTION_EQUAL) }, // ?=
+        +atSign map { Pair(it, ComparisonOperatorType.AT) }, // @
     )
     val comparison: Parser<Node> by spaceship * zeroOrMore(-s * comparisonOperator * -b * spaceship) map {
         if (it.t2.isNotEmpty()) {
