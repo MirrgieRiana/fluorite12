@@ -260,15 +260,15 @@ class Fluorite12Grammar : Grammar<Node>() {
         -b * +period * -b * factor map { { main -> InfixNode(InfixOperatorType.PERIOD, main, it.t1, it.t2) } },
         -b * +(colon * colon) * -b * factor map { { main -> InfixNode(InfixOperatorType.COLON_COLON, main, it.t1, it.t2) } },
 
-        -b * +(period * plus) map { { main -> RightNode(UnaryOperatorType.PLUS, main, it) } },
-        -b * +(period * minus) map { { main -> RightNode(UnaryOperatorType.MINUS, main, it) } },
-        -b * +(period * question) map { { main -> RightNode(UnaryOperatorType.QUESTION, main, it) } },
-        -b * +(period * exclamation * exclamation) map { { main -> RightNode(UnaryOperatorType.EXCLAMATION_EXCLAMATION, main, it) } },
-        -b * +(period * exclamation) map { { main -> RightNode(UnaryOperatorType.EXCLAMATION, main, it) } },
-        -b * +(period * ampersand) map { { main -> RightNode(UnaryOperatorType.AMPERSAND, main, it) } },
-        -b * +(period * dollar * sharp) map { { main -> RightNode(UnaryOperatorType.DOLLAR_SHARP, main, it) } },
-        -b * +(period * dollar * ampersand) map { { main -> RightNode(UnaryOperatorType.DOLLAR_AMPERSAND, main, it) } },
-        -b * +(period * dollar * asterisk) map { { main -> RightNode(UnaryOperatorType.DOLLAR_ASTERISK, main, it) } },
+        -b * +(period * plus) map { { main -> UnaryPlusNode(it, main, Side.RIGHT) } },
+        -b * +(period * minus) map { { main -> UnaryMinusNode(it, main, Side.RIGHT) } },
+        -b * +(period * question) map { { main -> UnaryQuestionNode(it, main, Side.RIGHT) } },
+        -b * +(period * exclamation * exclamation) map { { main -> UnaryExclamationExclamationNode(it, main, Side.RIGHT) } },
+        -b * +(period * exclamation) map { { main -> UnaryExclamationNode(it, main, Side.RIGHT) } },
+        -b * +(period * ampersand) map { { main -> UnaryAmpersandNode(it, main, Side.RIGHT) } },
+        -b * +(period * dollar * sharp) map { { main -> UnaryDollarSharpNode(it, main, Side.RIGHT) } },
+        -b * +(period * dollar * ampersand) map { { main -> UnaryDollarAmpersandNode(it, main, Side.RIGHT) } },
+        -b * +(period * dollar * asterisk) map { { main -> UnaryDollarAsteriskNode(it, main, Side.RIGHT) } },
     )
     val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
     val pow: Parser<Node> by right * optional(-s * +circumflex * -b * cachedParser { left }) map {
@@ -280,16 +280,16 @@ class Fluorite12Grammar : Grammar<Node>() {
         }
     }
     val leftOperator: Parser<(Node) -> Node> by OrCombinator(
-        +plus map { { main -> LeftNode(UnaryOperatorType.PLUS, it, main) } },
-        +minus map { { main -> LeftNode(UnaryOperatorType.MINUS, it, main) } },
-        +question map { { main -> LeftNode(UnaryOperatorType.QUESTION, it, main) } },
-        +(exclamation * exclamation) map { { main -> LeftNode(UnaryOperatorType.EXCLAMATION_EXCLAMATION, it, main) } },
-        +exclamation map { { main -> LeftNode(UnaryOperatorType.EXCLAMATION, it, main) } },
-        +ampersand map { { main -> LeftNode(UnaryOperatorType.AMPERSAND, it, main) } },
-        +(dollar * sharp) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_SHARP, it, main) } },
-        +(dollar * ampersand) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_AMPERSAND, it, main) } },
-        +(dollar * asterisk) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_ASTERISK, it, main) } },
-        +at map { { main -> LeftNode(UnaryOperatorType.AT, it, main) } },
+        +plus map { { main -> UnaryPlusNode(it, main, Side.LEFT) } },
+        +minus map { { main -> UnaryMinusNode(it, main, Side.LEFT) } },
+        +question map { { main -> UnaryQuestionNode(it, main, Side.LEFT) } },
+        +(exclamation * exclamation) map { { main -> UnaryExclamationExclamationNode(it, main, Side.LEFT) } },
+        +exclamation map { { main -> UnaryExclamationNode(it, main, Side.LEFT) } },
+        +ampersand map { { main -> UnaryAmpersandNode(it, main, Side.LEFT) } },
+        +(dollar * sharp) map { { main -> UnaryDollarSharpNode(it, main, Side.LEFT) } },
+        +(dollar * ampersand) map { { main -> UnaryDollarAmpersandNode(it, main, Side.LEFT) } },
+        +(dollar * asterisk) map { { main -> UnaryDollarAsteriskNode(it, main, Side.LEFT) } },
+        +at map { { main -> UnaryAtNode(it, main, Side.LEFT) } },
     )
     val left: Parser<Node> by zeroOrMore(leftOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 

@@ -18,17 +18,24 @@ import mirrg.fluorite12.IdentifierNode
 import mirrg.fluorite12.InfixNode
 import mirrg.fluorite12.InfixOperatorType
 import mirrg.fluorite12.IntegerNode
-import mirrg.fluorite12.LeftNode
 import mirrg.fluorite12.LiteralStringContent
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.NodeStringContent
 import mirrg.fluorite12.RawStringNode
 import mirrg.fluorite12.RightArrowBracketsNode
 import mirrg.fluorite12.RightBracketsNode
-import mirrg.fluorite12.RightNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
-import mirrg.fluorite12.UnaryOperatorType
+import mirrg.fluorite12.UnaryAmpersandNode
+import mirrg.fluorite12.UnaryDollarAmpersandNode
+import mirrg.fluorite12.UnaryDollarAsteriskNode
+import mirrg.fluorite12.UnaryDollarSharpNode
+import mirrg.fluorite12.UnaryExclamationExclamationNode
+import mirrg.fluorite12.UnaryExclamationNode
+import mirrg.fluorite12.UnaryMinusNode
+import mirrg.fluorite12.UnaryNode
+import mirrg.fluorite12.UnaryPlusNode
+import mirrg.fluorite12.UnaryQuestionNode
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.defineVariable
@@ -169,7 +176,7 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
         }
 
-        is RightNode -> compileUnaryOperatorToGetter(node.type, node.left)
+        is UnaryNode -> compileUnaryOperatorToGetter(node)
 
         is RightArrowBracketsNode -> when (node.type) {
             BracketsType.ROUND -> {
@@ -344,8 +351,6 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
         }
 
-        is LeftNode -> compileUnaryOperatorToGetter(node.type, node.right)
-
         is InfixNode -> compileInfixOperatorToGetter(node.type, node.left, node.right)
 
         is ComparisonsNode -> {
@@ -378,18 +383,18 @@ fun Frame.compileToGetter(node: Node): Getter {
     }
 }
 
-private fun Frame.compileUnaryOperatorToGetter(type: UnaryOperatorType, main: Node): Getter {
-    return when (type) {
-        UnaryOperatorType.PLUS -> ToNumberGetter(compileToGetter(main))
-        UnaryOperatorType.MINUS -> compileUnaryMinusToGetter(main)
-        UnaryOperatorType.QUESTION -> ToBooleanGetter(compileToGetter(main))
-        UnaryOperatorType.EXCLAMATION -> ToNegativeBooleanGetter(compileToGetter(main))
-        UnaryOperatorType.AMPERSAND -> ToStringGetter(compileToGetter(main))
-        UnaryOperatorType.DOLLAR_SHARP -> GetLengthGetter(compileToGetter(main))
-        UnaryOperatorType.DOLLAR_AMPERSAND -> ToJsonGetter(compileToGetter(main))
-        UnaryOperatorType.DOLLAR_ASTERISK -> FromJsonGetter(compileToGetter(main))
-        UnaryOperatorType.EXCLAMATION_EXCLAMATION -> ThrowGetter(compileToGetter(main))
-        else -> throw IllegalArgumentException("Unknown operator: $type")
+private fun Frame.compileUnaryOperatorToGetter(node: UnaryNode): Getter {
+    return when (node) {
+        is UnaryPlusNode -> ToNumberGetter(compileToGetter(node.main))
+        is UnaryMinusNode -> compileUnaryMinusToGetter(node.main)
+        is UnaryQuestionNode -> ToBooleanGetter(compileToGetter(node.main))
+        is UnaryExclamationNode -> ToNegativeBooleanGetter(compileToGetter(node.main))
+        is UnaryAmpersandNode -> ToStringGetter(compileToGetter(node.main))
+        is UnaryDollarSharpNode -> GetLengthGetter(compileToGetter(node.main))
+        is UnaryDollarAmpersandNode -> ToJsonGetter(compileToGetter(node.main))
+        is UnaryDollarAsteriskNode -> FromJsonGetter(compileToGetter(node.main))
+        is UnaryExclamationExclamationNode -> ThrowGetter(compileToGetter(node.main))
+        else -> throw IllegalArgumentException("Unknown operator: ${node.operator.text}")
     }
 }
 

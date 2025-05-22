@@ -16,8 +16,17 @@ class ArrowBracketsNode(val type: BracketsType, val left: TokenMatch, val argume
 class BracketsNode(val type: BracketsType, val left: TokenMatch, val main: Node, val right: TokenMatch) : Node()
 class RightArrowBracketsNode(val type: BracketsType, val main: Node, val left: TokenMatch, val arguments: Node, val arrow: List<TokenMatch>, val body: Node, val right: TokenMatch) : Node()
 class RightBracketsNode(val type: BracketsType, val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()
-class RightNode(val type: UnaryOperatorType, val left: Node, val right: List<TokenMatch>) : Node()
-class LeftNode(val type: UnaryOperatorType, val left: List<TokenMatch>, val right: Node) : Node()
+sealed class UnaryNode(val operator: List<TokenMatch>, val main: Node, val side: Side) : Node()
+class UnaryPlusNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
+class UnaryMinusNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
+class UnaryQuestionNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
+class UnaryExclamationNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
+class UnaryAmpersandNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
+class UnaryDollarSharpNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
+class UnaryDollarAmpersandNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
+class UnaryDollarAsteriskNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
+class UnaryAtNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
+class UnaryExclamationExclamationNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
 class InfixNode(val type: InfixOperatorType, val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
 class ComparisonsNode(val nodes: List<Node>, val operators: List<Pair<List<TokenMatch>, ComparisonOperatorType>>) : Node()
 class ConditionNode(val condition: Node, val question: TokenMatch, val ok: Node, val colon: TokenMatch, val ng: Node) : Node()
@@ -30,17 +39,9 @@ enum class BracketsType {
     CURLY,
 }
 
-enum class UnaryOperatorType {
-    PLUS,
-    MINUS,
-    QUESTION,
-    EXCLAMATION,
-    AMPERSAND,
-    DOLLAR_SHARP,
-    DOLLAR_AMPERSAND,
-    DOLLAR_ASTERISK,
-    AT,
-    EXCLAMATION_EXCLAMATION,
+enum class Side {
+    LEFT,
+    RIGHT,
 }
 
 enum class InfixOperatorType {
