@@ -280,16 +280,16 @@ class Fluorite12Grammar : Grammar<Node>() {
         }
     }
     val leftOperator: Parser<(Node) -> Node> by OrCombinator(
-        +(plus) map { { main -> LeftNode(UnaryOperatorType.PLUS, it, main) } },
-        +(minus) map { { main -> LeftNode(UnaryOperatorType.MINUS, it, main) } },
-        +(question) map { { main -> LeftNode(UnaryOperatorType.QUESTION, it, main) } },
+        +plus map { { main -> LeftNode(UnaryOperatorType.PLUS, it, main) } },
+        +minus map { { main -> LeftNode(UnaryOperatorType.MINUS, it, main) } },
+        +question map { { main -> LeftNode(UnaryOperatorType.QUESTION, it, main) } },
         +(exclamation * exclamation) map { { main -> LeftNode(UnaryOperatorType.EXCLAMATION_EXCLAMATION, it, main) } },
-        +(exclamation) map { { main -> LeftNode(UnaryOperatorType.EXCLAMATION, it, main) } },
-        +(ampersand) map { { main -> LeftNode(UnaryOperatorType.AMPERSAND, it, main) } },
+        +exclamation map { { main -> LeftNode(UnaryOperatorType.EXCLAMATION, it, main) } },
+        +ampersand map { { main -> LeftNode(UnaryOperatorType.AMPERSAND, it, main) } },
         +(dollar * sharp) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_SHARP, it, main) } },
         +(dollar * ampersand) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_AMPERSAND, it, main) } },
         +(dollar * asterisk) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_ASTERISK, it, main) } },
-        +(at) map { { main -> LeftNode(UnaryOperatorType.AT, it, main) } },
+        +at map { { main -> LeftNode(UnaryOperatorType.AT, it, main) } },
     )
     val left: Parser<Node> by zeroOrMore(leftOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
@@ -321,7 +321,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(less * equal) map { Pair(it, ComparisonOperatorType.LESS_EQUAL) }, // <=
         +(less * -NotParser(less)) map { Pair(it, ComparisonOperatorType.LESS) }, // <
         +(question * equal) map { Pair(it, ComparisonOperatorType.QUESTION_EQUAL) }, // ?=
-        +(at) map { Pair(it, ComparisonOperatorType.AT) }, // @
+        +at map { Pair(it, ComparisonOperatorType.AT) }, // @
     )
     val comparison: Parser<Node> by spaceship * zeroOrMore(-s * comparisonOperator * -b * spaceship) map {
         if (it.t2.isNotEmpty()) {
