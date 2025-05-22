@@ -8,6 +8,7 @@ import mirrg.fluorite12.InfixOperatorType
 import mirrg.fluorite12.LeftNode
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.SemicolonsNode
+import mirrg.fluorite12.UnaryOperatorType
 import mirrg.fluorite12.defineVariable
 import mirrg.fluorite12.mount
 import mirrg.fluorite12.operations.AssignmentRunner
@@ -16,7 +17,6 @@ import mirrg.fluorite12.operations.MountRunner
 import mirrg.fluorite12.operations.Runner
 import mirrg.fluorite12.operations.TryCatchRunner
 import mirrg.fluorite12.operations.VariableSetter
-import mirrg.fluorite12.text
 
 fun Frame.compileToRunner(node: Node): List<Runner> {
     return when {
@@ -50,7 +50,7 @@ fun Frame.compileToRunner(node: Node): List<Runner> {
             listOf(TryCatchRunner(compileToRunner(node.left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToRunner(rightNode)))
         }
 
-        node is LeftNode && node.left.text == "@" -> {
+        node is LeftNode && node.type == UnaryOperatorType.AT -> {
             val getter = compileToGetter(node.right)
             val newMountIndex = mount()
             listOf(MountRunner(frameIndex, newMountIndex, getter))
