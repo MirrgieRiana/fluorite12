@@ -321,7 +321,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(less * equal) map { Pair(it, ComparisonOperatorType.LESS_EQUAL) }, // <=
         +(less * -NotParser(less)) map { Pair(it, ComparisonOperatorType.LESS) }, // <
         +(question * equal) map { Pair(it, ComparisonOperatorType.QUESTION_EQUAL) }, // ?=
-        +atSign map { Pair(it, ComparisonOperatorType.AT) }, // @
+        +(atSign) map { Pair(it, ComparisonOperatorType.AT) }, // @
     )
     val comparison: Parser<Node> by spaceship * zeroOrMore(-s * comparisonOperator * -b * spaceship) map {
         if (it.t2.isNotEmpty()) {
