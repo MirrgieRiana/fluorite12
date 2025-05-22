@@ -65,7 +65,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val less by literalToken("<")
     val question by literalToken("?")
 
-    val atSign by literalToken("@")
+    val at by literalToken("@")
     val uA by literalToken("A")
     val uB by literalToken("B")
     val uC by literalToken("C")
@@ -289,7 +289,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(dollar * sharp) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_SHARP, it, main) } },
         +(dollar * ampersand) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_AMPERSAND, it, main) } },
         +(dollar * asterisk) map { { main -> LeftNode(UnaryOperatorType.DOLLAR_ASTERISK, it, main) } },
-        +(atSign) map { { main -> LeftNode(UnaryOperatorType.AT, it, main) } },
+        +(at) map { { main -> LeftNode(UnaryOperatorType.AT, it, main) } },
     )
     val left: Parser<Node> by zeroOrMore(leftOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
@@ -321,7 +321,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(less * equal) map { Pair(it, ComparisonOperatorType.LESS_EQUAL) }, // <=
         +(less * -NotParser(less)) map { Pair(it, ComparisonOperatorType.LESS) }, // <
         +(question * equal) map { Pair(it, ComparisonOperatorType.QUESTION_EQUAL) }, // ?=
-        +(atSign) map { Pair(it, ComparisonOperatorType.AT) }, // @
+        +(at) map { Pair(it, ComparisonOperatorType.AT) }, // @
     )
     val comparison: Parser<Node> by spaceship * zeroOrMore(-s * comparisonOperator * -b * spaceship) map {
         if (it.t2.isNotEmpty()) {
