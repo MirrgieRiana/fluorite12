@@ -56,6 +56,7 @@ import mirrg.fluorite12.RightBracketsSquareNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
 import mirrg.fluorite12.UnaryAmpersandNode
+import mirrg.fluorite12.UnaryAtNode
 import mirrg.fluorite12.UnaryDollarAmpersandNode
 import mirrg.fluorite12.UnaryDollarAsteriskNode
 import mirrg.fluorite12.UnaryDollarSharpNode
@@ -203,7 +204,16 @@ fun Frame.compileToGetter(node: Node): Getter {
             ObjectCreationGetter(null, contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
         }
 
-        is UnaryNode -> compileUnaryOperatorToGetter(node)
+        is UnaryPlusNode -> ToNumberGetter(compileToGetter(node.main))
+        is UnaryMinusNode -> compileUnaryMinusToGetter(node.main)
+        is UnaryQuestionNode -> ToBooleanGetter(compileToGetter(node.main))
+        is UnaryExclamationNode -> ToNegativeBooleanGetter(compileToGetter(node.main))
+        is UnaryAmpersandNode -> ToStringGetter(compileToGetter(node.main))
+        is UnaryDollarSharpNode -> GetLengthGetter(compileToGetter(node.main))
+        is UnaryDollarAmpersandNode -> ToJsonGetter(compileToGetter(node.main))
+        is UnaryDollarAsteriskNode -> FromJsonGetter(compileToGetter(node.main))
+        is UnaryAtNode -> throw IllegalArgumentException("Unknown operator: ${node.operator.text}")
+        is UnaryExclamationExclamationNode -> ThrowGetter(compileToGetter(node.main))
 
         is RightArrowBracketsRoundNode -> {
             if (node.main is InfixColonColonNode) { // メソッド呼出し
@@ -403,21 +413,6 @@ fun Frame.compileToGetter(node: Node): Getter {
             if (runners.isEmpty()) return getter
             LinesGetter(runners, getter)
         }
-    }
-}
-
-private fun Frame.compileUnaryOperatorToGetter(node: UnaryNode): Getter {
-    return when (node) {
-        is UnaryPlusNode -> ToNumberGetter(compileToGetter(node.main))
-        is UnaryMinusNode -> compileUnaryMinusToGetter(node.main)
-        is UnaryQuestionNode -> ToBooleanGetter(compileToGetter(node.main))
-        is UnaryExclamationNode -> ToNegativeBooleanGetter(compileToGetter(node.main))
-        is UnaryAmpersandNode -> ToStringGetter(compileToGetter(node.main))
-        is UnaryDollarSharpNode -> GetLengthGetter(compileToGetter(node.main))
-        is UnaryDollarAmpersandNode -> ToJsonGetter(compileToGetter(node.main))
-        is UnaryDollarAsteriskNode -> FromJsonGetter(compileToGetter(node.main))
-        is UnaryExclamationExclamationNode -> ThrowGetter(compileToGetter(node.main))
-        else -> throw IllegalArgumentException("Unknown operator: ${node.operator.text}")
     }
 }
 
