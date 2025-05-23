@@ -17,6 +17,18 @@ class DocShellParser(private val filePath: String, private val lines: List<Strin
 
     fun writeTestScriptHeader() {
         out("#!/usr/bin/env bash")
+        out("")
+        out("((\$# < 1)) && {")
+        out("  echo \"Usage: \$0 <flc_command>\" >&2")
+        out("  exit 1")
+        out("}")
+        out("flc_command=\$1")
+        out("shift")
+        out("")
+        out("flc() {")
+        out("  \"\$flc_command\" \"$@\"")
+        out("}")
+        out("")
         out("fail() {")
         out("  echo \"FAILED: \$1\" >&2")
         out("  echo \"[expected]\" >&2")

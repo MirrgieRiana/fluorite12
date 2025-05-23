@@ -110,3 +110,12 @@ tasks.register("generateDocShellTests") {
         outFile.setExecutable(true)
     }
 }
+
+tasks.register<Exec>("runDocShellTests") {
+    dependsOn("generateDocShellTests", "linkFlcReleaseExecutableLinuxX64")
+    commandLine("bash", "build/docShellTests/ja.sh", "build/bin/linuxX64/flcReleaseExecutable/flc.kexe")
+}
+
+tasks.named("check") {
+    dependsOn("runDocShellTests")
+}
