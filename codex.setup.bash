@@ -12,4 +12,4 @@ tar -xzf ./openjdk17/openjdk17.tar.gz -C ./openjdk17/jdk --strip-components=1 ||
 rm -r ./openjdk17/jdk/lib/security/cacerts || exit
 cp -r "$JAVA_HOME"/lib/security/cacerts ./openjdk17/jdk/lib/security/cacerts || exit
 
-JAVA_HOME=./openjdk17/jdk bash gradlew --no-daemon --refresh-dependencies downloadDependencies || exit
+JAVA_HOME=./openjdk17/jdk bash gradlew --no-daemon --refresh-dependencies build || exit
