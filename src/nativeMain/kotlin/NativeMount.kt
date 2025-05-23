@@ -8,7 +8,7 @@ import mirrg.fluorite12.compilers.objects.toFluoriteString
 
 fun createNativeMount(args: List<String>): Map<String, FluoriteValue> {
     return mapOf(
-        "ARGS" to FluoriteArray(args.drop(1).map { it.toFluoriteString() }.toMutableList()),
+        "ARGS" to FluoriteArray(args.map { it.toFluoriteString() }.toMutableList()),
         "IN" to FluoriteStream {
             while (true) {
                 val line = readlnOrNull() ?: break
