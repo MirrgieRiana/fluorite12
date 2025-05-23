@@ -63,7 +63,6 @@ import mirrg.fluorite12.UnaryDollarSharpNode
 import mirrg.fluorite12.UnaryExclamationExclamationNode
 import mirrg.fluorite12.UnaryExclamationNode
 import mirrg.fluorite12.UnaryMinusNode
-import mirrg.fluorite12.UnaryNode
 import mirrg.fluorite12.UnaryPlusNode
 import mirrg.fluorite12.UnaryQuestionNode
 import mirrg.fluorite12.compilers.objects.FluoriteString
@@ -222,49 +221,13 @@ fun Frame.compileToGetter(node: Node): Getter {
                 val name = node.main.right.string
                 val variable = getVariable("::$name")
                 val mountCounts = getMountCounts()
-
-                val commasNode = node.arguments
-                val identifierNodes = when (commasNode) {
-                    is EmptyNode -> listOf()
-                    is CommasNode -> commasNode.nodes
-                    is SemicolonsNode -> commasNode.nodes
-                    else -> listOf(commasNode)
-                }
-                val variables = identifierNodes.map {
-                    require(it is IdentifierNode)
-                    it.string
-                }
-                val newFrame = Frame(this)
-                val argumentsVariableIndex = newFrame.defineVariable("__")
-                val variableIndices = variables.map { newFrame.defineVariable(it) }
-                val getter = newFrame.compileToGetter(node.body)
-                val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
-                val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
-
-                val argumentGetters = listOf(getter3)
+                val getter = compileFunctionBodyToGetter(node.arguments, node.body)
+                val argumentGetters = listOf(getter)
                 MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, false)
             } else { // 関数呼び出し
                 val functionGetter = compileToGetter(node.main)
-
-                val commasNode = node.arguments
-                val identifierNodes = when (commasNode) {
-                    is EmptyNode -> listOf()
-                    is CommasNode -> commasNode.nodes
-                    is SemicolonsNode -> commasNode.nodes
-                    else -> listOf(commasNode)
-                }
-                val variables = identifierNodes.map {
-                    require(it is IdentifierNode)
-                    it.string
-                }
-                val newFrame = Frame(this)
-                val argumentsVariableIndex = newFrame.defineVariable("__")
-                val variableIndices = variables.map { newFrame.defineVariable(it) }
-                val getter = newFrame.compileToGetter(node.body)
-                val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
-                val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
-
-                val argumentGetters = listOf(getter3)
+                val getter = compileFunctionBodyToGetter(node.arguments, node.body)
+                val argumentGetters = listOf(getter)
                 FunctionInvocationGetter(functionGetter, argumentGetters)
             }
         }
@@ -276,49 +239,13 @@ fun Frame.compileToGetter(node: Node): Getter {
                 val name = node.main.right.string
                 val variable = getVariable("::$name")
                 val mountCounts = getMountCounts()
-
-                val commasNode = node.arguments
-                val identifierNodes = when (commasNode) {
-                    is EmptyNode -> listOf()
-                    is CommasNode -> commasNode.nodes
-                    is SemicolonsNode -> commasNode.nodes
-                    else -> listOf(commasNode)
-                }
-                val variables = identifierNodes.map {
-                    require(it is IdentifierNode)
-                    it.string
-                }
-                val newFrame = Frame(this)
-                val argumentsVariableIndex = newFrame.defineVariable("__")
-                val variableIndices = variables.map { newFrame.defineVariable(it) }
-                val getter = newFrame.compileToGetter(node.body)
-                val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
-                val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
-
-                val argumentGetters = listOf(getter3)
+                val getter = compileFunctionBodyToGetter(node.arguments, node.body)
+                val argumentGetters = listOf(getter)
                 MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, true)
             } else { // 関数呼び出し
                 val functionGetter = compileToGetter(node.main)
-
-                val commasNode = node.arguments
-                val identifierNodes = when (commasNode) {
-                    is EmptyNode -> listOf()
-                    is CommasNode -> commasNode.nodes
-                    is SemicolonsNode -> commasNode.nodes
-                    else -> listOf(commasNode)
-                }
-                val variables = identifierNodes.map {
-                    require(it is IdentifierNode)
-                    it.string
-                }
-                val newFrame = Frame(this)
-                val argumentsVariableIndex = newFrame.defineVariable("__")
-                val variableIndices = variables.map { newFrame.defineVariable(it) }
-                val getter = newFrame.compileToGetter(node.body)
-                val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
-                val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
-
-                val argumentGetters = listOf(getter3)
+                val getter = compileFunctionBodyToGetter(node.arguments, node.body)
+                val argumentGetters = listOf(getter)
                 FunctionBindGetter(functionGetter, argumentGetters)
             }
         }
@@ -423,6 +350,26 @@ private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
         is FloatNode -> LiteralGetter("-${main.string}".toFluoriteNumber())
         else -> ToNegativeNumberGetter(compileToGetter(main))
     }
+}
+
+private fun Frame.compileFunctionBodyToGetter(arguments: Node, body: Node): Getter {
+    val commasNode = arguments
+    val identifierNodes = when (commasNode) {
+        is EmptyNode -> listOf()
+        is CommasNode -> commasNode.nodes
+        is SemicolonsNode -> commasNode.nodes
+        else -> listOf(commasNode)
+    }
+    val variables = identifierNodes.map {
+        require(it is IdentifierNode)
+        it.string
+    }
+    val newFrame = Frame(this)
+    val argumentsVariableIndex = newFrame.defineVariable("__")
+    val variableIndices = variables.map { newFrame.defineVariable(it) }
+    val getter = newFrame.compileToGetter(body)
+    val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
+    return NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
 }
 
 private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
