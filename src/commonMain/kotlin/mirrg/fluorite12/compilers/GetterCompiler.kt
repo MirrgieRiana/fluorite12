@@ -431,77 +431,75 @@ private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
 }
 
 private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
-    val left = node.left
-    val right = node.right
     return when (node) {
         is InfixPeriodNode -> {
-            val receiverGetter = compileToGetter(left)
-            val nameGetter = when (right) {
-                is IdentifierNode -> LiteralGetter(FluoriteString(right.string))
-                else -> compileToGetter(right)
+            val receiverGetter = compileToGetter(node.left)
+            val nameGetter = when (node.right) {
+                is IdentifierNode -> LiteralGetter(FluoriteString(node.right.string))
+                else -> compileToGetter(node.right)
             }
             ItemAccessGetter(receiverGetter, nameGetter)
         }
 
         is InfixColonColonNode -> {
-            if (right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: $right")
-            val receiverGetter = compileToGetter(left)
-            val name = right.string
+            if (node.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.right}")
+            val receiverGetter = compileToGetter(node.left)
+            val name = node.right.string
             val variable = getVariable("::$name")
             val mountCounts = getMountCounts()
             MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true)
         }
 
-        is InfixPlusNode -> PlusGetter(compileToGetter(left), compileToGetter(right))
-        is InfixAmpersandNode -> StringConcatenationGetter(listOf(ConversionStringGetter(compileToGetter(left)), ConversionStringGetter(compileToGetter(right))))
-        is InfixMinusNode -> MinusGetter(compileToGetter(left), compileToGetter(right))
-        is InfixAsteriskNode -> TimesGetter(compileToGetter(left), compileToGetter(right))
-        is InfixSlashNode -> DivGetter(compileToGetter(left), compileToGetter(right))
-        is InfixPercentPercentNode -> DivisibleGetter(compileToGetter(left), compileToGetter(right))
-        is InfixPercentNode -> ModGetter(compileToGetter(left), compileToGetter(right))
-        is InfixCircumflexNode -> PowerGetter(compileToGetter(left), compileToGetter(right))
-        is InfixPeriodPeriodNode -> RangeGetter(compileToGetter(left), compileToGetter(right))
-        is InfixLessEqualGreaterNode -> SpaceshipGetter(compileToGetter(left), compileToGetter(right))
-        is InfixTildeNode -> ExclusiveRangeGetter(compileToGetter(left), compileToGetter(right))
-        is InfixAmpersandAmpersandNode -> AndGetter(compileToGetter(left), compileToGetter(right))
-        is InfixPipePipeNode -> OrGetter(compileToGetter(left), compileToGetter(right))
-        is InfixQuestionColonNode -> ElvisGetter(compileToGetter(left), compileToGetter(right))
+        is InfixPlusNode -> PlusGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixAmpersandNode -> StringConcatenationGetter(listOf(ConversionStringGetter(compileToGetter(node.left)), ConversionStringGetter(compileToGetter(node.right))))
+        is InfixMinusNode -> MinusGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixAsteriskNode -> TimesGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixSlashNode -> DivGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixPercentPercentNode -> DivisibleGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixPercentNode -> ModGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixCircumflexNode -> PowerGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixPeriodPeriodNode -> RangeGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixLessEqualGreaterNode -> SpaceshipGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixTildeNode -> ExclusiveRangeGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixAmpersandAmpersandNode -> AndGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixPipePipeNode -> OrGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixQuestionColonNode -> ElvisGetter(compileToGetter(node.left), compileToGetter(node.right))
 
         is InfixExclamationQuestionNode -> {
-            val (name, rightNode) = if (right is ArrowBracketsNode && right.type == BracketsType.ROUND) {
-                require(right.arguments is IdentifierNode)
-                Pair(right.arguments.string, right.body)
+            val (name, rightNode) = if (node.right is ArrowBracketsNode && node.right.type == BracketsType.ROUND) {
+                require(node.right.arguments is IdentifierNode)
+                Pair(node.right.arguments.string, node.right.body)
             } else {
-                Pair(null, right)
+                Pair(null, node.right)
             }
             if (name != null) {
                 val newFrame = Frame(this)
                 val argumentVariableIndex = newFrame.defineVariable(name)
-                TryCatchWithVariableGetter(compileToGetter(left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
+                TryCatchWithVariableGetter(compileToGetter(node.left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToGetter(rightNode))
             } else {
-                TryCatchGetter(compileToGetter(left), compileToGetter(rightNode))
+                TryCatchGetter(compileToGetter(node.left), compileToGetter(rightNode))
             }
         }
 
         is InfixColonNode -> {
-            val leftGetter = when (left) {
-                is IdentifierNode -> LiteralGetter(FluoriteString(left.string))
-                else -> compileToGetter(left)
+            val leftGetter = when (node.left) {
+                is IdentifierNode -> LiteralGetter(FluoriteString(node.left.string))
+                else -> compileToGetter(node.left)
             }
-            EntryGetter(leftGetter, compileToGetter(right))
+            EntryGetter(leftGetter, compileToGetter(node.right))
         }
 
         is InfixEqualNode -> {
-            val setter = compileToSetter(left)
-            val getter = compileToGetter(right)
+            val setter = compileToSetter(node.left)
+            val getter = compileToGetter(node.right)
             AssignmentGetter(setter, getter)
         }
 
         is InfixMinusGreaterNode -> {
-            val commasNode = if (left is BracketsNode && left.type == BracketsType.ROUND) {
-                left.main
+            val commasNode = if (node.left is BracketsNode && node.left.type == BracketsType.ROUND) {
+                node.left.main
             } else {
-                left
+                node.left
             }
             val identifierNodes = when (commasNode) {
                 is EmptyNode -> listOf()
@@ -516,17 +514,17 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
             val newFrame = Frame(this)
             val argumentsVariableIndex = newFrame.defineVariable("__")
             val variableIndices = variables.map { newFrame.defineVariable(it) }
-            val getter = newFrame.compileToGetter(right)
+            val getter = newFrame.compileToGetter(node.right)
             FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
         }
 
         is InfixPipeNode -> {
-            val streamGetter = compileToGetter(left)
-            val (variable, contentNode) = if (right is InfixEqualGreaterNode) {
-                require(right.left is IdentifierNode)
-                Pair(right.left.string, right.right)
+            val streamGetter = compileToGetter(node.left)
+            val (variable, contentNode) = if (node.right is InfixEqualGreaterNode) {
+                require(node.right.left is IdentifierNode)
+                Pair(node.right.left.string, node.right.right)
             } else {
-                Pair("_", right)
+                Pair("_", node.right)
             }
             val newFrame = Frame(this)
             val argumentVariableIndex = newFrame.defineVariable(variable)
@@ -535,14 +533,14 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
         }
 
         is InfixGreaterGreaterNode -> {
-            val valueGetter = compileToGetter(left)
-            val functionGetter = compileToGetter(right)
+            val valueGetter = compileToGetter(node.left)
+            val functionGetter = compileToGetter(node.right)
             FunctionInvocationGetter(functionGetter, listOf(valueGetter))
         }
 
         is InfixLessLessNode -> {
-            val valueGetter = compileToGetter(right)
-            val functionGetter = compileToGetter(left)
+            val valueGetter = compileToGetter(node.right)
+            val functionGetter = compileToGetter(node.left)
             FunctionInvocationGetter(functionGetter, listOf(valueGetter))
         }
 
