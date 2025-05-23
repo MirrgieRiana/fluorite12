@@ -135,7 +135,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val other by regexToken(""".""".toRegex()) // \r\n\t以外の制御文字、DEL、すべての2バイト文字、サロゲートペアの片方
 
 
-    val lineComment by sharp * zeroOrMore(-NotParser(br) * AnyParser)
+    val lineComment by (sharp or slash * slash) * zeroOrMore(-NotParser(br) * AnyParser)
 
 
     val s by zeroOrMore(space or tab or lineComment)

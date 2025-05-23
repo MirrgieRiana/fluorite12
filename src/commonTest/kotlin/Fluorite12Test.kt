@@ -39,6 +39,15 @@ class Fluorite12Test {
             ]
         """.let { assertEquals("[1;2;3]", eval(it).array()) }
 
+        // // による行コメント
+        """
+            [
+                1
+                2 // comment
+                3
+            ]
+        """.let { assertEquals("[1;2;3]", eval(it).array()) }
+
         // 行コメントの次の行に中置演算子としても解釈可能な前置演算子があったとしても、その行を結合しない
         """
             [
@@ -47,8 +56,21 @@ class Fluorite12Test {
                 -3
             ]
         """.let { assertEquals("[1;2;-3]", eval(it).array()) }
+        """
+            [
+                1
+                2 // comment
+                -3
+            ]
+        """.let { assertEquals("[1;2;-3]", eval(it).array()) }
 
-        assertEquals(1, eval("1 # comment").int) // 行コメントの後に改行が無くてもよい
+        // 行コメントの本文が空でもよい
+        assertEquals(1, eval("1 #").int)
+        assertEquals(1, eval("1 //").int)
+
+        // 行コメントの後に改行が無くてもよい
+        assertEquals(1, eval("1 # comment").int)
+        assertEquals(1, eval("1 // comment").int)
 
     }
 
