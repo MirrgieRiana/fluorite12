@@ -12,10 +12,22 @@ class FloatNode(tokens: List<TokenMatch>, string: String) : NumberNode(tokens, s
 class RawStringNode(val left: TokenMatch, val node: LiteralStringContent, val right: TokenMatch) : Node()
 class TemplateStringNode(val left: TokenMatch, val stringContents: List<StringContent>, val right: TokenMatch) : Node()
 class EmbeddedStringNode(val left: List<TokenMatch>, val stringContents: List<StringContent>, val right: List<TokenMatch>) : Node()
-class ArrowBracketsNode(val type: BracketsType, val left: TokenMatch, val arguments: Node, val arrow: List<TokenMatch>, val body: Node, val right: TokenMatch) : Node()
-class BracketsNode(val type: BracketsType, val left: TokenMatch, val main: Node, val right: TokenMatch) : Node()
-class RightArrowBracketsNode(val type: BracketsType, val main: Node, val left: TokenMatch, val arguments: Node, val arrow: List<TokenMatch>, val body: Node, val right: TokenMatch) : Node()
-class RightBracketsNode(val type: BracketsType, val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()
+sealed class ArrowBracketsNode(val left: TokenMatch, val arguments: Node, val arrow: List<TokenMatch>, val body: Node, val right: TokenMatch) : Node()
+class ArrowBracketsRoundNode(left: TokenMatch, arguments: Node, arrow: List<TokenMatch>, body: Node, right: TokenMatch) : ArrowBracketsNode(left, arguments, arrow, body, right)
+class ArrowBracketsSquareNode(left: TokenMatch, arguments: Node, arrow: List<TokenMatch>, body: Node, right: TokenMatch) : ArrowBracketsNode(left, arguments, arrow, body, right)
+class ArrowBracketsCurlyNode(left: TokenMatch, arguments: Node, arrow: List<TokenMatch>, body: Node, right: TokenMatch) : ArrowBracketsNode(left, arguments, arrow, body, right)
+sealed class BracketsNode(val left: TokenMatch, val main: Node, val right: TokenMatch) : Node()
+class BracketsRoundNode(left: TokenMatch, main: Node, right: TokenMatch) : BracketsNode(left, main, right)
+class BracketsSquareNode(left: TokenMatch, main: Node, right: TokenMatch) : BracketsNode(left, main, right)
+class BracketsCurlyNode(left: TokenMatch, main: Node, right: TokenMatch) : BracketsNode(left, main, right)
+sealed class RightArrowBracketsNode(val main: Node, val left: TokenMatch, val arguments: Node, val arrow: List<TokenMatch>, val body: Node, val right: TokenMatch) : Node()
+class RightArrowBracketsRoundNode(main: Node, left: TokenMatch, arguments: Node, arrow: List<TokenMatch>, body: Node, right: TokenMatch) : RightArrowBracketsNode(main, left, arguments, arrow, body, right)
+class RightArrowBracketsSquareNode(main: Node, left: TokenMatch, arguments: Node, arrow: List<TokenMatch>, body: Node, right: TokenMatch) : RightArrowBracketsNode(main, left, arguments, arrow, body, right)
+class RightArrowBracketsCurlyNode(main: Node, left: TokenMatch, arguments: Node, arrow: List<TokenMatch>, body: Node, right: TokenMatch) : RightArrowBracketsNode(main, left, arguments, arrow, body, right)
+sealed class RightBracketsNode(val main: Node, val left: TokenMatch, val argument: Node, val right: TokenMatch) : Node()
+class RightBracketsRoundNode(main: Node, left: TokenMatch, argument: Node, right: TokenMatch) : RightBracketsNode(main, left, argument, right)
+class RightBracketsSquareNode(main: Node, left: TokenMatch, argument: Node, right: TokenMatch) : RightBracketsNode(main, left, argument, right)
+class RightBracketsCurlyNode(main: Node, left: TokenMatch, argument: Node, right: TokenMatch) : RightBracketsNode(main, left, argument, right)
 sealed class UnaryNode(val operator: List<TokenMatch>, val main: Node, val side: Side) : Node()
 class UnaryPlusNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
 class UnaryMinusNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
@@ -57,12 +69,6 @@ class ComparisonsNode(val nodes: List<Node>, val operators: List<Pair<List<Token
 class ConditionNode(val condition: Node, val question: TokenMatch, val ok: Node, val colon: TokenMatch, val ng: Node) : Node()
 class CommasNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
 class SemicolonsNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
-
-enum class BracketsType {
-    ROUND,
-    SQUARE,
-    CURLY,
-}
 
 enum class Side {
     LEFT,

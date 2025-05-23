@@ -2,8 +2,10 @@ package mirrg.fluorite12.compilers
 
 import com.ionspin.kotlin.bignum.integer.toBigInteger
 import mirrg.fluorite12.ArrowBracketsNode
-import mirrg.fluorite12.BracketsNode
-import mirrg.fluorite12.BracketsType
+import mirrg.fluorite12.ArrowBracketsRoundNode
+import mirrg.fluorite12.BracketsCurlyNode
+import mirrg.fluorite12.BracketsRoundNode
+import mirrg.fluorite12.BracketsSquareNode
 import mirrg.fluorite12.CommasNode
 import mirrg.fluorite12.ComparisonOperatorType
 import mirrg.fluorite12.ComparisonsNode
@@ -45,8 +47,12 @@ import mirrg.fluorite12.LiteralStringContent
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.NodeStringContent
 import mirrg.fluorite12.RawStringNode
-import mirrg.fluorite12.RightArrowBracketsNode
-import mirrg.fluorite12.RightBracketsNode
+import mirrg.fluorite12.RightArrowBracketsCurlyNode
+import mirrg.fluorite12.RightArrowBracketsRoundNode
+import mirrg.fluorite12.RightArrowBracketsSquareNode
+import mirrg.fluorite12.RightBracketsCurlyNode
+import mirrg.fluorite12.RightBracketsRoundNode
+import mirrg.fluorite12.RightBracketsSquareNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
 import mirrg.fluorite12.UnaryAmpersandNode
@@ -181,197 +187,191 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is ArrowBracketsNode -> throw IllegalArgumentException("Unknown operator: ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
 
-        is BracketsNode -> when (node.type) {
-            BracketsType.ROUND -> {
-                val frame = Frame(this)
-                val newNode = frame.compileToGetter(node.main)
-                NewEnvironmentGetter(frame.nextVariableIndex, frame.mountCount, newNode)
-            }
+        is BracketsRoundNode -> {
+            val frame = Frame(this)
+            val newNode = frame.compileToGetter(node.main)
+            NewEnvironmentGetter(frame.nextVariableIndex, frame.mountCount, newNode)
+        }
 
-            BracketsType.SQUARE -> {
-                val nodes = if (node.main is SemicolonsNode) node.main.nodes else listOf(node.main)
-                ArrayCreationGetter(nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
-            }
+        is BracketsSquareNode -> {
+            val nodes = if (node.main is SemicolonsNode) node.main.nodes else listOf(node.main)
+            ArrayCreationGetter(nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
+        }
 
-            BracketsType.CURLY -> {
-                val contentNodes = if (node.main is SemicolonsNode) node.main.nodes else listOf(node.main)
-                ObjectCreationGetter(null, contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
-            }
+        is BracketsCurlyNode -> {
+            val contentNodes = if (node.main is SemicolonsNode) node.main.nodes else listOf(node.main)
+            ObjectCreationGetter(null, contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
         }
 
         is UnaryNode -> compileUnaryOperatorToGetter(node)
 
-        is RightArrowBracketsNode -> when (node.type) {
-            BracketsType.ROUND -> {
-                if (node.main is InfixColonColonNode) { // メソッド呼出し
-                    if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
-                    val receiverGetter = compileToGetter(node.main.left)
-                    val name = node.main.right.string
-                    val variable = getVariable("::$name")
-                    val mountCounts = getMountCounts()
+        is RightArrowBracketsRoundNode -> {
+            if (node.main is InfixColonColonNode) { // メソッド呼出し
+                if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
+                val receiverGetter = compileToGetter(node.main.left)
+                val name = node.main.right.string
+                val variable = getVariable("::$name")
+                val mountCounts = getMountCounts()
 
-                    val commasNode = node.arguments
-                    val identifierNodes = when (commasNode) {
-                        is EmptyNode -> listOf()
-                        is CommasNode -> commasNode.nodes
-                        is SemicolonsNode -> commasNode.nodes
-                        else -> listOf(commasNode)
-                    }
-                    val variables = identifierNodes.map {
-                        require(it is IdentifierNode)
-                        it.string
-                    }
-                    val newFrame = Frame(this)
-                    val argumentsVariableIndex = newFrame.defineVariable("__")
-                    val variableIndices = variables.map { newFrame.defineVariable(it) }
-                    val getter = newFrame.compileToGetter(node.body)
-                    val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
-                    val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
-
-                    val argumentGetters = listOf(getter3)
-                    MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, false)
-                } else { // 関数呼び出し
-                    val functionGetter = compileToGetter(node.main)
-
-                    val commasNode = node.arguments
-                    val identifierNodes = when (commasNode) {
-                        is EmptyNode -> listOf()
-                        is CommasNode -> commasNode.nodes
-                        is SemicolonsNode -> commasNode.nodes
-                        else -> listOf(commasNode)
-                    }
-                    val variables = identifierNodes.map {
-                        require(it is IdentifierNode)
-                        it.string
-                    }
-                    val newFrame = Frame(this)
-                    val argumentsVariableIndex = newFrame.defineVariable("__")
-                    val variableIndices = variables.map { newFrame.defineVariable(it) }
-                    val getter = newFrame.compileToGetter(node.body)
-                    val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
-                    val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
-
-                    val argumentGetters = listOf(getter3)
-                    FunctionInvocationGetter(functionGetter, argumentGetters)
+                val commasNode = node.arguments
+                val identifierNodes = when (commasNode) {
+                    is EmptyNode -> listOf()
+                    is CommasNode -> commasNode.nodes
+                    is SemicolonsNode -> commasNode.nodes
+                    else -> listOf(commasNode)
                 }
-            }
-
-            BracketsType.SQUARE -> {
-                if (node.main is InfixColonColonNode) { // メソッド呼出し
-                    if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
-                    val receiverGetter = compileToGetter(node.main.left)
-                    val name = node.main.right.string
-                    val variable = getVariable("::$name")
-                    val mountCounts = getMountCounts()
-
-                    val commasNode = node.arguments
-                    val identifierNodes = when (commasNode) {
-                        is EmptyNode -> listOf()
-                        is CommasNode -> commasNode.nodes
-                        is SemicolonsNode -> commasNode.nodes
-                        else -> listOf(commasNode)
-                    }
-                    val variables = identifierNodes.map {
-                        require(it is IdentifierNode)
-                        it.string
-                    }
-                    val newFrame = Frame(this)
-                    val argumentsVariableIndex = newFrame.defineVariable("__")
-                    val variableIndices = variables.map { newFrame.defineVariable(it) }
-                    val getter = newFrame.compileToGetter(node.body)
-                    val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
-                    val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
-
-                    val argumentGetters = listOf(getter3)
-                    MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, true)
-                } else { // 関数呼び出し
-                    val functionGetter = compileToGetter(node.main)
-
-                    val commasNode = node.arguments
-                    val identifierNodes = when (commasNode) {
-                        is EmptyNode -> listOf()
-                        is CommasNode -> commasNode.nodes
-                        is SemicolonsNode -> commasNode.nodes
-                        else -> listOf(commasNode)
-                    }
-                    val variables = identifierNodes.map {
-                        require(it is IdentifierNode)
-                        it.string
-                    }
-                    val newFrame = Frame(this)
-                    val argumentsVariableIndex = newFrame.defineVariable("__")
-                    val variableIndices = variables.map { newFrame.defineVariable(it) }
-                    val getter = newFrame.compileToGetter(node.body)
-                    val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
-                    val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
-
-                    val argumentGetters = listOf(getter3)
-                    FunctionBindGetter(functionGetter, argumentGetters)
+                val variables = identifierNodes.map {
+                    require(it is IdentifierNode)
+                    it.string
                 }
-            }
+                val newFrame = Frame(this)
+                val argumentsVariableIndex = newFrame.defineVariable("__")
+                val variableIndices = variables.map { newFrame.defineVariable(it) }
+                val getter = newFrame.compileToGetter(node.body)
+                val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
+                val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
 
-            else -> throw IllegalArgumentException("Unknown operator: ${node.main} ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
+                val argumentGetters = listOf(getter3)
+                MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, false)
+            } else { // 関数呼び出し
+                val functionGetter = compileToGetter(node.main)
+
+                val commasNode = node.arguments
+                val identifierNodes = when (commasNode) {
+                    is EmptyNode -> listOf()
+                    is CommasNode -> commasNode.nodes
+                    is SemicolonsNode -> commasNode.nodes
+                    else -> listOf(commasNode)
+                }
+                val variables = identifierNodes.map {
+                    require(it is IdentifierNode)
+                    it.string
+                }
+                val newFrame = Frame(this)
+                val argumentsVariableIndex = newFrame.defineVariable("__")
+                val variableIndices = variables.map { newFrame.defineVariable(it) }
+                val getter = newFrame.compileToGetter(node.body)
+                val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
+                val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
+
+                val argumentGetters = listOf(getter3)
+                FunctionInvocationGetter(functionGetter, argumentGetters)
+            }
         }
 
-        is RightBracketsNode -> when (node.type) {
-            BracketsType.ROUND -> {
-                if (node.main is InfixColonColonNode) { // メソッド呼出し
-                    if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
-                    val receiverGetter = compileToGetter(node.main.left)
-                    val name = node.main.right.string
-                    val variable = getVariable("::$name")
-                    val mountCounts = getMountCounts()
-                    val argumentNodes = when (node.argument) {
-                        is EmptyNode -> listOf()
-                        is SemicolonsNode -> node.argument.nodes
-                        else -> listOf(node.argument)
-                    }
-                    val argumentGetters = argumentNodes.map { compileToGetter(it) }
-                    MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, false)
-                } else { // 関数呼び出し
-                    val functionGetter = compileToGetter(node.main)
-                    val argumentNodes = when (node.argument) {
-                        is EmptyNode -> listOf()
-                        is SemicolonsNode -> node.argument.nodes
-                        else -> listOf(node.argument)
-                    }
-                    val argumentGetters = argumentNodes.map { compileToGetter(it) }
-                    FunctionInvocationGetter(functionGetter, argumentGetters)
-                }
-            }
+        is RightArrowBracketsSquareNode -> {
+            if (node.main is InfixColonColonNode) { // メソッド呼出し
+                if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
+                val receiverGetter = compileToGetter(node.main.left)
+                val name = node.main.right.string
+                val variable = getVariable("::$name")
+                val mountCounts = getMountCounts()
 
-            BracketsType.SQUARE -> {
-                if (node.main is InfixColonColonNode) { // メソッド呼出し
-                    if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
-                    val receiverGetter = compileToGetter(node.main.left)
-                    val name = node.main.right.string
-                    val variable = getVariable("::$name")
-                    val mountCounts = getMountCounts()
-                    val argumentNodes = when (node.argument) {
-                        is EmptyNode -> listOf()
-                        is SemicolonsNode -> node.argument.nodes
-                        else -> listOf(node.argument)
-                    }
-                    val argumentGetters = argumentNodes.map { compileToGetter(it) }
-                    MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, true)
-                } else { // 関数呼び出し
-                    val functionGetter = compileToGetter(node.main)
-                    val argumentNodes = when (node.argument) {
-                        is EmptyNode -> listOf()
-                        is SemicolonsNode -> node.argument.nodes
-                        else -> listOf(node.argument)
-                    }
-                    val argumentGetters = argumentNodes.map { compileToGetter(it) }
-                    FunctionBindGetter(functionGetter, argumentGetters)
+                val commasNode = node.arguments
+                val identifierNodes = when (commasNode) {
+                    is EmptyNode -> listOf()
+                    is CommasNode -> commasNode.nodes
+                    is SemicolonsNode -> commasNode.nodes
+                    else -> listOf(commasNode)
                 }
-            }
+                val variables = identifierNodes.map {
+                    require(it is IdentifierNode)
+                    it.string
+                }
+                val newFrame = Frame(this)
+                val argumentsVariableIndex = newFrame.defineVariable("__")
+                val variableIndices = variables.map { newFrame.defineVariable(it) }
+                val getter = newFrame.compileToGetter(node.body)
+                val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
+                val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
 
-            BracketsType.CURLY -> {
-                val parentGetter = compileToGetter(node.main)
-                val contentNodes = if (node.argument is SemicolonsNode) node.argument.nodes else listOf(node.argument)
-                val contentGetters = contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) }
-                ObjectCreationGetter(parentGetter, contentGetters)
+                val argumentGetters = listOf(getter3)
+                MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, true)
+            } else { // 関数呼び出し
+                val functionGetter = compileToGetter(node.main)
+
+                val commasNode = node.arguments
+                val identifierNodes = when (commasNode) {
+                    is EmptyNode -> listOf()
+                    is CommasNode -> commasNode.nodes
+                    is SemicolonsNode -> commasNode.nodes
+                    else -> listOf(commasNode)
+                }
+                val variables = identifierNodes.map {
+                    require(it is IdentifierNode)
+                    it.string
+                }
+                val newFrame = Frame(this)
+                val argumentsVariableIndex = newFrame.defineVariable("__")
+                val variableIndices = variables.map { newFrame.defineVariable(it) }
+                val getter = newFrame.compileToGetter(node.body)
+                val getter2 = FunctionGetter(newFrame.frameIndex, argumentsVariableIndex, variableIndices, getter)
+                val getter3 = NewEnvironmentGetter(newFrame.nextVariableIndex, newFrame.mountCount, getter2)
+
+                val argumentGetters = listOf(getter3)
+                FunctionBindGetter(functionGetter, argumentGetters)
             }
+        }
+
+        is RightArrowBracketsCurlyNode -> throw IllegalArgumentException("Unknown operator: ${node.main} ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
+
+        is RightBracketsRoundNode -> {
+            if (node.main is InfixColonColonNode) { // メソッド呼出し
+                if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
+                val receiverGetter = compileToGetter(node.main.left)
+                val name = node.main.right.string
+                val variable = getVariable("::$name")
+                val mountCounts = getMountCounts()
+                val argumentNodes = when (node.argument) {
+                    is EmptyNode -> listOf()
+                    is SemicolonsNode -> node.argument.nodes
+                    else -> listOf(node.argument)
+                }
+                val argumentGetters = argumentNodes.map { compileToGetter(it) }
+                MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, false)
+            } else { // 関数呼び出し
+                val functionGetter = compileToGetter(node.main)
+                val argumentNodes = when (node.argument) {
+                    is EmptyNode -> listOf()
+                    is SemicolonsNode -> node.argument.nodes
+                    else -> listOf(node.argument)
+                }
+                val argumentGetters = argumentNodes.map { compileToGetter(it) }
+                FunctionInvocationGetter(functionGetter, argumentGetters)
+            }
+        }
+
+        is RightBracketsSquareNode -> {
+            if (node.main is InfixColonColonNode) { // メソッド呼出し
+                if (node.main.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.main.right}")
+                val receiverGetter = compileToGetter(node.main.left)
+                val name = node.main.right.string
+                val variable = getVariable("::$name")
+                val mountCounts = getMountCounts()
+                val argumentNodes = when (node.argument) {
+                    is EmptyNode -> listOf()
+                    is SemicolonsNode -> node.argument.nodes
+                    else -> listOf(node.argument)
+                }
+                val argumentGetters = argumentNodes.map { compileToGetter(it) }
+                MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, true)
+            } else { // 関数呼び出し
+                val functionGetter = compileToGetter(node.main)
+                val argumentNodes = when (node.argument) {
+                    is EmptyNode -> listOf()
+                    is SemicolonsNode -> node.argument.nodes
+                    else -> listOf(node.argument)
+                }
+                val argumentGetters = argumentNodes.map { compileToGetter(it) }
+                FunctionBindGetter(functionGetter, argumentGetters)
+            }
+        }
+
+        is RightBracketsCurlyNode -> {
+            val parentGetter = compileToGetter(node.main)
+            val contentNodes = if (node.argument is SemicolonsNode) node.argument.nodes else listOf(node.argument)
+            val contentGetters = contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) }
+            ObjectCreationGetter(parentGetter, contentGetters)
         }
 
         is InfixNode -> compileInfixOperatorToGetter(node)
@@ -466,7 +466,7 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
         is InfixQuestionColonNode -> ElvisGetter(compileToGetter(node.left), compileToGetter(node.right))
 
         is InfixExclamationQuestionNode -> {
-            val (name, rightNode) = if (node.right is ArrowBracketsNode && node.right.type == BracketsType.ROUND) {
+            val (name, rightNode) = if (node.right is ArrowBracketsRoundNode) {
                 require(node.right.arguments is IdentifierNode)
                 Pair(node.right.arguments.string, node.right.body)
             } else {
@@ -496,7 +496,7 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
         }
 
         is InfixMinusGreaterNode -> {
-            val commasNode = if (node.left is BracketsNode && node.left.type == BracketsType.ROUND) {
+            val commasNode = if (node.left is BracketsRoundNode) {
                 node.left.main
             } else {
                 node.left
