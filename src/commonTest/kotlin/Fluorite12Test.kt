@@ -72,6 +72,23 @@ class Fluorite12Test {
         assertEquals(1, eval("1 # comment").int)
         assertEquals(1, eval("1 // comment").int)
 
+        assertEquals("[1;2;3]", eval("[1, /* comment */2, 3]").array()) // ブロックコメントが書ける
+        assertEquals("[1;2;3]", eval("[1, /**/2, 3]").array()) // ブロックコメントが空でもよい 
+        assertEquals("[1;2;3]", eval("[1, /* /* comment */ */2, 3]").array()) // ブロックコメントを入れ子にできる
+        assertEquals("[1;2;3]", eval("/* comment */[1, 2, 3]").array()) // ブロックコメントの前に何もなくてもよい
+        assertEquals("[1;2;3]", eval("[1, 2, 3]/* comment */").array()) // ブロックコメントの後に何もなくてもよい
+
+        // ブロックコメントの途中に改行が入ってもよい
+        """
+            [
+                1
+                /*
+                 * comment
+                 */
+                2
+            ]
+        """.let { assertEquals("[1;2]", eval(it).array()) }
+
     }
 
     @Test

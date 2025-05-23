@@ -137,9 +137,14 @@ class Fluorite12Grammar : Grammar<Node>() {
 
     val lineComment by (sharp or slash * slash) * zeroOrMore(-NotParser(br) * AnyParser)
 
+    val blockCommentContent: Parser<List<TokenMatch>> by OrCombinator(
+        cachedParser { blockComment },
+        -NotParser(asterisk * slash) * AnyParser map { listOf(it) },
+    )
+    val blockComment: Parser<List<TokenMatch>> by slash * asterisk * zeroOrMore(blockCommentContent) * asterisk * slash map { listOf(it.t1, it.t2, *it.t3.flatten().toTypedArray(), it.t4) }
 
-    val s by zeroOrMore(space or tab or lineComment)
-    val b by zeroOrMore(space or tab or lineComment) * zeroOrMore(br * zeroOrMore(space or tab or lineComment))
+    val s by zeroOrMore(space or tab or lineComment or blockComment)
+    val b by zeroOrMore(space or tab or lineComment or blockComment) * zeroOrMore(br * zeroOrMore(space or tab or lineComment or blockComment))
     val uAlphabet by uA or uB or uC or uD or uE or uF or uG or uH or uI or uJ or uK or uL or uM or uN or uO or uP or uQ or uR or uS or uT or uU or uV or uW or uX or uY or uZ
     val lAlphabet by lA or lB or lC or lD or lE or lF or lG or lH or lI or lJ or lK or lL or lM or lN or lO or lP or lQ or lR or lS or lT or lU or lV or lW or lX or lY or lZ
     val number by zero or nonZero
