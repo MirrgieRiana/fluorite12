@@ -4,3 +4,6 @@
 /kotlin-js-store
 *.hprof
 /openjdk17/
+
+/buildSrc/.gradle
+/buildSrc/build
