@@ -257,8 +257,8 @@ class Fluorite12Grammar : Grammar<Node>() {
         -s * lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> RightBracketsNode(BracketsType.SQUARE, main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> RightBracketsNode(BracketsType.CURLY, main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
 
-        -b * +period * -b * factor map { { main -> InfixNode(InfixOperatorType.PERIOD, main, it.t1, it.t2) } },
-        -b * +(colon * colon) * -b * factor map { { main -> InfixNode(InfixOperatorType.COLON_COLON, main, it.t1, it.t2) } },
+        -b * +period * -b * factor map { { main -> InfixPeriodNode(main, it.t1, it.t2) } },
+        -b * +(colon * colon) * -b * factor map { { main -> InfixColonColonNode(main, it.t1, it.t2) } },
 
         -b * +(period * plus) map { { main -> UnaryPlusNode(it, main, Side.RIGHT) } },
         -b * +(period * minus) map { { main -> UnaryMinusNode(it, main, Side.RIGHT) } },
@@ -275,7 +275,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val pow: Parser<Node> by right * optional(-s * +circumflex * -b * cachedParser { left }) map {
         val right = it.t2
         if (right != null) {
-            InfixNode(InfixOperatorType.CIRCUMFLEX, it.t1, right.t1, right.t2)
+            InfixCircumflexNode(it.t1, right.t1, right.t2)
         } else {
             it.t1
         }
@@ -294,26 +294,26 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val left: Parser<Node> by zeroOrMore(leftOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
 
-    val mulOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by OrCombinator(
-        +asterisk map { Pair(it, InfixOperatorType.ASTERISK) },
-        +slash map { Pair(it, InfixOperatorType.SLASH) },
-        +(percent * percent) map { Pair(it, InfixOperatorType.PERCENT_PERCENT) },
-        +percent map { Pair(it, InfixOperatorType.PERCENT) },
+    val mulOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +asterisk map { Pair(it, ::InfixAsteriskNode) },
+        +slash map { Pair(it, ::InfixSlashNode) },
+        +(percent * percent) map { Pair(it, ::InfixPercentPercentNode) },
+        +percent map { Pair(it, ::InfixPercentNode) },
     )
-    val mul: Parser<Node> by leftAssociative(left, -s * mulOperator * -b) { left, operator, right -> InfixNode(operator.second, left, operator.first, right) }
-    val addOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by OrCombinator(
-        +plus map { Pair(it, InfixOperatorType.PLUS) },
-        +(minus * -NotParser(greater)) map { Pair(it, InfixOperatorType.MINUS) },
-        +(ampersand * -NotParser(ampersand)) map { Pair(it, InfixOperatorType.AMPERSAND) },
+    val mul: Parser<Node> by leftAssociative(left, -s * mulOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
+    val addOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +plus map { Pair(it, ::InfixPlusNode) },
+        +(minus * -NotParser(greater)) map { Pair(it, ::InfixMinusNode) },
+        +(ampersand * -NotParser(ampersand)) map { Pair(it, ::InfixAmpersandNode) },
     )
-    val add: Parser<Node> by leftAssociative(mul, -s * addOperator * -b) { left, operator, right -> InfixNode(operator.second, left, operator.first, right) }
-    val rangeOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by OrCombinator(
-        +(period * period) map { Pair(it, InfixOperatorType.PERIOD_PERIOD) },
-        +tilde map { Pair(it, InfixOperatorType.TILDE) },
+    val add: Parser<Node> by leftAssociative(mul, -s * addOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
+    val rangeOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +(period * period) map { Pair(it, ::InfixPeriodPeriodNode) },
+        +tilde map { Pair(it, ::InfixTildeNode) },
     )
-    val range: Parser<Node> by leftAssociative(add, -s * rangeOperator * -b) { left, operator, right -> InfixNode(operator.second, left, operator.first, right) }
-    val spaceshipOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by +(less * equal * greater) map { Pair(it, InfixOperatorType.LESS_EQUAL_GREATER) }
-    val spaceship: Parser<Node> by leftAssociative(range, -s * spaceshipOperator * -b) { left, operator, right -> InfixNode(operator.second, left, operator.first, right) }
+    val range: Parser<Node> by leftAssociative(add, -s * rangeOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
+    val spaceshipOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by +(less * equal * greater) map { Pair(it, ::InfixLessEqualGreaterNode) }
+    val spaceship: Parser<Node> by leftAssociative(range, -s * spaceshipOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
     val comparisonOperator: Parser<Pair<List<TokenMatch>, ComparisonOperatorType>> by OrCombinator(
         +(equal * equal) map { Pair(it, ComparisonOperatorType.EQUAL) }, // ==
         +(exclamation * equal) map { Pair(it, ComparisonOperatorType.EXCLAMATION_EQUAL) }, // !=
@@ -331,14 +331,14 @@ class Fluorite12Grammar : Grammar<Node>() {
             it.t1
         }
     }
-    val andOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by +(ampersand * ampersand) map { Pair(it, InfixOperatorType.AMPERSAND_AMPERSAND) }
-    val and: Parser<Node> by leftAssociative(comparison, -s * andOperator * -b) { left, operator, right -> InfixNode(operator.second, left, operator.first, right) }
-    val orOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by +(pipe * pipe) map { Pair(it, InfixOperatorType.PIPE_PIPE) }
-    val or: Parser<Node> by leftAssociative(and, -s * orOperator * -b) { left, operator, right -> InfixNode(operator.second, left, operator.first, right) }
+    val andOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by +(ampersand * ampersand) map { Pair(it, ::InfixAmpersandAmpersandNode) }
+    val and: Parser<Node> by leftAssociative(comparison, -s * andOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
+    val orOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by +(pipe * pipe) map { Pair(it, ::InfixPipePipeNode) }
+    val or: Parser<Node> by leftAssociative(and, -s * orOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
     val condition: Parser<Node> by OrCombinator(
         or * -b * question * -b * cachedParser { condition } * -b * (colon * -NotParser(colon)) * -b * cachedParser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
-        or * -b * +(question * colon) * -b * cachedParser { condition } map { InfixNode(InfixOperatorType.QUESTION_COLON, it.t1, it.t2, it.t3) },
-        or * -b * +(exclamation * question) * -b * cachedParser { condition } map { InfixNode(InfixOperatorType.EXCLAMATION_QUESTION, it.t1, it.t2, it.t3) },
+        or * -b * +(question * colon) * -b * cachedParser { condition } map { InfixQuestionColonNode(it.t1, it.t2, it.t3) },
+        or * -b * +(exclamation * question) * -b * cachedParser { condition } map { InfixExclamationQuestionNode(it.t1, it.t2, it.t3) },
         or,
     )
 
@@ -348,42 +348,42 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommasNode(it.first, it.second) }
 
-    val pipeOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by OrCombinator(
-        +pipe map { Pair(it, InfixOperatorType.PIPE) }, // |
+    val pipeOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +pipe map { Pair(it, ::InfixPipeNode) }, // |
     )
-    val argumentsOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by OrCombinator(
-        +(equal * greater) map { Pair(it, InfixOperatorType.EQUAL_GREATER) }, // =>
+    val argumentsOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +(equal * greater) map { Pair(it, ::InfixEqualGreaterNode) }, // =>
     )
-    val executionOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by OrCombinator(
-        +(greater * greater) map { Pair(it, InfixOperatorType.GREATER_GREATER) }, // >>
+    val executionOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +(greater * greater) map { Pair(it, ::InfixGreaterGreaterNode) }, // >>
     )
-    val assignmentOperator: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by OrCombinator(
-        +(equal * -NotParser(greater)) map { Pair(it, InfixOperatorType.EQUAL) }, // =
-        +(colon * -NotParser(equal or colon)) map { Pair(it, InfixOperatorType.COLON) }, // :
-        +(colon * equal) map { Pair(it, InfixOperatorType.COLON_EQUAL) }, // :=
-        +(less * less) map { Pair(it, InfixOperatorType.LESS_LESS) }, // <<
-        +(minus * greater) map { Pair(it, InfixOperatorType.MINUS_GREATER) }, // ->
+    val assignmentOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +(equal * -NotParser(greater)) map { Pair(it, ::InfixEqualNode) }, // =
+        +(colon * -NotParser(equal or colon)) map { Pair(it, ::InfixColonNode) }, // :
+        +(colon * equal) map { Pair(it, ::InfixColonEqualNode) }, // :=
+        +(less * less) map { Pair(it, ::InfixLessLessNode) }, // <<
+        +(minus * greater) map { Pair(it, ::InfixMinusGreaterNode) }, // ->
     )
 
-    val pipeOperatorPart: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by -b * pipeOperator * -b or -s * argumentsOperator * -b
-    val executionOperatorPart: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by -b * executionOperator * -b
-    val assignmentOperatorPart: Parser<Pair<List<TokenMatch>, InfixOperatorType>> by -s * assignmentOperator * -b
+    val pipeOperatorPart: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by -b * pipeOperator * -b or -s * argumentsOperator * -b
+    val executionOperatorPart: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by -b * executionOperator * -b
+    val assignmentOperatorPart: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by -s * assignmentOperator * -b
 
     val pipeRight: Parser<Node> by OrCombinator(
-        commas * pipeOperatorPart * cachedParser { pipeRight } map { InfixNode(it.t2.second, it.t1, it.t2.first, it.t3) },
-        commas * assignmentOperatorPart * cachedParser { stream } map { InfixNode(it.t2.second, it.t1, it.t2.first, it.t3) },
+        commas * pipeOperatorPart * cachedParser { pipeRight } map { it.t2.second(it.t1, it.t2.first, it.t3) },
+        commas * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
         commas,
     )
     val executionRight: Parser<Node> by OrCombinator(
-        commas * assignmentOperatorPart * cachedParser { stream } map { InfixNode(it.t2.second, it.t1, it.t2.first, it.t3) },
+        commas * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
         commas,
     )
     val streamRightPart: Parser<(Node) -> Node> by OrCombinator(
-        pipeOperatorPart * pipeRight map { { left -> InfixNode(it.t1.second, left, it.t1.first, it.t2) } },
-        executionOperatorPart * executionRight map { { left -> InfixNode(it.t1.second, left, it.t1.first, it.t2) } },
+        pipeOperatorPart * pipeRight map { { left -> it.t1.second(left, it.t1.first, it.t2) } },
+        executionOperatorPart * executionRight map { { left -> it.t1.second(left, it.t1.first, it.t2) } },
     )
     val stream: Parser<Node> by OrCombinator(
-        commas * assignmentOperatorPart * cachedParser { stream } map { InfixNode(it.t2.second, it.t1, it.t2.first, it.t3) },
+        commas * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
         commas * zeroOrMore(streamRightPart) map { it.t2.fold(it.t1) { left, part -> part(left) } },
     )
 

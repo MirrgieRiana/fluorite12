@@ -27,7 +27,32 @@ class UnaryDollarAmpersandNode(operator: List<TokenMatch>, main: Node, side: Sid
 class UnaryDollarAsteriskNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
 class UnaryAtNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
 class UnaryExclamationExclamationNode(operator: List<TokenMatch>, main: Node, side: Side) : UnaryNode(operator, main, side)
-class InfixNode(val type: InfixOperatorType, val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
+sealed class InfixNode(val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
+class InfixPeriodNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixColonColonNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixPlusNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixAmpersandNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixMinusNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixAsteriskNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixSlashNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixPercentPercentNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixPercentNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixCircumflexNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixPeriodPeriodNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixLessEqualGreaterNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixTildeNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixAmpersandAmpersandNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixPipePipeNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixQuestionColonNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixExclamationQuestionNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixColonNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixEqualNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixMinusGreaterNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixPipeNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixGreaterGreaterNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixLessLessNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixColonEqualNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixEqualGreaterNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class ComparisonsNode(val nodes: List<Node>, val operators: List<Pair<List<TokenMatch>, ComparisonOperatorType>>) : Node()
 class ConditionNode(val condition: Node, val question: TokenMatch, val ok: Node, val colon: TokenMatch, val ng: Node) : Node()
 class CommasNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()
@@ -42,34 +67,6 @@ enum class BracketsType {
 enum class Side {
     LEFT,
     RIGHT,
-}
-
-enum class InfixOperatorType {
-    PERIOD,
-    COLON_COLON,
-    PLUS,
-    AMPERSAND,
-    MINUS,
-    ASTERISK,
-    SLASH,
-    PERCENT_PERCENT,
-    PERCENT,
-    CIRCUMFLEX,
-    PERIOD_PERIOD,
-    LESS_EQUAL_GREATER,
-    TILDE,
-    AMPERSAND_AMPERSAND,
-    PIPE_PIPE,
-    QUESTION_COLON,
-    EXCLAMATION_QUESTION,
-    COLON,
-    EQUAL,
-    MINUS_GREATER,
-    PIPE,
-    GREATER_GREATER,
-    LESS_LESS,
-    COLON_EQUAL,
-    EQUAL_GREATER,
 }
 
 enum class ComparisonOperatorType {
