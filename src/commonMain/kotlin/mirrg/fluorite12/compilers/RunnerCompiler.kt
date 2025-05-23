@@ -20,16 +20,16 @@ import mirrg.fluorite12.operations.TryCatchRunner
 import mirrg.fluorite12.operations.VariableSetter
 
 fun Frame.compileToRunner(node: Node): List<Runner> {
-    return when {
-        node is EmptyNode -> listOf()
+    return when (node) {
+        is EmptyNode -> listOf()
 
-        node is InfixEqualNode -> { // 代入文
+        is InfixEqualNode -> { // 代入文
             val setter = compileToSetter(node.left)
             val getter = compileToGetter(node.right)
             listOf(AssignmentRunner(setter, getter))
         }
 
-        node is InfixColonEqualNode -> when { // 宣言文
+        is InfixColonEqualNode -> when { // 宣言文
             node.left is IdentifierNode -> {
                 val name = node.left.string
                 val variableIndex = defineVariable(name)
@@ -39,7 +39,7 @@ fun Frame.compileToRunner(node: Node): List<Runner> {
             else -> throw IllegalArgumentException("Illegal definition: ${node.left::class} := ${node.right::class}")
         }
 
-        node is InfixExclamationQuestionNode -> {
+        is InfixExclamationQuestionNode -> {
             val (name, rightNode) = if (node.right is InfixEqualGreaterNode) {
                 require(node.right.left is IdentifierNode)
                 Pair(node.right.left.string, node.right.right)
@@ -51,13 +51,13 @@ fun Frame.compileToRunner(node: Node): List<Runner> {
             listOf(TryCatchRunner(compileToRunner(node.left), newFrame.frameIndex, argumentVariableIndex, newFrame.compileToRunner(rightNode)))
         }
 
-        node is UnaryAtNode -> {
+        is UnaryAtNode -> {
             val getter = compileToGetter(node.main)
             val newMountIndex = mount()
             listOf(MountRunner(frameIndex, newMountIndex, getter))
         }
 
-        node is SemicolonsNode -> node.nodes.flatMap { compileToRunner(it) }
+        is SemicolonsNode -> node.nodes.flatMap { compileToRunner(it) }
 
         else -> listOf(GetterRunner(compileToGetter(node))) // 式文
     }

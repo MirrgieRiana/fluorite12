@@ -14,16 +14,16 @@ import mirrg.fluorite12.operations.Setter
 import mirrg.fluorite12.operations.VariableSetter
 
 fun Frame.compileToSetter(node: Node): Setter {
-    return when {
-        node is IdentifierNode -> {
+    return when (node) {
+        is IdentifierNode -> {
             val name = node.string
             val (frameIndex, variableIndex) = getVariable(name) ?: throw IllegalArgumentException("No such variable: $name")
             VariableSetter(frameIndex, variableIndex)
         }
 
-        node is RightBracketsRoundNode -> ArrayItemSetter(compileToGetter(node.main), compileToGetter(node.argument))
+        is RightBracketsRoundNode -> ArrayItemSetter(compileToGetter(node.main), compileToGetter(node.argument))
 
-        node is InfixPeriodNode -> {
+        is InfixPeriodNode -> {
             val receiverGetter = compileToGetter(node.left)
             val keyGetter = when (node.right) {
                 is IdentifierNode -> LiteralGetter(FluoriteString(node.right.string))
