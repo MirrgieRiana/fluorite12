@@ -1,3 +1,5 @@
+package mirrg.fluorite12.cli
+
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteFunction
 import mirrg.fluorite12.compilers.objects.FluoriteNull
@@ -6,7 +8,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 
-fun createNativeMount(args: List<String>): Map<String, FluoriteValue> {
+fun createCliMount(args: List<String>): Map<String, FluoriteValue> {
     return mapOf(
         "ARGS" to FluoriteArray(args.map { it.toFluoriteString() }.toMutableList()),
         "IN" to FluoriteStream {
