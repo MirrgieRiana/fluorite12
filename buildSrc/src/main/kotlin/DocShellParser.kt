@@ -50,14 +50,14 @@ class DocShellParser(private val filePath: String, private val lines: List<Strin
             out("")
 
             out("# $filePath (${docShell.lineNumber})")
-            out("expected=$(")
+            out("expected=\$(")
             out("cat << 'DOC_SHELL_TEST_END'")
             docShell.expected.forEach {
                 out(it)
             }
             out("DOC_SHELL_TEST_END")
             out(")")
-            out("actual=$(")
+            out("actual=\$(")
             docShell.command.forEach {
                 out(it)
             }
