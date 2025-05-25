@@ -359,7 +359,7 @@ $ flc '
 | `pop`     | 末尾   | 要素を削除 |
 
 ```shell
-$ flc '
+$ flc -q '
   array := ["zero", "one", "two", "three", "four"]
 
   array::unshift("minus one")
@@ -373,8 +373,6 @@ $ flc '
 
   array::pop()
   OUT << array
-
-  array
 '
 # [minus one;zero;one;two;three;four]
 # [zero;one;two;three;four]
@@ -387,7 +385,7 @@ $ flc '
 `unshift` `push` メソッドにストリームを渡すと、そのストリームの各要素が配列に追加されます。
 
 ```shell
-$ flc '
+$ flc -q '
   array := ["zero", "one", "two", "three", "four"]
 
   array::unshift("minus two", "minus one")
@@ -395,8 +393,6 @@ $ flc '
 
   array::push("five", "six")
   OUT << array
-
-  array
 '
 # [minus two;minus one;zero;one;two;three;four]
 # [minus two;minus one;zero;one;two;three;four;five;six]
