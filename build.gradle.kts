@@ -71,6 +71,16 @@ kotlin {
 
 }
 
+tasks.named<Jar>("jvmJar") {
+    manifest {
+        attributes["Main-Class"] = "JvmMainKt"
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from({
+        configurations["jvmRuntimeClasspath"].filter { it.name.endsWith(".jar") }.map { zipTree(it) }
+    })
+}
+
 tasks.register<Exec>("compilePlayground") {
     workingDir = file("playground")
     commandLine("bash", "compile.sh")
