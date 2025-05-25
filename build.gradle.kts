@@ -101,10 +101,12 @@ tasks.register("generateDocShellTests") {
     doLast {
         outFile.parentFile.mkdirs()
         val lines = mutableListOf<String>()
-        docsDir.walkTopDown().filter { it.extension == "md" }.forEachIndexed { index, file ->
+        val docFiles = docsDir.walkTopDown().filter { it.extension == "md" }.toList()
+        docFiles.forEachIndexed { index, file ->
             val docShellParser = DocShellParser(file.toRelativeString(projectDir).replace('\\', '/'), file.readLines(), lines::add)
             if (index == 0) docShellParser.writeTestScriptHeader()
             docShellParser.writeTestScript()
+            if (index == docFiles.size - 1) docShellParser.writeTestScriptFooter()
         }
         outFile.writeText(lines.joinToString("") { "$it\n" })
         outFile.setExecutable(true)

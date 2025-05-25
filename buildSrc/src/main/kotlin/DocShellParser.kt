@@ -29,14 +29,20 @@ class DocShellParser(private val filePath: String, private val lines: List<Strin
         out("  \"\$flc_command\" \"$@\"")
         out("}")
         out("")
+        out("failed=0")
         out("fail() {")
         out("  echo \"FAILED: \$1\" >&2")
         out("  echo \"[expected]\" >&2")
         out("  echo \"\$2\" >&2")
         out("  echo \"[actual]\" >&2")
         out("  echo \"\$3\" >&2")
-        out("  exit 1")
+        out("  failed=1")
         out("}")
+    }
+
+    fun writeTestScriptFooter() {
+        out("")
+        out("exit \$failed")
     }
 
     fun writeTestScript() {
