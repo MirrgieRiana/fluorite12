@@ -15,6 +15,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.compareTo
 import mirrg.fluorite12.compilers.objects.invoke
+import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.compilers.objects.toMutableList
@@ -255,6 +256,30 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         },
         "SORT" to createSortFunction("SORT", false),
         "SORTR" to createSortFunction("SORTR", true),
+        "CHUNK" to FluoriteFunction { arguments ->
+            if (arguments.size == 2) {
+                val size = arguments[0].toFluoriteNumber().toInt()
+                require(size > 0)
+                val stream = arguments[1]
+                FluoriteStream {
+                    var buffer = mutableListOf<FluoriteValue>()
+                    if (stream is FluoriteStream) {
+                        stream.collect { item ->
+                            buffer += item
+                            if (buffer.size == size) {
+                                emit(FluoriteArray(buffer))
+                                buffer = mutableListOf()
+                            }
+                        }
+                    } else {
+                        buffer += stream
+                    }
+                    if (buffer.isNotEmpty()) emit(FluoriteArray(buffer))
+                }
+            } else {
+                usage("CHUNK(size: NUMBER; stream: STREAM<VALUE>): STREAM<ARRAY<VALUE>>")
+            }
+        },
         "SLEEP" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 val time = arguments[0] as FluoriteNumber

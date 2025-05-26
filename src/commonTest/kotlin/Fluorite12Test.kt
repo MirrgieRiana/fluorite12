@@ -874,6 +874,16 @@ class Fluorite12Test {
     }
 
     @Test
+    fun chunkTest() = runTest {
+        assertEquals("[1;2],[3;4]", eval("CHUNK(2; 1, 2, 3, 4)").stream()) // CHUNK でストリームを分割する
+        assertEquals("[1;2],[3;4],[5]", eval("CHUNK(2; 1, 2, 3, 4, 5)").stream()) // 要素が余る場合、余った部分だけの配列を生成する
+        assertEquals("[1;2]", eval("CHUNK(2; 1, 2)").stream()) // 全体の要素数が一致している場合、その配列になる
+        assertEquals("[1;2]", eval("CHUNK(4; 1, 2)").stream()) // 全体の要素数が足りない場合、その配列になる
+        assertEquals("[1]", eval("CHUNK(2; 1)").stream()) // 第2引数が非ストリームの場合でもストリームの場合と同様に動作する
+        assertEquals("", eval("CHUNK(2; ,)").stream()) // 空ストリームの場合、空ストリームになる
+    }
+
+    @Test
     fun keysValuesTest() = runTest {
         assertEquals("a,b,c", eval("KEYS({a: 1; b: 2; c: 3})").stream()) // KEYS でオブジェクトのキーを得る
         assertEquals("1,2,3", eval("VALUES({a: 1; b: 2; c: 3})").stream()) // VALUES でオブジェクトの値を得る

@@ -268,6 +268,19 @@ $ flc '3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5 >> SORTR >> JOIN[" "]'
 # 9 6 5 5 5 4 3 3 2 1 1
 ```
 
+## `CHUNK` ストリームを一定サイズの配列に分割
+
+`CHUNK(size: NUMBER; stream: STREAM<VALUE>): STREAM<ARRAY<VALUE>>`
+
+第2引数のストリームの要素を第1引数で指定したサイズごとにまとめた配列のストリームを返します。
+
+```shell
+$ flc '1, 2, 3, 4, 5 >> CHUNK[2]'
+# [1;2]
+# [3;4]
+# [5]
+```
+
 ## `REDUCE` ストリームの要素を累積する
 
 `REDUCE(function: VALUE, VALUE -> VALUE; stream: STREAM<VALUE>): VALUE`
