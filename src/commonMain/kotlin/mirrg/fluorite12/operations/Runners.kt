@@ -1,6 +1,7 @@
 package mirrg.fluorite12.operations
 
 import mirrg.fluorite12.Environment
+import mirrg.fluorite12.LocalVariable
 import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteValue
@@ -37,7 +38,7 @@ class TryCatchRunner(private val leftRunners: List<Runner>, private val newFrame
             }
         } catch (e: FluoriteException) {
             val newEnv = Environment(env, 1, 0)
-            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = e.value
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable.of(e.value)
             rightRunners.forEach {
                 it.evaluate(newEnv)
             }

@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import mirrg.fluorite12.Environment
+import mirrg.fluorite12.LocalVariable
 import mirrg.fluorite12.compilers.objects.Callable
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
@@ -48,7 +49,7 @@ class LiteralGetter(private val value: FluoriteValue) : Getter {
 }
 
 class VariableGetter(private val frameIndex: Int, private val variableIndex: Int) : Getter {
-    override suspend fun evaluate(env: Environment) = env.variableTable[frameIndex][variableIndex]
+    override suspend fun evaluate(env: Environment) = env.variableTable[frameIndex][variableIndex]!!.get()
     override val code get() = "Variable[$frameIndex;$variableIndex]"
 }
 
@@ -197,7 +198,7 @@ class MethodAccessGetter(
 
         // ローカル変数のチェック
         if (variable != null) {
-            val value = env.variableTable[variable.first][variable.second]
+            val value = env.variableTable[variable.first][variable.second]!!.get()
             val result = processEntries(value)
             if (result != null) return result
         }
@@ -552,9 +553,9 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return FluoriteFunction { arguments ->
             val newEnv = Environment(env, 1 + variableIndices.size, 0)
-            newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = FluoriteArray(arguments.toMutableList())
+            newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = LocalVariable.of(FluoriteArray(arguments.toMutableList()))
             variableIndices.forEachIndexed { i, variableIndex ->
-                newEnv.variableTable[newFrameIndex][variableIndex] = arguments.getOrNull(i) ?: FluoriteNull
+                newEnv.variableTable[newFrameIndex][variableIndex] = LocalVariable.of(arguments.getOrNull(i) ?: FluoriteNull)
             }
             getter.evaluate(newEnv)
         }
@@ -660,7 +661,7 @@ class TryCatchWithVariableGetter(private val leftGetter: Getter, private val new
             leftGetter.evaluate(env)
         } catch (e: FluoriteException) {
             val newEnv = Environment(env, 1, 0)
-            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = e.value
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable.of(e.value)
             rightGetter.evaluate(newEnv)
         }
     }
@@ -687,7 +688,7 @@ class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: In
             FluoriteStream {
                 val newEnv = Environment(env, 1, 0)
                 stream.collect { value ->
-                    newEnv.variableTable[newFrameIndex][argumentVariableIndex] = value
+                    newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable.of(value)
                     val result = contentGetter.evaluate(newEnv)
                     if (result is FluoriteStream) {
                         result.flowProvider(this)
@@ -698,7 +699,7 @@ class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: In
             }
         } else {
             val newEnv = Environment(env, 1, 0)
-            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = stream
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable.of(stream)
             contentGetter.evaluate(newEnv)
         }
     }

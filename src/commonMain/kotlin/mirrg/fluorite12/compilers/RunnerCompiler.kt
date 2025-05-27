@@ -17,7 +17,7 @@ import mirrg.fluorite12.operations.GetterRunner
 import mirrg.fluorite12.operations.MountRunner
 import mirrg.fluorite12.operations.Runner
 import mirrg.fluorite12.operations.TryCatchRunner
-import mirrg.fluorite12.operations.VariableSetter
+import mirrg.fluorite12.operations.VariableDefinitionSetter
 
 fun Frame.compileToRunner(node: Node): List<Runner> {
     return when (node) {
@@ -33,7 +33,7 @@ fun Frame.compileToRunner(node: Node): List<Runner> {
             node.left is IdentifierNode -> {
                 val name = node.left.string
                 val variableIndex = defineVariable(name)
-                listOf(AssignmentRunner(VariableSetter(frameIndex, variableIndex), compileToGetter(node.right)))
+                listOf(AssignmentRunner(VariableDefinitionSetter(frameIndex, variableIndex), compileToGetter(node.right)))
             }
 
             else -> throw IllegalArgumentException("Illegal definition: ${node.left::class} := ${node.right::class}")

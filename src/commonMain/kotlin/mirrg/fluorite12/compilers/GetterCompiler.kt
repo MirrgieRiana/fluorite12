@@ -353,8 +353,7 @@ private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
 }
 
 private fun Frame.compileFunctionBodyToGetter(arguments: Node, body: Node): Getter {
-    val commasNode = arguments
-    val identifierNodes = when (commasNode) {
+    val identifierNodes = when (val commasNode = arguments) {
         is EmptyNode -> listOf()
         is CommasNode -> commasNode.nodes
         is SemicolonsNode -> commasNode.nodes

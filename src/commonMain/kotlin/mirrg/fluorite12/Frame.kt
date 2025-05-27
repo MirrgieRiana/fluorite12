@@ -18,15 +18,38 @@ class Frame(val parent: Frame? = null) {
 }
 
 class Environment(val parent: Environment?, variableCount: Int, mountCount: Int) {
-    val variableTable: Array<Array<FluoriteValue>> = if (parent != null) {
-        arrayOf(*parent.variableTable, Array(variableCount) { FluoriteNull })
+    val variableTable: Array<Array<Variable?>> = if (parent != null) {
+        arrayOf(*parent.variableTable, arrayOfNulls(variableCount))
     } else {
-        arrayOf(Array(variableCount) { FluoriteNull })
+        arrayOf(arrayOfNulls(variableCount))
     }
     val mountTable: Array<Array<Map<String, FluoriteValue>>> = if (parent != null) {
         arrayOf(*parent.mountTable, Array(mountCount) { mapOf() })
     } else {
         arrayOf(Array(mountCount) { mapOf() })
+    }
+}
+
+interface Variable {
+    fun get(): FluoriteValue
+    fun set(value: FluoriteValue)
+}
+
+class LocalVariable : Variable {
+    companion object {
+        fun of(value: FluoriteValue): LocalVariable {
+            return LocalVariable().apply {
+                this.value = value
+            }
+        }
+    }
+
+    private var value: FluoriteValue = FluoriteNull
+
+    override fun get() = value
+
+    override fun set(value: FluoriteValue) {
+        this.value = value
     }
 }
 
