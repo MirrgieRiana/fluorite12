@@ -31,8 +31,8 @@ class Environment(val parent: Environment?, variableCount: Int, mountCount: Int)
 }
 
 interface Variable {
-    fun get(): FluoriteValue
-    fun set(value: FluoriteValue)
+    suspend fun get(env: Environment): FluoriteValue
+    suspend fun set(env: Environment, value: FluoriteValue)
 }
 
 class LocalVariable : Variable {
@@ -46,9 +46,9 @@ class LocalVariable : Variable {
 
     private var value: FluoriteValue = FluoriteNull
 
-    override fun get() = value
+    override suspend fun get(env: Environment) = value
 
-    override fun set(value: FluoriteValue) {
+    override suspend fun set(env: Environment, value: FluoriteValue) {
         this.value = value
     }
 }

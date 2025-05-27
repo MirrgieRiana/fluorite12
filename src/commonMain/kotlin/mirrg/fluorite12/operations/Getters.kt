@@ -49,7 +49,7 @@ class LiteralGetter(private val value: FluoriteValue) : Getter {
 }
 
 class VariableGetter(private val frameIndex: Int, private val variableIndex: Int) : Getter {
-    override suspend fun evaluate(env: Environment) = env.variableTable[frameIndex][variableIndex]!!.get()
+    override suspend fun evaluate(env: Environment) = env.variableTable[frameIndex][variableIndex]!!.get(env)
     override val code get() = "Variable[$frameIndex;$variableIndex]"
 }
 
@@ -198,7 +198,7 @@ class MethodAccessGetter(
 
         // ローカル変数のチェック
         if (variable != null) {
-            val value = env.variableTable[variable.first][variable.second]!!.get()
+            val value = env.variableTable[variable.first][variable.second]!!.get(env)
             val result = processEntries(value)
             if (result != null) return result
         }
