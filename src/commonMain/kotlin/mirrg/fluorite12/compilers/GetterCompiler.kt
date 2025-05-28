@@ -198,10 +198,7 @@ fun Frame.compileToGetter(node: Node): Getter {
             ArrayCreationGetter(nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
         }
 
-        is BracketsCurlyNode -> {
-            val contentNodes = if (node.main is SemicolonsNode) node.main.nodes else listOf(node.main)
-            ObjectCreationGetter(null, contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
-        }
+        is BracketsCurlyNode -> compileObjectCreationToGetter(null, node.main)
 
         is UnaryPlusNode -> ToNumberGetter(compileToGetter(node.main))
         is UnaryMinusNode -> compileUnaryMinusToGetter(node.main)
@@ -304,12 +301,7 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
         }
 
-        is RightBracketsCurlyNode -> {
-            val parentGetter = compileToGetter(node.main)
-            val contentNodes = if (node.argument is SemicolonsNode) node.argument.nodes else listOf(node.argument)
-            val contentGetters = contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) }
-            ObjectCreationGetter(parentGetter, contentGetters)
-        }
+        is RightBracketsCurlyNode -> compileObjectCreationToGetter(node.main, node.argument)
 
         is InfixNode -> compileInfixOperatorToGetter(node)
 
@@ -341,6 +333,13 @@ fun Frame.compileToGetter(node: Node): Getter {
             LinesGetter(runners, getter)
         }
     }
+}
+
+private fun Frame.compileObjectCreationToGetter(parentNode: Node?, bodyNode: Node): Getter {
+    val parentGetter = parentNode?.let { compileToGetter(it) }
+    val contentNodes = if (bodyNode is SemicolonsNode) bodyNode.nodes else listOf(bodyNode)
+    val contentGetters = contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) }
+    return ObjectCreationGetter(parentGetter, contentGetters)
 }
 
 private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
