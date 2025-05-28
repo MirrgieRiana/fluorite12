@@ -22,6 +22,7 @@ import mirrg.fluorite12.InfixAmpersandNode
 import mirrg.fluorite12.InfixAsteriskNode
 import mirrg.fluorite12.InfixCircumflexNode
 import mirrg.fluorite12.InfixColonColonNode
+import mirrg.fluorite12.InfixColonEqualNode
 import mirrg.fluorite12.InfixColonNode
 import mirrg.fluorite12.InfixEqualGreaterNode
 import mirrg.fluorite12.InfixEqualNode
@@ -128,6 +129,7 @@ import mirrg.fluorite12.operations.ToNumberGetter
 import mirrg.fluorite12.operations.ToStringGetter
 import mirrg.fluorite12.operations.TryCatchGetter
 import mirrg.fluorite12.operations.TryCatchWithVariableGetter
+import mirrg.fluorite12.operations.VariableDefinitionObjectInitializer
 import mirrg.fluorite12.operations.VariableGetter
 import mirrg.fluorite12.text
 
@@ -344,6 +346,9 @@ private fun Frame.compileObjectCreationToGetter(parentNode: Node?, bodyNode: Nod
     val objectInitializerCreators: List<() -> ObjectInitializer> = contentNodes.mapNotNull { contentNode ->
         if (contentNode is EmptyNode) {
             null
+        } else if (contentNode is InfixColonEqualNode && contentNode.left is IdentifierNode) {
+            val variableIndex = newFrame.defineVariable(contentNode.left.string)
+            ({ VariableDefinitionObjectInitializer(contentNode.left.string, newFrame.frameIndex, variableIndex, newFrame.compileToGetter(contentNode.right)) })
         } else {
             { GetterObjectInitializer(newFrame.compileToGetter(contentNode)) }
         }

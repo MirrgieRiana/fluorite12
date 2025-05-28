@@ -294,6 +294,13 @@ class Fluorite12Test {
         assertEquals("{}", eval(""" {} """).obj) // 空でもよい
 
         assertEquals(true, eval(""" A := {}; a := A {}; a ?= A """).boolean) // 親クラスを取るオブジェクト
+
+        assertEquals("{a:100;b:123}", eval("{a := 100; b: a + 23}").obj) // オブジェクト内で変数が宣言できる
+        assertEquals("{a:100;b:120;c:123}", eval("{a := 100; b := a + 20; c: b + 3}").obj) // 変数の初期化子の中からも変数を参照できる
+        assertEquals("{a:100}", eval("{a := 100}").obj) // 変数宣言しかなくても初期化される
+        assertEquals("{a:100;b:123}", eval("{b: a + 23; a := 100}").obj) // オブジェクトリテラル内の変数は参照した時点で初期化される
+        assertEquals(20, eval("o := {v := 10; f: () -> v}; o.v = 20; o.f()").int) // オブジェクト変数はそのオブジェクトのエントリーの値と連動する
+        assertEquals(20, eval("o := {v := 10; f: (n) -> v = n}; o.f(20); o.v").int) // 代入も可能
     }
 
     @Test
