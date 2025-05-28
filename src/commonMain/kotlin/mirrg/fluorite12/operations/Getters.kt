@@ -111,28 +111,17 @@ class ArrayCreationGetter(private val getters: List<Getter>) : Getter {
     override val code get() = "ArrayCreation[${getters.code}]"
 }
 
-class ObjectCreationGetter(private val parentGetter: Getter?, private val contentGetters: List<Getter>) : Getter {
+class ObjectCreationGetter(private val parentGetter: Getter?, private val objectInitializers: List<ObjectInitializer>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val parent = parentGetter?.let { it.evaluate(env) as FluoriteObject } ?: FluoriteObject.fluoriteClass
         val map = mutableMapOf<String, FluoriteValue>()
-        contentGetters.forEach {
-            val value = it.evaluate(env)
-            if (value is FluoriteStream) {
-                value.collect { item ->
-                    require(item is FluoriteArray)
-                    require(item.values.size == 2)
-                    map[item.values[0].toString()] = item.values[1]
-                }
-            } else {
-                require(value is FluoriteArray)
-                require(value.values.size == 2)
-                map[value.values[0].toString()] = value.values[1]
-            }
+        objectInitializers.forEach {
+            it.evaluate(env, map)
         }
         return FluoriteObject(parent, map)
     }
 
-    override val code get() = "ObjectCreation[${parentGetter?.code};${contentGetters.code}]"
+    override val code get() = "ObjectCreation[${parentGetter?.code};${objectInitializers.code}]"
 }
 
 class MethodAccessGetter(

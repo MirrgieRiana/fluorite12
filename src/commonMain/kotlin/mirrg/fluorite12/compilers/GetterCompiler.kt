@@ -90,6 +90,7 @@ import mirrg.fluorite12.operations.FunctionGetter
 import mirrg.fluorite12.operations.FunctionInvocationGetter
 import mirrg.fluorite12.operations.GetLengthGetter
 import mirrg.fluorite12.operations.Getter
+import mirrg.fluorite12.operations.GetterObjectInitializer
 import mirrg.fluorite12.operations.GreaterComparator
 import mirrg.fluorite12.operations.GreaterEqualComparator
 import mirrg.fluorite12.operations.IfGetter
@@ -108,6 +109,7 @@ import mirrg.fluorite12.operations.NewEnvironmentGetter
 import mirrg.fluorite12.operations.NotEqualComparator
 import mirrg.fluorite12.operations.NullGetter
 import mirrg.fluorite12.operations.ObjectCreationGetter
+import mirrg.fluorite12.operations.ObjectInitializer
 import mirrg.fluorite12.operations.OrGetter
 import mirrg.fluorite12.operations.PipeGetter
 import mirrg.fluorite12.operations.PlusGetter
@@ -338,8 +340,14 @@ fun Frame.compileToGetter(node: Node): Getter {
 private fun Frame.compileObjectCreationToGetter(parentNode: Node?, bodyNode: Node): Getter {
     val parentGetter = parentNode?.let { compileToGetter(it) }
     val contentNodes = if (bodyNode is SemicolonsNode) bodyNode.nodes else listOf(bodyNode)
-    val contentGetters = contentNodes.filter { it !is EmptyNode }.map { compileToGetter(it) }
-    return ObjectCreationGetter(parentGetter, contentGetters)
+    val objectInitializerCreators: List<() -> ObjectInitializer> = contentNodes.mapNotNull { contentNode ->
+        if (contentNode is EmptyNode) {
+            null
+        } else {
+            { GetterObjectInitializer(compileToGetter(contentNode)) }
+        }
+    }
+    return ObjectCreationGetter(parentGetter, objectInitializerCreators.map { it() })
 }
 
 private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {

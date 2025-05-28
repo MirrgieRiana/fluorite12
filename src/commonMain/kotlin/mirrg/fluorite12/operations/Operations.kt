@@ -28,3 +28,7 @@ interface Runner : Operation {
 interface Setter : Operation {
     suspend fun evaluate(env: Environment): suspend (FluoriteValue) -> Unit
 }
+
+interface ObjectInitializer : Operation {
+    suspend fun evaluate(env: Environment, map: MutableMap<String, FluoriteValue>)
+}
