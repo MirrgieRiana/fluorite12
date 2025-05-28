@@ -252,6 +252,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val square: Parser<Node> by lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsSquareNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
     val curly: Parser<Node> by lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsCurlyNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
     val brackets by arrowRound or arrowSquare or arrowCurly or round or square or curly
+    val nonFloatFactor: Parser<Node> by hexadecimal or identifier or quotedIdentifier or integer or rawString or templateString or embeddedString or brackets
     val factor: Parser<Node> by hexadecimal or identifier or quotedIdentifier or float or integer or rawString or templateString or embeddedString or brackets
 
     val rightOperator: Parser<(Node) -> Node> by OrCombinator(
@@ -262,8 +263,8 @@ class Fluorite12Grammar : Grammar<Node>() {
         -s * lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> RightBracketsSquareNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> RightBracketsCurlyNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
 
-        -b * +period * -b * factor map { { main -> InfixPeriodNode(main, it.t1, it.t2) } },
-        -b * +(colon * colon) * -b * factor map { { main -> InfixColonColonNode(main, it.t1, it.t2) } },
+        -b * +period * -b * nonFloatFactor map { { main -> InfixPeriodNode(main, it.t1, it.t2) } },
+        -b * +(colon * colon) * -b * nonFloatFactor map { { main -> InfixColonColonNode(main, it.t1, it.t2) } },
 
         -b * +(period * plus) map { { main -> UnaryPlusNode(it, main, Side.RIGHT) } },
         -b * +(period * minus) map { { main -> UnaryMinusNode(it, main, Side.RIGHT) } },

@@ -74,6 +74,7 @@ class ArrayTest {
         assertEquals(2, eval("[1; 2; 3].'0.95'").int) // インデックスは数値化し、四捨五入される
         assertEquals(FluoriteNull, eval("[1; 2; 3].3")) // 範囲外のインデックスは NULL が返る
         assertEquals(FluoriteNull, eval("[1; 2; 3].(-1)")) // 負のインデックスも範囲外扱い
+        assertEquals("ItemAccessGetter[ItemAccessGetter[ArrayCreationGetter[ArrayCreationGetter[LiteralGetter[1]]];LiteralGetter[2]];LiteralGetter[3]]", parse("[[1]].2.3")) // 連続したプロパティアクセスでも小数としてパースされない
     }
 
     @Test
