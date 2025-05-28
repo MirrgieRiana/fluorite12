@@ -910,6 +910,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun distinctTest() = runTest {
+        assertEquals("1,2,3,0", eval("1, 2, 3, 3, 3, 2, 1, 0 >> DISTINCT").stream()) // DISTINCT で重複を除去する
+        assertEquals(1, eval("1 >> DISTINCT").int) // 非ストリームの場合、それがそのまま出てくる
+        assertEquals("", eval(", >> DISTINCT").stream()) // 空ストリームの場合、空ストリームになる
+    }
+
+    @Test
     fun minMaxTest() = runTest {
         assertEquals(1.0, eval("MIN(1.0, 2.0, 3.0)").double) // MIN で最小値を得る
         assertEquals(FluoriteNull, eval("MIN(,)")) // 空ストリームの場合、NULL

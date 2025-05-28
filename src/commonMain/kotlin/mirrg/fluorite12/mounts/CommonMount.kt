@@ -118,6 +118,23 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("REVERSE(stream: STREAM<VALUE>): STREAM<VALUE>")
             }
         },
+        "DISTINCT" to FluoriteFunction { arguments ->
+            if (arguments.size == 1) {
+                val stream = arguments[0]
+                if (stream is FluoriteStream) {
+                    FluoriteStream {
+                        val set = mutableSetOf<FluoriteValue>()
+                        stream.collect { item ->
+                            if (set.add(item)) emit(item)
+                        }
+                    }
+                } else {
+                    stream
+                }
+            } else {
+                usage("DISTINCT(stream: STREAM<VALUE>): STREAM<VALUE>")
+            }
+        },
         "JOIN" to FluoriteFunction { arguments ->
             if (arguments.size == 2) {
                 val separator = arguments[0].toFluoriteString().value

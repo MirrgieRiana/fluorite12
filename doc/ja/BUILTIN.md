@@ -78,6 +78,20 @@ $ flc 'REVERSE(1 .. 3)'
 # 1
 ```
 
+## `DISTINCT` ストリームの重複要素を除去
+
+`DISTINCT(stream: STREAM<VALUE>): STREAM<VALUE>`
+
+第1引数のストリームから重複する要素を取り除いたストリームを返します。
+
+```shell
+$ flc '1, 2, 3, 3, 3, 2, 1, 0 >> DISTINCT'
+# 1
+# 2
+# 3
+# 0
+```
+
 ## `JOIN` ストリームを文字列に連結
 
 `JOIN(separator: VALUE; stream: VALUE): STRING`
