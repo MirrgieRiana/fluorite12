@@ -40,17 +40,17 @@ import kotlin.math.pow
 
 object NullGetter : Getter {
     override suspend fun evaluate(env: Environment) = FluoriteNull
-    override val code get() = "Null"
+    override val code get() = "NullGetter"
 }
 
 class LiteralGetter(private val value: FluoriteValue) : Getter {
     override suspend fun evaluate(env: Environment) = value
-    override val code get() = "Literal[$value]"
+    override val code get() = "LiteralGetter[$value]"
 }
 
 class VariableGetter(private val frameIndex: Int, private val variableIndex: Int) : Getter {
     override suspend fun evaluate(env: Environment) = env.variableTable[frameIndex][variableIndex]!!.get(env)
-    override val code get() = "Variable[$frameIndex;$variableIndex]"
+    override val code get() = "VariableGetter[$frameIndex;$variableIndex]"
 }
 
 class MountGetter(private val mountCounts: IntArray, private val name: String) : Getter {
@@ -61,7 +61,7 @@ class MountGetter(private val mountCounts: IntArray, private val name: String) :
         throw IllegalArgumentException("No such mount entry: $name")
     }
 
-    override val code get() = "Mount[${mountCounts.joinToString(",") { "$it" }};$name]"
+    override val code get() = "MountGetter[${mountCounts.joinToString(",") { "$it" }};$name]"
 }
 
 class StringConcatenationGetter(private val stringGetters: List<StringGetter>) : Getter {
@@ -73,12 +73,12 @@ class StringConcatenationGetter(private val stringGetters: List<StringGetter>) :
         return sb.toString().toFluoriteString()
     }
 
-    override val code get() = "StringConcatenation[${stringGetters.code}]"
+    override val code get() = "StringConcatenationGetter[${stringGetters.code}]"
 }
 
 class NewEnvironmentGetter(private val variableCount: Int, private val mountCount: Int, private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = getter.evaluate(Environment(env, variableCount, mountCount))
-    override val code get() = "NewEnvironment[$variableCount;$mountCount;${getter.code}]"
+    override val code get() = "NewEnvironmentGetter[$variableCount;$mountCount;${getter.code}]"
 }
 
 class LinesGetter(private val runners: List<Runner>, private val getter: Getter) : Getter {
@@ -89,7 +89,7 @@ class LinesGetter(private val runners: List<Runner>, private val getter: Getter)
         return getter.evaluate(env)
     }
 
-    override val code get() = "Lines[${runners.code};${getter.code}]"
+    override val code get() = "LinesGetter[${runners.code};${getter.code}]"
 }
 
 class ArrayCreationGetter(private val getters: List<Getter>) : Getter {
@@ -108,7 +108,7 @@ class ArrayCreationGetter(private val getters: List<Getter>) : Getter {
         return FluoriteArray(values)
     }
 
-    override val code get() = "ArrayCreation[${getters.code}]"
+    override val code get() = "ArrayCreationGetter[${getters.code}]"
 }
 
 class ObjectCreationGetter(private val parentGetter: Getter?, private val variableCount: Int, private val objectInitializers: List<ObjectInitializer>) : Getter {
@@ -125,7 +125,7 @@ class ObjectCreationGetter(private val parentGetter: Getter?, private val variab
         return FluoriteObject(parent, map)
     }
 
-    override val code get() = "ObjectCreation[${parentGetter?.code};$variableCount;${objectInitializers.code}]"
+    override val code get() = "ObjectCreationGetter[${parentGetter?.code};$variableCount;${objectInitializers.code}]"
 }
 
 class MethodAccessGetter(
@@ -211,7 +211,7 @@ class MethodAccessGetter(
         throw FluoriteException("Method not found: $receiver::$name".toFluoriteString())
     }
 
-    override val code get() = "MethodAccess[${receiverGetter.code};$variable;${mountCounts.joinToString { "$it" }};${name.escapeJsonString()};${argumentGetters.code};$isBinding]"
+    override val code get() = "MethodAccessGetter[${receiverGetter.code};$variable;${mountCounts.joinToString { "$it" }};${name.escapeJsonString()};${argumentGetters.code};$isBinding]"
 }
 
 class FunctionInvocationGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
@@ -221,7 +221,7 @@ class FunctionInvocationGetter(private val functionGetter: Getter, private val a
         return function.invoke(arguments)
     }
 
-    override val code get() = "FunctionInvocation[${functionGetter.code};${argumentGetters.code}]"
+    override val code get() = "FunctionInvocationGetter[${functionGetter.code};${argumentGetters.code}]"
 }
 
 class FunctionBindGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
@@ -231,32 +231,32 @@ class FunctionBindGetter(private val functionGetter: Getter, private val argumen
         return function.bind(arguments)
     }
 
-    override val code get() = "FunctionBind[${functionGetter.code};${argumentGetters.code}]"
+    override val code get() = "FunctionBindGetter[${functionGetter.code};${argumentGetters.code}]"
 }
 
 class ToNumberGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteNumber()
-    override val code get() = "ToNumber[${getter.code}]"
+    override val code get() = "ToNumberGetter[${getter.code}]"
 }
 
 class ToNegativeNumberGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteNumber().negate()
-    override val code get() = "ToNegativeNumber[${getter.code}]"
+    override val code get() = "ToNegativeNumberGetter[${getter.code}]"
 }
 
 class ToStringGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteString()
-    override val code get() = "ToString[${getter.code}]"
+    override val code get() = "ToStringGetter[${getter.code}]"
 }
 
 class ToBooleanGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteBoolean()
-    override val code get() = "ToBoolean[${getter.code}]"
+    override val code get() = "ToBooleanGetter[${getter.code}]"
 }
 
 class ToNegativeBooleanGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteBoolean().not()
-    override val code get() = "ToNegativeBoolean[${getter.code}]"
+    override val code get() = "ToNegativeBooleanGetter[${getter.code}]"
 }
 
 // TODO to method
@@ -268,12 +268,12 @@ class GetLengthGetter(private val getter: Getter) : Getter {
         else -> throw IllegalArgumentException("Can not calculate length: $value")
     }
 
-    override val code get() = "GetLength[${getter.code}]"
+    override val code get() = "GetLengthGetter[${getter.code}]"
 }
 
 class ToJsonGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = getter.evaluate(env).toJson()
-    override val code get() = "ToJson[${getter.code}]"
+    override val code get() = "ToJsonGetter[${getter.code}]"
 }
 
 class FromJsonGetter(private val getter: Getter) : Getter {
@@ -296,14 +296,14 @@ class FromJsonGetter(private val getter: Getter) : Getter {
         return f(data)
     }
 
-    override val code get() = "FromJson[${getter.code}]"
+    override val code get() = "FromJsonGetter[${getter.code}]"
 }
 
 class FluoriteException(val value: FluoriteValue) : Exception(value.toString())
 
 class ThrowGetter(private val getter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = throw FluoriteException(getter.evaluate(env))
-    override val code get() = "Throw[${getter.code}]"
+    override val code get() = "ThrowGetter[${getter.code}]"
 }
 
 class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter: Getter) : Getter {
@@ -313,7 +313,7 @@ class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter
         return receiver.callMethod("_._", arrayOf(key))
     }
 
-    override val code get() = "ItemAccess[${receiverGetter.code};${keyGetter.code}]"
+    override val code get() = "ItemAccessGetter[${receiverGetter.code};${keyGetter.code}]"
 }
 
 class PlusGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
@@ -323,7 +323,7 @@ class PlusGetter(private val leftGetter: Getter, private val rightGetter: Getter
         return left.plus(right)
     }
 
-    override val code get() = "Plus[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "PlusGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 // TODO to method
@@ -348,7 +348,7 @@ class MinusGetter(private val leftGetter: Getter, private val rightGetter: Gette
         }
     }
 
-    override val code get() = "Minus[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "MinusGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 // TODO to method
@@ -383,7 +383,7 @@ class TimesGetter(private val leftGetter: Getter, private val rightGetter: Gette
         }
     }
 
-    override val code get() = "Times[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "TimesGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 // TODO to method
@@ -408,7 +408,7 @@ class DivGetter(private val leftGetter: Getter, private val rightGetter: Getter)
         }
     }
 
-    override val code get() = "Div[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "DivGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 // TODO to method
@@ -433,7 +433,7 @@ class DivisibleGetter(private val leftGetter: Getter, private val rightGetter: G
         }
     }
 
-    override val code get() = "Divisible[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "DivisibleGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 // TODO to method
@@ -478,7 +478,7 @@ class ModGetter(private val leftGetter: Getter, private val rightGetter: Getter)
         }
     }
 
-    override val code get() = "Mod[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "ModGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 class PowerGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
@@ -488,7 +488,7 @@ class PowerGetter(private val leftGetter: Getter, private val rightGetter: Gette
         return FluoriteDouble(left.toDouble().pow(right.toDouble()))
     }
 
-    override val code get() = "Power[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "PowerGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 // TODO to method
@@ -517,7 +517,7 @@ class RangeGetter(private val leftGetter: Getter, private val rightGetter: Gette
         }
     }
 
-    override val code get() = "Range[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "RangeGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 // TODO to method
@@ -534,12 +534,12 @@ class ExclusiveRangeGetter(private val leftGetter: Getter, private val rightGett
         }
     }
 
-    override val code get() = "Range[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "ExclusiveRangeGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 class EntryGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = FluoriteArray(mutableListOf(leftGetter.evaluate(env), rightGetter.evaluate(env)))
-    override val code get() = "Entry[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "EntryGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariableIndex: Int, private val variableIndices: List<Int>, private val getter: Getter) : Getter {
@@ -554,7 +554,7 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
         }
     }
 
-    override val code get() = "Function[$newFrameIndex;$argumentsVariableIndex;${variableIndices.joinToString(",") { "$it" }};${getter.code}]"
+    override val code get() = "FunctionGetter[$newFrameIndex;$argumentsVariableIndex;${variableIndices.joinToString(",") { "$it" }};${getter.code}]"
 }
 
 class SpaceshipGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
@@ -564,7 +564,7 @@ class SpaceshipGetter(private val leftGetter: Getter, private val rightGetter: G
         return left.compareTo(right)
     }
 
-    override val code get() = "Spaceship"
+    override val code get() = "SpaceshipGetter"
 }
 
 class ComparisonChainGetter(private val termGetters: List<Getter>, private val comparators: List<Comparator>) : Getter {
@@ -585,7 +585,7 @@ class ComparisonChainGetter(private val termGetters: List<Getter>, private val c
         return FluoriteBoolean.TRUE
     }
 
-    override val code get() = "ComparisonChain[${termGetters.code};${comparators.code}]"
+    override val code get() = "ComparisonChainGetter[${termGetters.code};${comparators.code}]"
 }
 
 class AndGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
@@ -594,7 +594,7 @@ class AndGetter(private val leftGetter: Getter, private val rightGetter: Getter)
         return if (!left.toBoolean()) left else rightGetter.evaluate(env)
     }
 
-    override val code get() = "And[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "AndGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 class OrGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
@@ -603,12 +603,12 @@ class OrGetter(private val leftGetter: Getter, private val rightGetter: Getter) 
         return if (left.toBoolean()) left else rightGetter.evaluate(env)
     }
 
-    override val code get() = "Or[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "OrGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 class IfGetter(private val conditionGetter: Getter, private val okGetter: Getter, private val ngGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment) = if (conditionGetter.evaluate(env).toBoolean()) okGetter.evaluate(env) else ngGetter.evaluate(env)
-    override val code get() = "If[${conditionGetter.code};${okGetter.code},${ngGetter.code}]"
+    override val code get() = "IfGetter[${conditionGetter.code};${okGetter.code},${ngGetter.code}]"
 }
 
 class ElvisGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
@@ -617,7 +617,7 @@ class ElvisGetter(private val leftGetter: Getter, private val rightGetter: Gette
         return if (left != FluoriteNull) left else rightGetter.evaluate(env)
     }
 
-    override val code get() = "Elvis[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "ElvisGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 class StreamConcatenationGetter(private val getters: List<Getter>) : Getter {
@@ -634,7 +634,7 @@ class StreamConcatenationGetter(private val getters: List<Getter>) : Getter {
         }
     }
 
-    override val code get() = "StreamConcatenation[${getters.code}]"
+    override val code get() = "StreamConcatenationGetter[${getters.code}]"
 }
 
 class AssignmentGetter(private val setter: Setter, private val getter: Getter) : Getter {
@@ -645,7 +645,7 @@ class AssignmentGetter(private val setter: Setter, private val getter: Getter) :
         return right
     }
 
-    override val code get() = "Assignment[${setter.code};${getter.code}]"
+    override val code get() = "AssignmentGetter[${setter.code};${getter.code}]"
 }
 
 class TryCatchWithVariableGetter(private val leftGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightGetter: Getter) : Getter {
@@ -659,7 +659,7 @@ class TryCatchWithVariableGetter(private val leftGetter: Getter, private val new
         }
     }
 
-    override val code get() = "TryCatchWithVariable[${leftGetter.code};$newFrameIndex;$argumentVariableIndex;${rightGetter.code}]"
+    override val code get() = "TryCatchWithVariableGetter[${leftGetter.code};$newFrameIndex;$argumentVariableIndex;${rightGetter.code}]"
 }
 
 class TryCatchGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
@@ -671,7 +671,7 @@ class TryCatchGetter(private val leftGetter: Getter, private val rightGetter: Ge
         }
     }
 
-    override val code get() = "TryCatch[${leftGetter.code};${rightGetter.code}]"
+    override val code get() = "TryCatchGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {
@@ -697,5 +697,5 @@ class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: In
         }
     }
 
-    override val code get() = "Pipe[${streamGetter.code};$newFrameIndex;$argumentVariableIndex;${contentGetter.code}]"
+    override val code get() = "PipeGetter[${streamGetter.code};$newFrameIndex;$argumentVariableIndex;${contentGetter.code}]"
 }

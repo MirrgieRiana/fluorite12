@@ -17,7 +17,7 @@ class GetterRunner(private val getter: Getter) : Runner {
         }
     }
 
-    override val code get() = "Getter[${getter.code}]"
+    override val code get() = "GetterRunner[${getter.code}]"
 }
 
 class AssignmentRunner(private val setter: Setter, private val getter: Getter) : Runner {
@@ -27,7 +27,7 @@ class AssignmentRunner(private val setter: Setter, private val getter: Getter) :
         left.invoke(right)
     }
 
-    override val code get() = "Assignment[${setter.code};${getter.code}]"
+    override val code get() = "AssignmentRunner[${setter.code};${getter.code}]"
 }
 
 class TryCatchRunner(private val leftRunners: List<Runner>, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val rightRunners: List<Runner>) : Runner {
@@ -45,7 +45,7 @@ class TryCatchRunner(private val leftRunners: List<Runner>, private val newFrame
         }
     }
 
-    override val code get() = "TryCatch[${leftRunners.code};$newFrameIndex;$argumentVariableIndex;${rightRunners.code}]"
+    override val code get() = "TryCatchRunner[${leftRunners.code};$newFrameIndex;$argumentVariableIndex;${rightRunners.code}]"
 }
 
 class MountRunner(private val frameIndex: Int, private val mountIndex: Int, private val getter: Getter) : Runner {
@@ -53,7 +53,7 @@ class MountRunner(private val frameIndex: Int, private val mountIndex: Int, priv
         env.mountTable[frameIndex][mountIndex] = (getter.evaluate(env) as FluoriteObject).map.toMap()
     }
 
-    override val code get() = "Mount[$frameIndex;$mountIndex;${getter.code}]"
+    override val code get() = "MountRunner[$frameIndex;$mountIndex;${getter.code}]"
 }
 
 class BuiltinMountRunner(private val frameIndex: Int, private val mountIndex: Int, private val entries: Map<String, FluoriteValue>) : Runner {
@@ -61,5 +61,5 @@ class BuiltinMountRunner(private val frameIndex: Int, private val mountIndex: In
         env.mountTable[frameIndex][mountIndex] = entries
     }
 
-    override val code get() = "BuiltinMount[$frameIndex;$mountIndex;{${entries.keys.sorted().joinToString { it }}}]"
+    override val code get() = "BuiltinMountRunner[$frameIndex;$mountIndex;{${entries.keys.sorted().joinToString { it }}}]"
 }

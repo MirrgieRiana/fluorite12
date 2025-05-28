@@ -15,7 +15,7 @@ class VariableSetter(private val frameIndex: Int, private val variableIndex: Int
         }
     }
 
-    override val code get() = "Variable[$frameIndex;$variableIndex]"
+    override val code get() = "VariableSetter[$frameIndex;$variableIndex]"
 }
 
 class VariableDefinitionSetter(private val frameIndex: Int, private val variableIndex: Int) : Setter {
@@ -25,7 +25,7 @@ class VariableDefinitionSetter(private val frameIndex: Int, private val variable
         }
     }
 
-    override val code get() = "VariableDefinition[$frameIndex;$variableIndex]"
+    override val code get() = "VariableDefinitionSetter[$frameIndex;$variableIndex]"
 }
 
 class ItemAccessSetter(private val receiverGetter: Getter, private val keyGetter: Getter) : Setter {
@@ -37,7 +37,7 @@ class ItemAccessSetter(private val receiverGetter: Getter, private val keyGetter
         }
     }
 
-    override val code get() = "ItemAccess[${receiverGetter.code};${keyGetter.code}]"
+    override val code get() = "ItemAccessSetter[${receiverGetter.code};${keyGetter.code}]"
 }
 
 class ArrayItemSetter(private val arrayGetter: Getter, private val indexGetter: Getter) : Setter {
@@ -50,5 +50,5 @@ class ArrayItemSetter(private val arrayGetter: Getter, private val indexGetter: 
         }
     }
 
-    override val code get() = "ArrayItem[${arrayGetter.code};${indexGetter.code}]"
+    override val code get() = "ArrayItemSetter[${arrayGetter.code};${indexGetter.code}]"
 }

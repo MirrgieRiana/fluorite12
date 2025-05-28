@@ -33,7 +33,7 @@ class VariableDefinitionObjectInitializer(private val key: String, private val f
         map[key] = getter.evaluate(env)
     }
 
-    override val code get() = "VariableDefinition[$key;$frameIndex;$variableIndex;${getter.code}]"
+    override val code get() = "VariableDefinitionObjectInitializer[$key;$frameIndex;$variableIndex;${getter.code}]"
 }
 
 class GetterObjectInitializer(private val entriesGetter: Getter) : ObjectInitializer {
@@ -56,5 +56,5 @@ class GetterObjectInitializer(private val entriesGetter: Getter) : ObjectInitial
         }
     }
 
-    override val code get() = "Getter[${entriesGetter.code}]"
+    override val code get() = "GetterObjectInitializer[${entriesGetter.code}]"
 }
