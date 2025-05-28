@@ -38,7 +38,7 @@ class TryCatchRunner(private val leftRunners: List<Runner>, private val newFrame
             }
         } catch (e: FluoriteException) {
             val newEnv = Environment(env, 1, 0)
-            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable.of(e.value)
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable(e.value)
             rightRunners.forEach {
                 it.evaluate(newEnv)
             }

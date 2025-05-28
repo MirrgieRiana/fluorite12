@@ -4,7 +4,6 @@ import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
 import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import mirrg.fluorite12.compilers.compileToGetter
 import mirrg.fluorite12.compilers.compileToRunner
-import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.operations.BuiltinMountRunner
 import mirrg.fluorite12.operations.Runner
@@ -35,19 +34,8 @@ interface Variable {
     suspend fun set(env: Environment, value: FluoriteValue)
 }
 
-class LocalVariable : Variable {
-    companion object {
-        fun of(value: FluoriteValue): LocalVariable {
-            return LocalVariable().apply {
-                this.value = value
-            }
-        }
-    }
-
-    private var value: FluoriteValue = FluoriteNull
-
+class LocalVariable(var value: FluoriteValue) : Variable {
     override suspend fun get(env: Environment) = value
-
     override suspend fun set(env: Environment, value: FluoriteValue) {
         this.value = value
     }

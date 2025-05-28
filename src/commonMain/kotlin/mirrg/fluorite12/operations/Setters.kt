@@ -21,7 +21,7 @@ class VariableSetter(private val frameIndex: Int, private val variableIndex: Int
 class VariableDefinitionSetter(private val frameIndex: Int, private val variableIndex: Int) : Setter {
     override suspend fun evaluate(env: Environment): suspend (FluoriteValue) -> Unit {
         return {
-            env.variableTable[frameIndex][variableIndex] = LocalVariable.of(it)
+            env.variableTable[frameIndex][variableIndex] = LocalVariable(it)
         }
     }
 

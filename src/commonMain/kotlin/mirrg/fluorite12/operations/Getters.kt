@@ -546,9 +546,9 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return FluoriteFunction { arguments ->
             val newEnv = Environment(env, 1 + variableIndices.size, 0)
-            newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = LocalVariable.of(FluoriteArray(arguments.toMutableList()))
+            newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = LocalVariable(FluoriteArray(arguments.toMutableList()))
             variableIndices.forEachIndexed { i, variableIndex ->
-                newEnv.variableTable[newFrameIndex][variableIndex] = LocalVariable.of(arguments.getOrNull(i) ?: FluoriteNull)
+                newEnv.variableTable[newFrameIndex][variableIndex] = LocalVariable(arguments.getOrNull(i) ?: FluoriteNull)
             }
             getter.evaluate(newEnv)
         }
@@ -654,7 +654,7 @@ class TryCatchWithVariableGetter(private val leftGetter: Getter, private val new
             leftGetter.evaluate(env)
         } catch (e: FluoriteException) {
             val newEnv = Environment(env, 1, 0)
-            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable.of(e.value)
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable(e.value)
             rightGetter.evaluate(newEnv)
         }
     }
@@ -681,7 +681,7 @@ class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: In
             FluoriteStream {
                 val newEnv = Environment(env, 1, 0)
                 stream.collect { value ->
-                    newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable.of(value)
+                    newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable(value)
                     val result = contentGetter.evaluate(newEnv)
                     if (result is FluoriteStream) {
                         result.flowProvider(this)
@@ -692,7 +692,7 @@ class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: In
             }
         } else {
             val newEnv = Environment(env, 1, 0)
-            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable.of(stream)
+            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable(stream)
             contentGetter.evaluate(newEnv)
         }
     }
