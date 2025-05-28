@@ -7,6 +7,10 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 
 class GetterObjectInitializer(private val entriesGetter: Getter) : ObjectInitializer {
+    override suspend fun initializeVariable(env: Environment, map: MutableMap<String, FluoriteValue>) {
+
+    }
+
     override suspend fun evaluate(env: Environment, map: MutableMap<String, FluoriteValue>) {
         val value = entriesGetter.evaluate(env)
         if (value is FluoriteStream) {

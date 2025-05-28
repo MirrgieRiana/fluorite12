@@ -30,5 +30,6 @@ interface Setter : Operation {
 }
 
 interface ObjectInitializer : Operation {
+    suspend fun initializeVariable(env: Environment, map: MutableMap<String, FluoriteValue>)
     suspend fun evaluate(env: Environment, map: MutableMap<String, FluoriteValue>)
 }

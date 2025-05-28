@@ -339,15 +339,16 @@ fun Frame.compileToGetter(node: Node): Getter {
 
 private fun Frame.compileObjectCreationToGetter(parentNode: Node?, bodyNode: Node): Getter {
     val parentGetter = parentNode?.let { compileToGetter(it) }
+    val newFrame = Frame(this)
     val contentNodes = if (bodyNode is SemicolonsNode) bodyNode.nodes else listOf(bodyNode)
     val objectInitializerCreators: List<() -> ObjectInitializer> = contentNodes.mapNotNull { contentNode ->
         if (contentNode is EmptyNode) {
             null
         } else {
-            { GetterObjectInitializer(compileToGetter(contentNode)) }
+            { GetterObjectInitializer(newFrame.compileToGetter(contentNode)) }
         }
     }
-    return ObjectCreationGetter(parentGetter, objectInitializerCreators.map { it() })
+    return ObjectCreationGetter(parentGetter, newFrame.nextVariableIndex, objectInitializerCreators.map { it() })
 }
 
 private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
