@@ -369,7 +369,7 @@ class Fluorite12Test {
 
     @Test
     fun rightTest() {
-        assertEquals("ToNumber[Literal[100]]", parse("100.+"))
+        assertEquals("ToNumberGetter[LiteralGetter[100]]", parse("100.+"))
 
         assertEquals(parse("+100"), parse("100.+"))
         assertEquals(parse("-100"), parse("100.-"))
@@ -486,16 +486,16 @@ class Fluorite12Test {
         assertEquals(16.0, eval("4 ^ 2").double, 0.00001) // ^ でべき乗ができる、べき乗すると常に浮動小数点数になる
 
         // ^ は右優先結合
-        assertEquals("Power[Literal[1];Power[Literal[2];Literal[3]]]", parse("1 ^ 2 ^ 3"))
+        assertEquals("PowerGetter[LiteralGetter[1];PowerGetter[LiteralGetter[2];LiteralGetter[3]]]", parse("1 ^ 2 ^ 3"))
         assertEquals(256.0, eval("2 ^ 2 ^ 3").double, 0.00001)
         assertEquals(64.0, eval("(2 ^ 2) ^ 3").double, 0.00001)
 
         // ^ は乗算よりも優先される
-        assertEquals("Times[Times[Literal[1];Power[Literal[2];Literal[3]]];Literal[4]]", parse("1 * 2 ^ 3 * 4"))
+        assertEquals("TimesGetter[TimesGetter[LiteralGetter[1];PowerGetter[LiteralGetter[2];LiteralGetter[3]]];LiteralGetter[4]]", parse("1 * 2 ^ 3 * 4"))
         assertEquals(280.0, eval("5 * 2 ^ 3 * 7").double, 0.00001)
 
         // ^ は前置演算子よりも優先される
-        assertEquals("ToNegativeNumber[Power[Literal[1];Literal[2]]]", parse("- 1 ^ 2"))
+        assertEquals("ToNegativeNumberGetter[PowerGetter[LiteralGetter[1];LiteralGetter[2]]]", parse("- 1 ^ 2"))
         assertEquals(-16.0, eval("- 4 ^ 2").double, 0.00001)
 
         // ^ の右に前置演算子があってもよい
