@@ -353,8 +353,8 @@ $ flc -q '
   f("arg1"; p1: "param1"; p2: "param2")
 '
 # a1=arg1
-# p1=1
-# p2=2
+# p1=param1
+# p2=param2
 # p3=NULL
 ```
 

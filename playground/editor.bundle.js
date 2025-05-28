@@ -4995,7 +4995,6 @@
       chrome_version: chrome ? +chrome[1] : 0,
       ios,
       android: /*@__PURE__*//Android\b/.test(nav.userAgent),
-      webkit,
       safari,
       webkit_version: webkit ? +(/*@__PURE__*//\bAppleWebKit\/(\d+)/.exec(nav.userAgent) || [0, 0])[1] : 0,
       tabSize: doc.documentElement.style.tabSize != null ? "tab-size" : "-moz-tab-size"
@@ -5321,7 +5320,7 @@
                   if (child.children.length) {
                       scan(child, pos - off);
                   }
-                  else if ((!after || after.isHidden && side > 0) &&
+                  else if ((!after || after.isHidden && (side > 0 || onSameLine(after, child))) &&
                       (end > pos || off == end && child.getSide() > 0)) {
                       after = child;
                       afterPos = pos - off;
@@ -5346,6 +5345,10 @@
           return view.dom.getBoundingClientRect();
       let rects = clientRectsFor(last);
       return rects[rects.length - 1] || null;
+  }
+  function onSameLine(a, b) {
+      let posA = a.coordsAt(0, 1), posB = b.coordsAt(0, 1);
+      return posA && posB && posB.top < posA.bottom;
   }
 
   function combineAttrs(source, target) {
@@ -6665,8 +6668,7 @@
       let handler = state.facet(exceptionSink);
       if (handler.length)
           handler[0](exception);
-      else if (window.onerror)
-          window.onerror(String(exception), context, undefined, undefined, exception);
+      else if (window.onerror && window.onerror(String(exception), context, undefined, undefined, exception)) ;
       else if (context)
           console.error(context + ":", exception);
       else
@@ -7903,17 +7905,26 @@
           : textRange(node, 0, Math.max(node.nodeValue.length, 1)).getBoundingClientRect();
       return x - rect.left > 5;
   }
-  function blockAt(view, pos) {
+  function blockAt(view, pos, side) {
       let line = view.lineBlockAt(pos);
-      if (Array.isArray(line.type))
+      if (Array.isArray(line.type)) {
+          let best;
           for (let l of line.type) {
-              if (l.to > pos || l.to == pos && (l.to == line.to || l.type == BlockType.Text))
+              if (l.from > pos)
+                  break;
+              if (l.to < pos)
+                  continue;
+              if (l.from < pos && l.to > pos)
                   return l;
+              if (!best || (l.type == BlockType.Text && (best.type != l.type || (side < 0 ? l.from < pos : l.to > pos))))
+                  best = l;
           }
+          return best || line;
+      }
       return line;
   }
   function moveToLineBoundary(view, start, forward, includeWrap) {
-      let line = blockAt(view, start.head);
+      let line = blockAt(view, start.head, start.assoc || -1);
       let coords = !includeWrap || line.type != BlockType.Text || !(view.lineWrapping || line.widgetLineBreaks) ? null
           : view.coordsAtPos(start.assoc < 0 && start.head > line.from ? start.head - 1 : start.head);
       if (coords) {
@@ -9148,7 +9159,7 @@
           if (effect)
               effects.push(effect);
       }
-      return effects ? state.update({ effects, annotations: isFocusChange.of(true) }) : null;
+      return effects.length ? state.update({ effects, annotations: isFocusChange.of(true) }) : null;
   }
   function updateForFocusChange(view) {
       setTimeout(() => {
@@ -10183,7 +10194,7 @@
           }
           else {
               this.scrollAnchorPos = -1;
-              this.scrollAnchorHeight = this.heightMap.height;
+              this.scrollAnchorHeight = prevHeight;
           }
           let viewport = heightChanges.length ? this.mapViewport(this.viewport, update.changes) : this.viewport;
           if (scrollTarget && (scrollTarget.range.head < viewport.from || scrollTarget.range.head > viewport.to) ||
@@ -10865,6 +10876,7 @@
           color: "#888",
           display: "inline-block",
           verticalAlign: "top",
+          userSelect: "none"
       },
       ".cm-highlightSpace": {
           backgroundImage: "radial-gradient(circle at 50% 55%, #aaa 20%, transparent 5%)",
@@ -11678,14 +11690,14 @@
       [IME](https://en.wikipedia.org/wiki/Input_method), and at least
       one change has been made in the current composition.
       */
-      get composing() { return this.inputState.composing > 0; }
+      get composing() { return !!this.inputState && this.inputState.composing > 0; }
       /**
       Indicates whether the user is currently in composing state. Note
       that on some platforms, like Android, this will be the case a
       lot, since just putting the cursor on a word starts a
       composition there.
       */
-      get compositionStarted() { return this.inputState.composing >= 0; }
+      get compositionStarted() { return !!this.inputState && this.inputState.composing >= 0; }
       /**
       The document or shadow root that the view lives in.
       */
@@ -13112,7 +13124,7 @@
       let leftSide = contentRect.left +
           (lineStyle ? parseInt(lineStyle.paddingLeft) + Math.min(0, parseInt(lineStyle.textIndent)) : 0);
       let rightSide = contentRect.right - (lineStyle ? parseInt(lineStyle.paddingRight) : 0);
-      let startBlock = blockAt(view, from), endBlock = blockAt(view, to);
+      let startBlock = blockAt(view, from, 1), endBlock = blockAt(view, to, -1);
       let visualStart = startBlock.type == BlockType.Text ? startBlock : null;
       let visualEnd = endBlock.type == BlockType.Text ? endBlock : null;
       if (visualStart && (view.lineWrapping || startBlock.widgetLineBreaks))
@@ -13279,7 +13291,6 @@
       ];
   }
 
-  const CanHidePrimary = !(browser.ios && browser.webkit && browser.webkit_version < 534);
   const selectionConfig = /*@__PURE__*/Facet.define({
       combine(configs) {
           return combineConfig(configs, {
@@ -13328,7 +13339,7 @@
           let cursors = [];
           for (let r of state.selection.ranges) {
               let prim = r == state.selection.main;
-              if (r.empty ? !prim || CanHidePrimary : conf.drawRangeCursor) {
+              if (r.empty || conf.drawRangeCursor) {
                   let className = prim ? "cm-cursor cm-cursor-primary" : "cm-cursor cm-cursor-secondary";
                   let cursor = r.empty ? r : EditorSelection.cursor(r.head, r.head > r.anchor ? -1 : 1);
                   for (let piece of RectangleMarker.forRange(view, className, cursor))
@@ -13364,11 +13375,13 @@
       },
       class: "cm-selectionLayer"
   });
-  const themeSpec = {
+  const hideNativeSelection = /*@__PURE__*/Prec.highest(/*@__PURE__*/EditorView.theme({
       ".cm-line": {
           "& ::selection, &::selection": { backgroundColor: "transparent !important" },
+          caretColor: "transparent !important"
       },
       ".cm-content": {
+          caretColor: "transparent !important",
           "& :focus": {
               caretColor: "initial !important",
               "&::selection, & ::selection": {
@@ -13376,10 +13389,7 @@
               }
           }
       }
-  };
-  if (CanHidePrimary)
-      themeSpec[".cm-line"].caretColor = themeSpec[".cm-content"].caretColor = "transparent !important";
-  const hideNativeSelection = /*@__PURE__*/Prec.highest(/*@__PURE__*/EditorView.theme(themeSpec));
+  }));
 
   const setDropCursorPos = /*@__PURE__*/StateEffect.define({
       map(pos, mapping) { return pos == null ? null : mapping.mapPos(pos); }
@@ -13567,7 +13577,7 @@
       updateRange(view, deco, updateFrom, updateTo) {
           for (let r of view.visibleRanges) {
               let from = Math.max(r.from, updateFrom), to = Math.min(r.to, updateTo);
-              if (to > from) {
+              if (to >= from) {
                   let fromLine = view.state.doc.lineAt(from), toLine = fromLine.to < to ? view.state.doc.lineAt(to) : fromLine;
                   let start = Math.max(r.from, fromLine.from), end = Math.min(r.to, toLine.to);
                   if (this.boundary) {
@@ -19526,7 +19536,7 @@
   */
   const toggleBlockCommentByLine = /*@__PURE__*/command((o, s) => changeBlockComment(o, s, selectedLineRanges(s)), 0 /* CommentOption.Toggle */);
   function getConfig(state, pos) {
-      let data = state.languageDataAt("commentTokens", pos);
+      let data = state.languageDataAt("commentTokens", pos, 1);
       return data.length ? data[0] : {};
   }
   const SearchMargin = 50;
@@ -21881,14 +21891,16 @@
           next = query.nextMatch(state, next.from, next.to);
           effects.push(EditorView.announce.of(state.phrase("replaced match on line $", state.doc.lineAt(from).number) + "."));
       }
+      let changeSet = view.state.changes(changes);
       if (next) {
-          let off = changes.length == 0 || changes[0].from >= match.to ? 0 : match.to - match.from - replacement.length;
-          selection = EditorSelection.single(next.from - off, next.to - off);
+          selection = EditorSelection.single(next.from, next.to).map(changeSet);
           effects.push(announceMatch(view, next));
           effects.push(state.facet(searchConfigFacet).scrollToMatch(selection.main, view));
       }
       view.dispatch({
-          changes, selection, effects,
+          changes: changeSet,
+          selection,
+          effects,
           userEvent: "input.replace"
       });
       return true;
@@ -23834,10 +23846,9 @@
       }
       static init(diagnostics, panel, state) {
           // Filter the list of diagnostics for which to create markers
-          let markedDiagnostics = diagnostics;
           let diagnosticFilter = state.facet(lintConfig).markerFilter;
           if (diagnosticFilter)
-              markedDiagnostics = diagnosticFilter(markedDiagnostics, state);
+              diagnostics = diagnosticFilter(diagnostics, state);
           let sorted = diagnostics.slice().sort((a, b) => a.from - b.from || a.to - b.to);
           let deco = new RangeSetBuilder(), active = [], pos = 0;
           for (let i = 0;;) {
