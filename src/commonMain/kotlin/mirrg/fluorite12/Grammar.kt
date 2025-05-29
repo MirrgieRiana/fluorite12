@@ -245,23 +245,23 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val embeddedString by percent * greater * zeroOrMore(embeddedStringContent) * less * percent map { EmbeddedStringNode(listOf(it.t1, it.t2), it.t3, listOf(it.t4, it.t5)) } // %>string<%
 
-    val arrowRound: Parser<Node> by lRound * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { ArrowBracketsRoundNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
-    val arrowSquare: Parser<Node> by lSquare * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { ArrowBracketsSquareNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
-    val arrowCurly: Parser<Node> by lCurly * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rCurly map { ArrowBracketsCurlyNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
-    val round: Parser<Node> by lRound * -b * optional(cachedParser { expression } * -b) * rRound map { BracketsRoundNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
-    val square: Parser<Node> by lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsSquareNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
-    val curly: Parser<Node> by lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsCurlyNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
+    val arrowRound: Parser<Node> by lRound * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { BracketsLiteralArrowedRoundNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
+    val arrowSquare: Parser<Node> by lSquare * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsLiteralArrowedSquareNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
+    val arrowCurly: Parser<Node> by lCurly * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsLiteralArrowedCurlyNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
+    val round: Parser<Node> by lRound * -b * optional(cachedParser { expression } * -b) * rRound map { BracketsLiteralSimpleRoundNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
+    val square: Parser<Node> by lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsLiteralSimpleSquareNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
+    val curly: Parser<Node> by lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsLiteralSimpleCurlyNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
     val brackets by arrowRound or arrowSquare or arrowCurly or round or square or curly
     val nonFloatFactor: Parser<Node> by hexadecimal or identifier or quotedIdentifier or integer or rawString or templateString or embeddedString or brackets
     val factor: Parser<Node> by hexadecimal or identifier or quotedIdentifier or float or integer or rawString or templateString or embeddedString or brackets
 
     val rightOperator: Parser<(Node) -> Node> by OrCombinator(
-        -s * lRound * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> RightArrowBracketsRoundNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
-        -s * lSquare * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> RightArrowBracketsSquareNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
-        -s * lCurly * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> RightArrowBracketsCurlyNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
-        -s * lRound * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> RightBracketsRoundNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
-        -s * lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> RightBracketsSquareNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
-        -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> RightBracketsCurlyNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lRound * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> BracketsRightArrowedRoundNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
+        -s * lSquare * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> BracketsRightArrowedSquareNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
+        -s * lCurly * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> BracketsRightArrowedCurlyNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
+        -s * lRound * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> BracketsRightSimpleRoundNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> BracketsRightSimpleSquareNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
+        -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> BracketsRightSimpleCurlyNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
 
         -b * +period * -b * nonFloatFactor map { { main -> InfixPeriodNode(main, it.t1, it.t2) } },
         -b * +(colon * colon) * -b * nonFloatFactor map { { main -> InfixColonColonNode(main, it.t1, it.t2) } },

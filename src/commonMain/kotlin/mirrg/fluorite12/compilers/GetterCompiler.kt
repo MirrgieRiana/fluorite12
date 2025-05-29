@@ -1,11 +1,19 @@
 package mirrg.fluorite12.compilers
 
 import com.ionspin.kotlin.bignum.integer.toBigInteger
-import mirrg.fluorite12.ArrowBracketsNode
-import mirrg.fluorite12.ArrowBracketsRoundNode
-import mirrg.fluorite12.BracketsCurlyNode
-import mirrg.fluorite12.BracketsRoundNode
-import mirrg.fluorite12.BracketsSquareNode
+import mirrg.fluorite12.BracketsLiteralArrowedNode
+import mirrg.fluorite12.BracketsLiteralArrowedRoundNode
+import mirrg.fluorite12.BracketsLiteralSimpleCurlyNode
+import mirrg.fluorite12.BracketsLiteralSimpleRoundNode
+import mirrg.fluorite12.BracketsLiteralSimpleSquareNode
+import mirrg.fluorite12.BracketsRightArrowedCurlyNode
+import mirrg.fluorite12.BracketsRightArrowedNode
+import mirrg.fluorite12.BracketsRightArrowedRoundNode
+import mirrg.fluorite12.BracketsRightArrowedSquareNode
+import mirrg.fluorite12.BracketsRightSimpleCurlyNode
+import mirrg.fluorite12.BracketsRightSimpleNode
+import mirrg.fluorite12.BracketsRightSimpleRoundNode
+import mirrg.fluorite12.BracketsRightSimpleSquareNode
 import mirrg.fluorite12.CommasNode
 import mirrg.fluorite12.ComparisonOperatorType
 import mirrg.fluorite12.ComparisonsNode
@@ -48,14 +56,6 @@ import mirrg.fluorite12.LiteralStringContent
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.NodeStringContent
 import mirrg.fluorite12.RawStringNode
-import mirrg.fluorite12.RightArrowBracketsCurlyNode
-import mirrg.fluorite12.RightArrowBracketsNode
-import mirrg.fluorite12.RightArrowBracketsRoundNode
-import mirrg.fluorite12.RightArrowBracketsSquareNode
-import mirrg.fluorite12.RightBracketsCurlyNode
-import mirrg.fluorite12.RightBracketsNode
-import mirrg.fluorite12.RightBracketsRoundNode
-import mirrg.fluorite12.RightBracketsSquareNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
 import mirrg.fluorite12.UnaryAmpersandNode
@@ -191,20 +191,20 @@ fun Frame.compileToGetter(node: Node): Getter {
             StringConcatenationGetter(getters)
         }
 
-        is ArrowBracketsNode -> throw IllegalArgumentException("Unknown operator: ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
+        is BracketsLiteralArrowedNode -> throw IllegalArgumentException("Unknown operator: ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
 
-        is BracketsRoundNode -> {
+        is BracketsLiteralSimpleRoundNode -> {
             val frame = Frame(this)
             val newNode = frame.compileToGetter(node.body)
             NewEnvironmentGetter(frame.nextVariableIndex, frame.mountCount, newNode)
         }
 
-        is BracketsSquareNode -> {
+        is BracketsLiteralSimpleSquareNode -> {
             val nodes = if (node.body is SemicolonsNode) node.body.nodes else listOf(node.body)
             ArrayCreationGetter(nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
         }
 
-        is BracketsCurlyNode -> compileObjectCreationToGetter(null, node.body)
+        is BracketsLiteralSimpleCurlyNode -> compileObjectCreationToGetter(null, node.body)
 
         is UnaryPlusNode -> ToNumberGetter(compileToGetter(node.main))
         is UnaryMinusNode -> compileUnaryMinusToGetter(node.main)
@@ -217,12 +217,12 @@ fun Frame.compileToGetter(node: Node): Getter {
         is UnaryAtNode -> throw IllegalArgumentException("Unknown operator: ${node.operator.text}")
         is UnaryExclamationExclamationNode -> ThrowGetter(compileToGetter(node.main))
 
-        is RightArrowBracketsRoundNode -> compileArrowedFunctionalAccessToGetter(node, false, ::FunctionInvocationGetter)
-        is RightArrowBracketsSquareNode -> compileArrowedFunctionalAccessToGetter(node, true, ::FunctionBindGetter)
-        is RightArrowBracketsCurlyNode -> throw IllegalArgumentException("Unknown operator: ${node.receiver} ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
-        is RightBracketsRoundNode -> compileFunctionalAccessToGetter(node, false, ::FunctionInvocationGetter)
-        is RightBracketsSquareNode -> compileFunctionalAccessToGetter(node, true, ::FunctionBindGetter)
-        is RightBracketsCurlyNode -> compileObjectCreationToGetter(node.receiver, node.body)
+        is BracketsRightArrowedRoundNode -> compileArrowedFunctionalAccessToGetter(node, false, ::FunctionInvocationGetter)
+        is BracketsRightArrowedSquareNode -> compileArrowedFunctionalAccessToGetter(node, true, ::FunctionBindGetter)
+        is BracketsRightArrowedCurlyNode -> throw IllegalArgumentException("Unknown operator: ${node.receiver} ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
+        is BracketsRightSimpleRoundNode -> compileFunctionalAccessToGetter(node, false, ::FunctionInvocationGetter)
+        is BracketsRightSimpleSquareNode -> compileFunctionalAccessToGetter(node, true, ::FunctionBindGetter)
+        is BracketsRightSimpleCurlyNode -> compileObjectCreationToGetter(node.receiver, node.body)
 
         is InfixNode -> compileInfixOperatorToGetter(node)
 
@@ -282,8 +282,8 @@ private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
     }
 }
 
-fun Frame.compileArrowedFunctionalAccessToGetter(node: RightArrowBracketsNode, isBinding: Boolean, getterCreator: (functionGetter: Getter, argumentGetters: List<Getter>) -> Getter): Getter {
-    val argumentGettersFactory: (RightArrowBracketsNode) -> List<Getter> = {
+fun Frame.compileArrowedFunctionalAccessToGetter(node: BracketsRightArrowedNode, isBinding: Boolean, getterCreator: (functionGetter: Getter, argumentGetters: List<Getter>) -> Getter): Getter {
+    val argumentGettersFactory: (BracketsRightArrowedNode) -> List<Getter> = {
         val getter = compileFunctionBodyToGetter(node.arguments, node.body)
         listOf(getter)
     }
@@ -303,8 +303,8 @@ fun Frame.compileArrowedFunctionalAccessToGetter(node: RightArrowBracketsNode, i
     }
 }
 
-fun Frame.compileFunctionalAccessToGetter(node: RightBracketsNode, isBinding: Boolean, getterCreator: (functionGetter: Getter, argumentGetters: List<Getter>) -> Getter): Getter {
-    val argumentGettersFactory: (RightBracketsNode) -> List<Getter> = {
+fun Frame.compileFunctionalAccessToGetter(node: BracketsRightSimpleNode, isBinding: Boolean, getterCreator: (functionGetter: Getter, argumentGetters: List<Getter>) -> Getter): Getter {
+    val argumentGettersFactory: (BracketsRightSimpleNode) -> List<Getter> = {
         val argumentNodes = when (node.body) {
             is EmptyNode -> listOf()
             is SemicolonsNode -> node.body.nodes
@@ -383,7 +383,7 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
         is InfixQuestionColonNode -> ElvisGetter(compileToGetter(node.left), compileToGetter(node.right))
 
         is InfixExclamationQuestionNode -> {
-            val (name, rightNode) = if (node.right is ArrowBracketsRoundNode) {
+            val (name, rightNode) = if (node.right is BracketsLiteralArrowedRoundNode) {
                 require(node.right.arguments is IdentifierNode)
                 Pair(node.right.arguments.string, node.right.body)
             } else {
@@ -413,7 +413,7 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
         }
 
         is InfixMinusGreaterNode -> {
-            val commasNode = if (node.left is BracketsRoundNode) {
+            val commasNode = if (node.left is BracketsLiteralSimpleRoundNode) {
                 node.left.body
             } else {
                 node.left
