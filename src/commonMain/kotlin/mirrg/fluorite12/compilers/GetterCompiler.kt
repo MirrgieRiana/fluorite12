@@ -195,16 +195,16 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is BracketsRoundNode -> {
             val frame = Frame(this)
-            val newNode = frame.compileToGetter(node.main)
+            val newNode = frame.compileToGetter(node.body)
             NewEnvironmentGetter(frame.nextVariableIndex, frame.mountCount, newNode)
         }
 
         is BracketsSquareNode -> {
-            val nodes = if (node.main is SemicolonsNode) node.main.nodes else listOf(node.main)
+            val nodes = if (node.body is SemicolonsNode) node.body.nodes else listOf(node.body)
             ArrayCreationGetter(nodes.filter { it !is EmptyNode }.map { compileToGetter(it) })
         }
 
-        is BracketsCurlyNode -> compileObjectCreationToGetter(null, node.main)
+        is BracketsCurlyNode -> compileObjectCreationToGetter(null, node.body)
 
         is UnaryPlusNode -> ToNumberGetter(compileToGetter(node.main))
         is UnaryMinusNode -> compileUnaryMinusToGetter(node.main)
@@ -222,7 +222,7 @@ fun Frame.compileToGetter(node: Node): Getter {
         is RightArrowBracketsCurlyNode -> throw IllegalArgumentException("Unknown operator: ${node.receiver} ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
         is RightBracketsRoundNode -> compileFunctionalAccessToGetter(node, false, ::FunctionInvocationGetter)
         is RightBracketsSquareNode -> compileFunctionalAccessToGetter(node, true, ::FunctionBindGetter)
-        is RightBracketsCurlyNode -> compileObjectCreationToGetter(node.receiver, node.argument)
+        is RightBracketsCurlyNode -> compileObjectCreationToGetter(node.receiver, node.body)
 
         is InfixNode -> compileInfixOperatorToGetter(node)
 
@@ -305,10 +305,10 @@ fun Frame.compileArrowedFunctionalAccessToGetter(node: RightArrowBracketsNode, i
 
 fun Frame.compileFunctionalAccessToGetter(node: RightBracketsNode, isBinding: Boolean, getterCreator: (functionGetter: Getter, argumentGetters: List<Getter>) -> Getter): Getter {
     val argumentGettersFactory: (RightBracketsNode) -> List<Getter> = {
-        val argumentNodes = when (node.argument) {
+        val argumentNodes = when (node.body) {
             is EmptyNode -> listOf()
-            is SemicolonsNode -> node.argument.nodes
-            else -> listOf(node.argument)
+            is SemicolonsNode -> node.body.nodes
+            else -> listOf(node.body)
         }
         argumentNodes.map { compileToGetter(it) }
     }
@@ -414,7 +414,7 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
 
         is InfixMinusGreaterNode -> {
             val commasNode = if (node.left is BracketsRoundNode) {
-                node.left.main
+                node.left.body
             } else {
                 node.left
             }
