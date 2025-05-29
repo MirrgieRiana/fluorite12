@@ -21,7 +21,7 @@ fun Frame.compileToSetter(node: Node): Setter {
             VariableSetter(frameIndex, variableIndex)
         }
 
-        is RightBracketsRoundNode -> ArrayItemSetter(compileToGetter(node.main), compileToGetter(node.argument))
+        is RightBracketsRoundNode -> ArrayItemSetter(compileToGetter(node.receiver), compileToGetter(node.argument))
 
         is InfixPeriodNode -> {
             val receiverGetter = compileToGetter(node.left)
