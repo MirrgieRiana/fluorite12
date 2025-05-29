@@ -10,6 +10,7 @@ import mirrg.fluorite12.BracketsRightArrowedCurlyNode
 import mirrg.fluorite12.BracketsRightArrowedNode
 import mirrg.fluorite12.BracketsRightArrowedRoundNode
 import mirrg.fluorite12.BracketsRightArrowedSquareNode
+import mirrg.fluorite12.BracketsRightNode
 import mirrg.fluorite12.BracketsRightSimpleCurlyNode
 import mirrg.fluorite12.BracketsRightSimpleNode
 import mirrg.fluorite12.BracketsRightSimpleRoundNode
@@ -217,11 +218,11 @@ fun Frame.compileToGetter(node: Node): Getter {
         is UnaryAtNode -> throw IllegalArgumentException("Unknown operator: ${node.operator.text}")
         is UnaryExclamationExclamationNode -> ThrowGetter(compileToGetter(node.main))
 
-        is BracketsRightArrowedRoundNode -> compileArrowedFunctionalAccessToGetter(node, false, ::FunctionInvocationGetter)
-        is BracketsRightArrowedSquareNode -> compileArrowedFunctionalAccessToGetter(node, true, ::FunctionBindGetter)
+        is BracketsRightArrowedRoundNode -> compileFunctionalAccessToGetter(node, false, ::FunctionInvocationGetter, ::createArrowedArgumentGetters)
+        is BracketsRightArrowedSquareNode -> compileFunctionalAccessToGetter(node, true, ::FunctionBindGetter, ::createArrowedArgumentGetters)
         is BracketsRightArrowedCurlyNode -> throw IllegalArgumentException("Unknown operator: ${node.receiver} ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
-        is BracketsRightSimpleRoundNode -> compileFunctionalAccessToGetter(node, false, ::FunctionInvocationGetter)
-        is BracketsRightSimpleSquareNode -> compileFunctionalAccessToGetter(node, true, ::FunctionBindGetter)
+        is BracketsRightSimpleRoundNode -> compileFunctionalAccessToGetter(node, false, ::FunctionInvocationGetter, ::createSimpleArgumentGetters)
+        is BracketsRightSimpleSquareNode -> compileFunctionalAccessToGetter(node, true, ::FunctionBindGetter, ::createSimpleArgumentGetters)
         is BracketsRightSimpleCurlyNode -> compileObjectCreationToGetter(node.receiver, node.body)
 
         is InfixNode -> compileInfixOperatorToGetter(node)
@@ -282,37 +283,26 @@ private fun Frame.compileUnaryMinusToGetter(main: Node): Getter {
     }
 }
 
-fun Frame.compileArrowedFunctionalAccessToGetter(node: BracketsRightArrowedNode, isBinding: Boolean, getterCreator: (functionGetter: Getter, argumentGetters: List<Getter>) -> Getter): Getter {
-    val argumentGettersFactory: (BracketsRightArrowedNode) -> List<Getter> = {
-        val getter = compileFunctionBodyToGetter(node.arguments, node.body)
-        listOf(getter)
-    }
-
-    return if (node.receiver is InfixColonColonNode) { // メソッド呼出し
-        if (node.receiver.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.receiver.right}")
-        val receiverGetter = compileToGetter(node.receiver.left)
-        val name = node.receiver.right.string
-        val variable = getVariable("::$name")
-        val mountCounts = getMountCounts()
-        val argumentGetters = argumentGettersFactory(node)
-        MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding)
-    } else { // 関数呼び出し
-        val functionGetter = compileToGetter(node.receiver)
-        val argumentGetters = argumentGettersFactory(node)
-        getterCreator(functionGetter, argumentGetters)
-    }
+fun Frame.createArrowedArgumentGetters(node: BracketsRightArrowedNode): List<Getter> {
+    val getter = compileFunctionBodyToGetter(node.arguments, node.body)
+    return listOf(getter)
 }
 
-fun Frame.compileFunctionalAccessToGetter(node: BracketsRightSimpleNode, isBinding: Boolean, getterCreator: (functionGetter: Getter, argumentGetters: List<Getter>) -> Getter): Getter {
-    val argumentGettersFactory: (BracketsRightSimpleNode) -> List<Getter> = {
-        val argumentNodes = when (node.body) {
-            is EmptyNode -> listOf()
-            is SemicolonsNode -> node.body.nodes
-            else -> listOf(node.body)
-        }
-        argumentNodes.map { compileToGetter(it) }
+fun Frame.createSimpleArgumentGetters(node: BracketsRightSimpleNode): List<Getter> {
+    val argumentNodes = when (node.body) {
+        is EmptyNode -> listOf()
+        is SemicolonsNode -> node.body.nodes
+        else -> listOf(node.body)
     }
+    return argumentNodes.map { compileToGetter(it) }
+}
 
+fun <T : BracketsRightNode> Frame.compileFunctionalAccessToGetter(
+    node: T,
+    isBinding: Boolean,
+    getterCreator: (functionGetter: Getter, argumentGetters: List<Getter>) -> Getter,
+    argumentGettersFactory: (T) -> List<Getter>,
+): Getter {
     return if (node.receiver is InfixColonColonNode) { // メソッド呼出し
         if (node.receiver.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.receiver.right}")
         val receiverGetter = compileToGetter(node.receiver.left)
