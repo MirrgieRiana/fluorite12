@@ -4253,6 +4253,34 @@
     return name
   }
 
+  function crelt() {
+    var elt = arguments[0];
+    if (typeof elt == "string") elt = document.createElement(elt);
+    var i = 1, next = arguments[1];
+    if (next && typeof next == "object" && next.nodeType == null && !Array.isArray(next)) {
+      for (var name in next) if (Object.prototype.hasOwnProperty.call(next, name)) {
+        var value = next[name];
+        if (typeof value == "string") elt.setAttribute(name, value);
+        else if (value != null) elt[name] = value;
+      }
+      i++;
+    }
+    for (; i < arguments.length; i++) add(elt, arguments[i]);
+    return elt
+  }
+
+  function add(elt, child) {
+    if (typeof child == "string") {
+      elt.appendChild(document.createTextNode(child));
+    } else if (child == null) ; else if (child.nodeType != null) {
+      elt.appendChild(child);
+    } else if (Array.isArray(child)) {
+      for (var i = 0; i < child.length; i++) add(elt, child[i]);
+    } else {
+      throw new RangeError("Unsupported child node: " + child)
+    }
+  }
+
   function getSelection(root) {
       let target;
       // Browsers differ on whether shadow roots have a getSelection
@@ -6676,11 +6704,23 @@
   }
   const editable = /*@__PURE__*/Facet.define({ combine: values => values.length ? values[0] : true });
   let nextPluginID = 0;
-  const viewPlugin = /*@__PURE__*/Facet.define();
+  const viewPlugin = /*@__PURE__*/Facet.define({
+      combine(plugins) {
+          return plugins.filter((p, i) => {
+              for (let j = 0; j < i; j++)
+                  if (plugins[j].plugin == p.plugin)
+                      return false;
+              return true;
+          });
+      }
+  });
   /**
   View plugins associate stateful values with a view. They can
   influence the way the content is drawn, and are notified of things
-  that happen in the view.
+  that happen in the view. They optionally take an argument, in
+  which case you need to call [`of`](https://codemirror.net/6/docs/ref/#view.ViewPlugin.of) to create
+  an extension for the plugin. When the argument type is undefined,
+  you can use the plugin instance as an extension directly.
   */
   class ViewPlugin {
       constructor(
@@ -6704,7 +6744,14 @@
           this.create = create;
           this.domEventHandlers = domEventHandlers;
           this.domEventObservers = domEventObservers;
-          this.extension = buildExtensions(this);
+          this.baseExtensions = buildExtensions(this);
+          this.extension = this.baseExtensions.concat(viewPlugin.of({ plugin: this, arg: undefined }));
+      }
+      /**
+      Create an extension for this plugin with the given argument.
+      */
+      of(arg) {
+          return this.baseExtensions.concat(viewPlugin.of({ plugin: this, arg }));
       }
       /**
       Define a plugin from a constructor function that creates the
@@ -6713,7 +6760,7 @@
       static define(create, spec) {
           const { eventHandlers, eventObservers, provide, decorations: deco } = spec || {};
           return new ViewPlugin(nextPluginID++, create, eventHandlers, eventObservers, plugin => {
-              let ext = [viewPlugin.of(plugin)];
+              let ext = [];
               if (deco)
                   ext.push(decorations.of(view => {
                       let pluginInst = view.plugin(plugin);
@@ -6729,7 +6776,7 @@
       editor view as argument.
       */
       static fromClass(cls, spec) {
-          return ViewPlugin.define(view => new cls(view), spec);
+          return ViewPlugin.define((view, arg) => new cls(view, arg), spec);
       }
   }
   class PluginInstance {
@@ -6737,18 +6784,19 @@
           this.spec = spec;
           // When starting an update, all plugins have this field set to the
           // update object, indicating they need to be updated. When finished
-          // updating, it is set to `false`. Retrieving a plugin that needs to
+          // updating, it is set to `null`. Retrieving a plugin that needs to
           // be updated with `view.plugin` forces an eager update.
           this.mustUpdate = null;
           // This is null when the plugin is initially created, but
           // initialized on the first update.
           this.value = null;
       }
+      get plugin() { return this.spec && this.spec.plugin; }
       update(view) {
           if (!this.value) {
               if (this.spec) {
                   try {
-                      this.value = this.spec.create(view);
+                      this.value = this.spec.plugin.create(view, this.spec.arg);
                   }
                   catch (e) {
                       logException(view.state, e, "CodeMirror plugin crashed");
@@ -8606,16 +8654,16 @@
           return result[type] || (result[type] = { observers: [], handlers: [] });
       }
       for (let plugin of plugins) {
-          let spec = plugin.spec;
-          if (spec && spec.domEventHandlers)
-              for (let type in spec.domEventHandlers) {
-                  let f = spec.domEventHandlers[type];
+          let spec = plugin.spec, handlers = spec && spec.plugin.domEventHandlers, observers = spec && spec.plugin.domEventObservers;
+          if (handlers)
+              for (let type in handlers) {
+                  let f = handlers[type];
                   if (f)
                       record(type).handlers.push(bindHandler(plugin.value, f));
               }
-          if (spec && spec.domEventObservers)
-              for (let type in spec.domEventObservers) {
-                  let f = spec.domEventObservers[type];
+          if (observers)
+              for (let type in observers) {
+                  let f = observers[type];
                   if (f)
                       record(type).observers.push(bindHandler(plugin.value, f));
               }
@@ -10861,6 +10909,21 @@
           backgroundColor: "#333338",
           color: "white"
       },
+      ".cm-dialog": {
+          padding: "2px 19px 4px 6px",
+          position: "relative",
+          "& label": { fontSize: "80%" },
+      },
+      ".cm-dialog-close": {
+          position: "absolute",
+          top: "3px",
+          right: "4px",
+          backgroundColor: "inherit",
+          border: "none",
+          font: "inherit",
+          fontSize: "14px",
+          padding: "0"
+      },
       ".cm-tab": {
           display: "inline-block",
           overflow: "hidden",
@@ -12173,8 +12236,8 @@
       */
       plugin(plugin) {
           let known = this.pluginMap.get(plugin);
-          if (known === undefined || known && known.spec != plugin)
-              this.pluginMap.set(plugin, known = this.plugins.find(p => p.spec == plugin) || null);
+          if (known === undefined || known && known.plugin != plugin)
+              this.pluginMap.set(plugin, known = this.plugins.find(p => p.plugin == plugin) || null);
           return known && known.update(this).value;
       }
       /**
@@ -14831,7 +14894,7 @@
   determined by their extension priority.
   */
   function gutter(config) {
-      return [gutters(), activeGutters.of(Object.assign(Object.assign({}, defaults$1), config))];
+      return [gutters(), activeGutters.of({ ...defaults$1, ...config })];
   }
   const unfixGutters = /*@__PURE__*/Facet.define({
       combine: values => values.some(x => x)
@@ -20933,34 +20996,6 @@
   this.
   */
   const indentWithTab = { key: "Tab", run: indentMore, shift: indentLess };
-
-  function crelt() {
-    var elt = arguments[0];
-    if (typeof elt == "string") elt = document.createElement(elt);
-    var i = 1, next = arguments[1];
-    if (next && typeof next == "object" && next.nodeType == null && !Array.isArray(next)) {
-      for (var name in next) if (Object.prototype.hasOwnProperty.call(next, name)) {
-        var value = next[name];
-        if (typeof value == "string") elt.setAttribute(name, value);
-        else if (value != null) elt[name] = value;
-      }
-      i++;
-    }
-    for (; i < arguments.length; i++) add(elt, arguments[i]);
-    return elt
-  }
-
-  function add(elt, child) {
-    if (typeof child == "string") {
-      elt.appendChild(document.createTextNode(child));
-    } else if (child == null) ; else if (child.nodeType != null) {
-      elt.appendChild(child);
-    } else if (Array.isArray(child)) {
-      for (var i = 0; i < child.length; i++) add(elt, child[i]);
-    } else {
-      throw new RangeError("Unsupported child node: " + child)
-    }
-  }
 
   const basicNormalize = typeof String.prototype.normalize == "function"
       ? x => x.normalize("NFKD") : x => x;
