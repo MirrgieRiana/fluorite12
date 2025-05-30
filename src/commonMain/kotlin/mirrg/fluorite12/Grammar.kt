@@ -265,6 +265,7 @@ class Fluorite12Grammar : Grammar<Node>() {
 
         -b * +period * -b * nonFloatFactor map { { main -> InfixPeriodNode(main, it.t1, it.t2) } },
         -b * +(colon * colon) * -b * nonFloatFactor map { { main -> InfixColonColonNode(main, it.t1, it.t2) } },
+        -b * +(question * colon * colon) * -b * nonFloatFactor map { { main -> InfixQuestionColonColonNode(main, it.t1, it.t2) } },
 
         -b * +(period * plus) map { { main -> UnaryPlusNode(it, main, Side.RIGHT) } },
         -b * +(period * minus) map { { main -> UnaryMinusNode(it, main, Side.RIGHT) } },

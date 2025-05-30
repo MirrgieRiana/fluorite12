@@ -135,9 +135,19 @@ class MethodAccessGetter(
     private val name: String,
     private val argumentGetters: List<Getter>,
     private val isBinding: Boolean,
+    private val isNullSafe: Boolean,
 ) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val receiver = receiverGetter.evaluate(env)
+        if (isNullSafe && receiver == FluoriteNull) {
+            return if (isBinding) {
+                FluoriteFunction { arguments2 ->
+                    FluoriteNull
+                }
+            } else {
+                FluoriteNull
+            }
+        }
 
         suspend fun processFunction(function: FluoriteValue): FluoriteValue {
             val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
@@ -211,7 +221,7 @@ class MethodAccessGetter(
         throw FluoriteException("Method not found: $receiver::$name".toFluoriteString())
     }
 
-    override val code get() = "MethodAccessGetter[${receiverGetter.code};$variable;${mountCounts.joinToString { "$it" }};${name.escapeJsonString()};${argumentGetters.code};$isBinding]"
+    override val code get() = "MethodAccessGetter[${receiverGetter.code};$variable;${mountCounts.joinToString { "$it" }};${name.escapeJsonString()};${argumentGetters.code};$isBinding,$isNullSafe]"
 }
 
 class FunctionInvocationGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {

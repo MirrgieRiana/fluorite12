@@ -49,6 +49,7 @@ import mirrg.fluorite12.InfixPeriodPeriodNode
 import mirrg.fluorite12.InfixPipeNode
 import mirrg.fluorite12.InfixPipePipeNode
 import mirrg.fluorite12.InfixPlusNode
+import mirrg.fluorite12.InfixQuestionColonColonNode
 import mirrg.fluorite12.InfixQuestionColonNode
 import mirrg.fluorite12.InfixSlashNode
 import mirrg.fluorite12.InfixTildeNode
@@ -305,7 +306,15 @@ fun <T : BracketsRightNode> Frame.compileFunctionalAccessToGetter(node: T, isBin
         val variable = getVariable("::$name")
         val mountCounts = getMountCounts()
         val argumentGetters = argumentGettersFactory(node)
-        MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding)
+        MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding, false)
+    } else if (node.receiver is InfixQuestionColonColonNode) {
+        if (node.receiver.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.receiver.right}")
+        val receiverGetter = compileToGetter(node.receiver.left)
+        val name = node.receiver.right.string
+        val variable = getVariable("::$name")
+        val mountCounts = getMountCounts()
+        val argumentGetters = argumentGettersFactory(node)
+        MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding, true)
     } else { // 関数呼び出し
         val functionGetter = compileToGetter(node.receiver)
         val argumentGetters = argumentGettersFactory(node)
@@ -353,7 +362,16 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
             val name = node.right.string
             val variable = getVariable("::$name")
             val mountCounts = getMountCounts()
-            MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true)
+            MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true, false)
+        }
+
+        is InfixQuestionColonColonNode -> {
+            if (node.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.right}")
+            val receiverGetter = compileToGetter(node.left)
+            val name = node.right.string
+            val variable = getVariable("::$name")
+            val mountCounts = getMountCounts()
+            MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true, true)
         }
 
         is InfixPlusNode -> PlusGetter(compileToGetter(node.left), compileToGetter(node.right))

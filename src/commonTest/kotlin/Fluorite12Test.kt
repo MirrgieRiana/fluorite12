@@ -806,6 +806,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun nullSafeTest() = runTest {
+        assertEquals("1,NULL,3", eval("{m:_->1}{},NULL,{m:_->3}{}|_?::m()").stream()) // Null安全メソッド呼び出し
+        assertEquals("1,NULL,3", eval("{m:_->1}{},NULL,{m:_->3}{}|_?::m[]()").stream()) // Null安全メソッド部分適用
+        assertEquals("1,NULL,3", eval("{m:_->1}{},NULL,{m:_->3}{}|(_?::m)()").stream()) // Null安全メソッド参照
+    }
+
+    @Test
     fun runnerTest() = runTest {
         assertEquals(55, eval("x := 0; 1 .. 10 | x = x + _; x").int) // runner部分がストリームの式だった場合、イテレーションはする
     }

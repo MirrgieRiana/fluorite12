@@ -45,6 +45,7 @@ class UnaryExclamationExclamationNode(operator: List<TokenMatch>, main: Node, si
 sealed class InfixNode(val left: Node, val operator: List<TokenMatch>, val right: Node) : Node()
 class InfixPeriodNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixColonColonNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixQuestionColonColonNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixPlusNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixAmpersandNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixMinusNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)

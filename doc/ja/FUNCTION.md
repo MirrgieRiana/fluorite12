@@ -255,6 +255,33 @@ $ flc '
 | メソッド参照   | `receiver::method`                | `receiver` を挿入        |
 | 関数呼び出し   | `function(argument; ...)`         | 関数の実行                 |
 
+## NULL安全
+
+`?::` 演算子は `receiver` が `NULL` の場合にメソッドを実行せず、代わりに `NULL` を返します。
+
+| 演算子                 | 記法                                 |
+|---------------------|------------------------------------|
+| NULL安全メソッド呼び出し      | `receiver?::method(argument; ...)` |
+| NULL安全メソッド呼び出しの部分適用 | `receiver?::method[argument; ...]` |
+| NULL安全メソッド参照        | `receiver?::method`                |
+
+```shell
+$ flc '
+  Object := {
+    get_name: this -> this.name
+  }
+
+  object1 := Object{name: 1}
+  object2 := NULL
+  object3 := Object{name: 3}
+
+  object1, object2, object3 | _?::get_name()
+'
+# 1
+# NULL
+# 3
+```
+
 ## フォールバックメソッド
 
 レシーバに定義されていないメソッドの参照が行われた際、 `_::_` メソッドが呼び出されます。
