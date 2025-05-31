@@ -378,6 +378,44 @@ $ flc '
 # 3
 ```
 
+# 変換系関数
+
+## `JSON` 値をJSON文字列に変換
+
+`JSON(["indent": indent: STRING; ]value: VALUE | STREAM<VALUE>): STRING | STREAM<STRING>`
+
+`value` をJSON形式の文字列に変換します。
+
+ストリームを渡した場合、各要素を変換したストリームを返します。
+
+```shell
+$ flc '{a: 1; b: 2} >> JSON[indent: "  "]'
+# {
+#   "a": 1,
+#   "b": 2
+# }
+```
+
+```shell
+$ flc '{a: 1}, {b: 2} >> JSON'
+# {"a":1}
+# {"b":2}
+```
+
+## `JSOND` JSON文字列を値に変換
+
+`JSOND(json: STRING | STREAM<STRING>): VALUE | STREAM<VALUE>`
+
+`json` を対応する値に変換します。
+
+ストリームを渡した場合、各要素を変換したストリームを返します。
+
+```shell
+$ flc ' "{\"a\": 1}", "{\"b\": 2}" >> JSOND '
+# {a:1}
+# {b:2}
+```
+
 # `SLEEP` 指定時間の間処理を停止
 
 `SLEEP(milliseconds: NUMBER): NULL`

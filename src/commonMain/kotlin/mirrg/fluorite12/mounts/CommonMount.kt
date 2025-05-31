@@ -19,6 +19,8 @@ import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.compilers.objects.toMutableList
+import mirrg.fluorite12.toFluoriteValueAsJson
+import mirrg.fluorite12.toJsonFluoriteValue
 import kotlin.math.E
 import kotlin.math.PI
 import kotlin.math.floor
@@ -305,6 +307,28 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             } else {
                 usage("SLEEP(milliseconds: NUMBER): NULL")
             }
+        },
+        "JSON" to FluoriteFunction { arguments ->
+            fun usage(): Nothing = usage("""JSON(["indent": indent: STRING; ]value: VALUE | STREAM<VALUE>): STRING | STREAM<STRING>""")
+            val (indent, value) = when (arguments.size) {
+                1 -> Pair(null, arguments[0])
+                2 -> {
+                    val indentParameter = arguments[0] as? FluoriteArray ?: usage()
+                    if (indentParameter.values.size != 2) usage()
+                    val indentKey = indentParameter.values[0] as? FluoriteString ?: usage()
+                    if (indentKey.value != "indent") usage()
+                    Pair(indentParameter.values[1].toFluoriteString().value, arguments[1])
+                }
+
+                else -> usage()
+            }
+            value.toJsonFluoriteValue(indent = indent)
+        },
+        "JSOND" to FluoriteFunction { arguments ->
+            fun usage(): Nothing = usage("JSOND(json: STRING | STREAM<STRING>): VALUE | STREAM<VALUE>")
+            if (arguments.size != 1) usage()
+            val json = arguments[0]
+            json.toFluoriteValueAsJson()
         },
         "GENERATE" to FluoriteFunction { arguments ->
             if (arguments.size != 1) usage("GENERATE(generator: (yield: (value: VALUE) -> NULL) -> NULL | STREAM): STREAM<VALUE>")
