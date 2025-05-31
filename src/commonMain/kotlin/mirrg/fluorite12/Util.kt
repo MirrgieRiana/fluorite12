@@ -8,6 +8,20 @@ import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.ParseResult
 import com.github.h0tk3y.betterParse.parser.Parsed
 import com.github.h0tk3y.betterParse.parser.Parser
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import mirrg.fluorite12.compilers.objects.FluoriteArray
+import mirrg.fluorite12.compilers.objects.FluoriteBoolean
+import mirrg.fluorite12.compilers.objects.FluoriteNull
+import mirrg.fluorite12.compilers.objects.FluoriteObject
+import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.toFluoriteNumber
+import mirrg.fluorite12.compilers.objects.toFluoriteString
 
 val List<TokenMatch>.text get() = this.joinToString("") { it.text }
 
@@ -37,6 +51,23 @@ fun String.escapeJsonString() = this
     .replace("\\", "\\\\")
     .replace("\n", "\\n")
     .replace("\"", "\\\"")
+
+fun String.parseJsonToFluoriteValue(): FluoriteValue {
+    fun f(data: JsonElement): FluoriteValue = when (data) {
+        is JsonObject -> FluoriteObject(FluoriteObject.fluoriteClass, data.mapValues { (_, it) -> f(it) }.toMutableMap())
+        is JsonArray -> FluoriteArray(data.map { f(it) }.toMutableList())
+        is JsonNull -> FluoriteNull
+        is JsonPrimitive -> when {
+            data.isString -> data.content.toFluoriteString()
+            data.content == "true" -> FluoriteBoolean.TRUE
+            data.content == "false" -> FluoriteBoolean.FALSE
+            else -> data.content.toFluoriteNumber()
+        }
+
+        else -> throw IllegalArgumentException()
+    }
+    return f(Json.decodeFromString<JsonElement>(this))
+}
 
 class CachedParser<T>(private val parser: Parser<T>) : Parser<T> {
     private val cacheTable = mutableMapOf<Int, ParseResult<T>>()

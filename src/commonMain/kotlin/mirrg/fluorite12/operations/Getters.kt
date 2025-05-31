@@ -1,12 +1,5 @@
 package mirrg.fluorite12.operations
 
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import mirrg.fluorite12.Environment
 import mirrg.fluorite12.LocalVariable
 import mirrg.fluorite12.compilers.objects.Callable
@@ -36,6 +29,7 @@ import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.compilers.objects.toJson
 import mirrg.fluorite12.escapeJsonString
 import mirrg.fluorite12.getMounts
+import mirrg.fluorite12.parseJsonToFluoriteValue
 import kotlin.math.pow
 
 object NullGetter : Getter {
@@ -287,25 +281,7 @@ class ToJsonGetter(private val getter: Getter) : Getter {
 }
 
 class FromJsonGetter(private val getter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment): FluoriteValue {
-        val value = getter.evaluate(env)
-        val data = Json.decodeFromString<JsonElement>((value as FluoriteString).value)
-        fun f(data: JsonElement): FluoriteValue = when (data) {
-            is JsonObject -> FluoriteObject(FluoriteObject.fluoriteClass, data.mapValues { (_, it) -> f(it) }.toMutableMap())
-            is JsonArray -> FluoriteArray(data.map { f(it) }.toMutableList())
-            is JsonNull -> FluoriteNull
-            is JsonPrimitive -> when {
-                data.isString -> data.content.toFluoriteString()
-                data.content == "true" -> FluoriteBoolean.TRUE
-                data.content == "false" -> FluoriteBoolean.FALSE
-                else -> data.content.toFluoriteNumber()
-            }
-
-            else -> throw IllegalArgumentException()
-        }
-        return f(data)
-    }
-
+    override suspend fun evaluate(env: Environment) = (getter.evaluate(env) as FluoriteString).value.parseJsonToFluoriteValue()
     override val code get() = "FromJsonGetter[${getter.code}]"
 }
 
