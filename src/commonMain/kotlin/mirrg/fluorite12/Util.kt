@@ -9,6 +9,7 @@ import com.github.h0tk3y.betterParse.parser.ParseResult
 import com.github.h0tk3y.betterParse.parser.Parsed
 import com.github.h0tk3y.betterParse.parser.Parser
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -17,9 +18,15 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
+import mirrg.fluorite12.compilers.objects.FluoriteDouble
+import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteObject
+import mirrg.fluorite12.compilers.objects.FluoriteStream
+import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.callMethod
+import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 
@@ -52,21 +59,68 @@ fun String.escapeJsonString() = this
     .replace("\n", "\\n")
     .replace("\"", "\\\"")
 
-fun String.parseJsonToFluoriteValue(): FluoriteValue {
-    fun f(data: JsonElement): FluoriteValue = when (data) {
-        is JsonObject -> FluoriteObject(FluoriteObject.fluoriteClass, data.mapValues { (_, it) -> f(it) }.toMutableMap())
-        is JsonArray -> FluoriteArray(data.map { f(it) }.toMutableList())
-        is JsonNull -> FluoriteNull
-        is JsonPrimitive -> when {
-            data.isString -> data.content.toFluoriteString()
-            data.content == "true" -> FluoriteBoolean.TRUE
-            data.content == "false" -> FluoriteBoolean.FALSE
-            else -> data.content.toFluoriteNumber()
+private val jsons = mutableMapOf<String, Json>()
+
+suspend fun FluoriteValue.toJsonFluoriteValue(indent: String? = null): FluoriteValue {
+    return if (this is FluoriteStream) {
+        FluoriteStream {
+            this@toJsonFluoriteValue.collect {
+                emit(it.toJsonFluoriteValue(indent = indent))
+            }
+        }
+    } else {
+        suspend fun FluoriteValue.toJsonElement(): JsonElement = when (this) {
+            is FluoriteObject -> JsonObject(this.map.mapValues { it.value.toJsonElement() })
+            is FluoriteArray -> JsonArray(this.values.map { it.toJsonElement() })
+            is FluoriteInt -> JsonPrimitive(this.value)
+            is FluoriteDouble -> JsonPrimitive(this.value)
+            is FluoriteString -> JsonPrimitive(this.value)
+            is FluoriteBoolean -> JsonPrimitive(this.value)
+            FluoriteNull -> JsonNull
+            else -> this.callMethod("$&_").toJsonElement()
         }
 
-        else -> throw IllegalArgumentException()
+        val jsonElement = this.toJsonElement()
+
+        if (indent == null) return Json.encodeToString(jsonElement).toFluoriteString()
+        val oldJson = jsons[indent]
+        val json = if (oldJson != null) {
+            oldJson
+        } else {
+            val newJson = Json {
+                prettyPrint = true
+                prettyPrintIndent = indent
+            }
+            if (jsons.size >= 10) jsons.clear()
+            jsons[indent] = newJson
+            newJson
+        }
+        json.encodeToString(jsonElement).toFluoriteString()
     }
-    return f(Json.decodeFromString<JsonElement>(this))
+}
+
+suspend fun FluoriteValue.toFluoriteValueAsJson(): FluoriteValue {
+    return if (this is FluoriteStream) {
+        FluoriteStream {
+            this@toFluoriteValueAsJson.collect {
+                emit(it.toFluoriteValueAsJson())
+            }
+        }
+    } else {
+        fun JsonElement.toFluoriteValue(): FluoriteValue = when (this) {
+            is JsonObject -> FluoriteObject(FluoriteObject.fluoriteClass, this.mapValues { it.value.toFluoriteValue() }.toMutableMap())
+            is JsonArray -> FluoriteArray(this.map { it.toFluoriteValue() }.toMutableList())
+            JsonNull -> FluoriteNull
+            is JsonPrimitive -> when {
+                this.isString -> this.content.toFluoriteString()
+                this.content == "true" -> FluoriteBoolean.TRUE
+                this.content == "false" -> FluoriteBoolean.FALSE
+                else -> this.content.toFluoriteNumber()
+            }
+        }
+
+        Json.decodeFromString<JsonElement>(this.toFluoriteString().value).toFluoriteValue()
+    }
 }
 
 class CachedParser<T>(private val parser: Parser<T>) : Parser<T> {

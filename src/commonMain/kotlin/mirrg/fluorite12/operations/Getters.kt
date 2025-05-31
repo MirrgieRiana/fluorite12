@@ -26,10 +26,10 @@ import mirrg.fluorite12.compilers.objects.toBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteString
-import mirrg.fluorite12.compilers.objects.toJson
 import mirrg.fluorite12.escapeJsonString
 import mirrg.fluorite12.getMounts
-import mirrg.fluorite12.parseJsonToFluoriteValue
+import mirrg.fluorite12.toFluoriteValueAsJson
+import mirrg.fluorite12.toJsonFluoriteValue
 import kotlin.math.pow
 
 object NullGetter : Getter {
@@ -276,12 +276,12 @@ class GetLengthGetter(private val getter: Getter) : Getter {
 }
 
 class ToJsonGetter(private val getter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toJson()
+    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toJsonFluoriteValue()
     override val code get() = "ToJsonGetter[${getter.code}]"
 }
 
 class FromJsonGetter(private val getter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = (getter.evaluate(env) as FluoriteString).value.parseJsonToFluoriteValue()
+    override suspend fun evaluate(env: Environment) = getter.evaluate(env).toFluoriteValueAsJson()
     override val code get() = "FromJsonGetter[${getter.code}]"
 }
 

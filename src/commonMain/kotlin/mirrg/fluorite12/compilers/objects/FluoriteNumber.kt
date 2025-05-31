@@ -17,7 +17,6 @@ class FluoriteInt(val value: Int) : FluoriteNumber {
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     "+_" to FluoriteFunction { it[0] as FluoriteInt },
                     "?_" to FluoriteFunction { ((it[0] as FluoriteInt).value != 0).toFluoriteBoolean() },
-                    "$&_" to FluoriteFunction { "${(it[0] as FluoriteInt).value}".toFluoriteString() },
                     "_+_" to FluoriteFunction { arguments ->
                         val left = arguments[0] as FluoriteInt
                         when (val right = arguments[1]) {
@@ -59,7 +58,6 @@ class FluoriteDouble(val value: Double) : FluoriteNumber {
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     "+_" to FluoriteFunction { it[0] as FluoriteDouble },
                     "?_" to FluoriteFunction { ((it[0] as FluoriteDouble).value != 0.0).toFluoriteBoolean() },
-                    "$&_" to FluoriteFunction { "${(it[0] as FluoriteDouble).value}".toFluoriteString() },
                     "_+_" to FluoriteFunction { arguments ->
                         val left = arguments[0] as FluoriteDouble
                         when (val right = arguments[1]) {

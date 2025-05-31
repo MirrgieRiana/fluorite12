@@ -11,7 +11,6 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     "+_" to FluoriteFunction { if ((it[0] as FluoriteBoolean).value) FluoriteInt.ONE else FluoriteInt.ZERO },
                     "?_" to FluoriteFunction { it[0] as FluoriteBoolean },
-                    "$&_" to FluoriteFunction { (if ((it[0] as FluoriteBoolean).value) "true" else "false").toFluoriteString() },
                 )
             )
         }

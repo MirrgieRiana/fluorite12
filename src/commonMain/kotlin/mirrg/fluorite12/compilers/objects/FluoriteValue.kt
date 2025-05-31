@@ -73,7 +73,6 @@ suspend fun FluoriteValue.callMethod(method: FluoriteValue, arguments: Array<Flu
 
 suspend fun FluoriteValue.invoke(arguments: Array<FluoriteValue>) = this.callMethod("_()", arguments)
 suspend fun FluoriteValue.bind(arguments: Array<FluoriteValue>) = this.callMethod("_[]", arguments)
-suspend fun FluoriteValue.toJson() = this.callMethod("$&_")
 suspend fun FluoriteValue.toFluoriteNumber(): FluoriteNumber = this.callMethod("+_").let { if (it is FluoriteNumber) it else it.toFluoriteNumber() }
 suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod("&_").let { if (it is FluoriteString) it else it.toFluoriteString() }
 suspend fun FluoriteValue.toFluoriteBoolean(): FluoriteBoolean = this.callMethod("?_").let { if (it is FluoriteBoolean) it else it.toFluoriteBoolean() }

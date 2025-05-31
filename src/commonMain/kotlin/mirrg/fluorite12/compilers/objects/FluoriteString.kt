@@ -1,7 +1,5 @@
 package mirrg.fluorite12.compilers.objects
 
-import mirrg.fluorite12.escapeJsonString
-
 class FluoriteString(val value: String) : FluoriteValue {
     companion object {
         val fluoriteClass by lazy {
@@ -85,10 +83,6 @@ class FluoriteString(val value: String) : FluoriteValue {
                     },
                     "?_" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
                     "&_" to FluoriteFunction { it[0] as FluoriteString },
-                    "$&_" to FluoriteFunction { arguments ->
-                        val escaped = (arguments[0] as FluoriteString).value.escapeJsonString()
-                        "\"$escaped\"".toFluoriteString()
-                    },
                     "_+_" to FluoriteFunction { arguments ->
                         val left = arguments[0] as FluoriteString
                         val right = arguments[1]

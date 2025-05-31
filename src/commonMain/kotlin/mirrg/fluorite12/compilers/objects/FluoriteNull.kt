@@ -6,7 +6,6 @@ object FluoriteNull : FluoriteValue {
             FluoriteValue.fluoriteClass, mutableMapOf(
                 "+_" to FluoriteFunction { FluoriteInt.ZERO },
                 "?_" to FluoriteFunction { FluoriteBoolean.FALSE },
-                "$&_" to FluoriteFunction { "null".toFluoriteString() },
             )
         )
     }
