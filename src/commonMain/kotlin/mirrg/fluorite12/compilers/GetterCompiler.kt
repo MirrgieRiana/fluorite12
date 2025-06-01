@@ -301,17 +301,19 @@ fun Frame.createSimpleArgumentGetters(node: BracketsRightSimpleNode): List<Gette
 
 fun <T : BracketsRightNode> Frame.compileFunctionalAccessToGetter(node: T, isBinding: Boolean, argumentGettersFactory: (T) -> List<Getter>): Getter {
     return if (node.receiver is InfixColonColonNode) { // メソッド呼出し
-        if (node.receiver.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.receiver.right}")
-        val receiverGetter = compileToGetter(node.receiver.left)
-        val name = node.receiver.right.string
+        val receiverNode = node.receiver
+        if (receiverNode.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${receiverNode.right}")
+        val receiverGetter = compileToGetter(receiverNode.left)
+        val name = receiverNode.right.string
         val variable = getVariable("::$name")
         val mountCounts = getMountCounts()
         val argumentGetters = argumentGettersFactory(node)
         MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding, false)
     } else if (node.receiver is InfixQuestionColonColonNode) {
-        if (node.receiver.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.receiver.right}")
-        val receiverGetter = compileToGetter(node.receiver.left)
-        val name = node.receiver.right.string
+        val receiverNode = node.receiver
+        if (receiverNode.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${receiverNode.right}")
+        val receiverGetter = compileToGetter(receiverNode.left)
+        val name = receiverNode.right.string
         val variable = getVariable("::$name")
         val mountCounts = getMountCounts()
         val argumentGetters = argumentGettersFactory(node)
@@ -367,18 +369,20 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
         }
 
         is InfixColonColonNode -> {
-            if (node.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.right}")
-            val receiverGetter = compileToGetter(node.left)
-            val name = node.right.string
+            val receiverNode = node
+            if (receiverNode.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${receiverNode.right}")
+            val receiverGetter = compileToGetter(receiverNode.left)
+            val name = receiverNode.right.string
             val variable = getVariable("::$name")
             val mountCounts = getMountCounts()
             MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true, false)
         }
 
         is InfixQuestionColonColonNode -> {
-            if (node.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${node.right}")
-            val receiverGetter = compileToGetter(node.left)
-            val name = node.right.string
+            val receiverNode = node
+            if (receiverNode.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${receiverNode.right}")
+            val receiverGetter = compileToGetter(receiverNode.left)
+            val name = receiverNode.right.string
             val variable = getVariable("::$name")
             val mountCounts = getMountCounts()
             MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true, true)
