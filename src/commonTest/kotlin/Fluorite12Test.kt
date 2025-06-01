@@ -807,6 +807,7 @@ class Fluorite12Test {
 
     @Test
     fun nullSafeTest() = runTest {
+        assertEquals("1,NULL,3", eval("{v:1},NULL,{v:3}|_?.v").stream()) // Null安全要素アクセス
         assertEquals("1,NULL,3", eval("{m:_->1}{},NULL,{m:_->3}{}|_?::m()").stream()) // Null安全メソッド呼び出し
         assertEquals("1,NULL,3", eval("{m:_->1}{},NULL,{m:_->3}{}|_?::m[]()").stream()) // Null安全メソッド部分適用
         assertEquals("1,NULL,3", eval("{m:_->1}{},NULL,{m:_->3}{}|(_?::m)()").stream()) // Null安全メソッド参照

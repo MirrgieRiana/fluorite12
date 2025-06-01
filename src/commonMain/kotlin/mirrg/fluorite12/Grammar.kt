@@ -264,6 +264,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> BracketsRightSimpleCurlyNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
 
         -b * +period * -b * nonFloatFactor map { { main -> InfixPeriodNode(main, it.t1, it.t2) } },
+        -b * +(question * period) * -b * nonFloatFactor map { { main -> InfixQuestionPeriodNode(main, it.t1, it.t2) } },
         -b * +(colon * colon) * -b * nonFloatFactor map { { main -> InfixColonColonNode(main, it.t1, it.t2) } },
         -b * +(question * colon * colon) * -b * nonFloatFactor map { { main -> InfixQuestionColonColonNode(main, it.t1, it.t2) } },
 

@@ -51,6 +51,7 @@ import mirrg.fluorite12.InfixPipePipeNode
 import mirrg.fluorite12.InfixPlusNode
 import mirrg.fluorite12.InfixQuestionColonColonNode
 import mirrg.fluorite12.InfixQuestionColonNode
+import mirrg.fluorite12.InfixQuestionPeriodNode
 import mirrg.fluorite12.InfixSlashNode
 import mirrg.fluorite12.InfixTildeNode
 import mirrg.fluorite12.IntegerNode
@@ -353,7 +354,16 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
                 is IdentifierNode -> LiteralGetter(FluoriteString(node.right.string))
                 else -> compileToGetter(node.right)
             }
-            ItemAccessGetter(receiverGetter, nameGetter)
+            ItemAccessGetter(receiverGetter, nameGetter, false)
+        }
+
+        is InfixQuestionPeriodNode -> {
+            val receiverGetter = compileToGetter(node.left)
+            val nameGetter = when (node.right) {
+                is IdentifierNode -> LiteralGetter(FluoriteString(node.right.string))
+                else -> compileToGetter(node.right)
+            }
+            ItemAccessGetter(receiverGetter, nameGetter, true)
         }
 
         is InfixColonColonNode -> {

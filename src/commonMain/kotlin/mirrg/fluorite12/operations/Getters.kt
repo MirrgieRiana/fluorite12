@@ -292,14 +292,15 @@ class ThrowGetter(private val getter: Getter) : Getter {
     override val code get() = "ThrowGetter[${getter.code}]"
 }
 
-class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter: Getter) : Getter {
+class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter: Getter, private val isNullSafe: Boolean) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val receiver = receiverGetter.evaluate(env)
+        if (isNullSafe && receiver == FluoriteNull) return FluoriteNull
         val key = keyGetter.evaluate(env)
         return receiver.callMethod("_._", arrayOf(key))
     }
 
-    override val code get() = "ItemAccessGetter[${receiverGetter.code};${keyGetter.code}]"
+    override val code get() = "ItemAccessGetter[${receiverGetter.code};${keyGetter.code};$isNullSafe]"
 }
 
 class PlusGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
