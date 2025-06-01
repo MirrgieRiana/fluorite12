@@ -939,6 +939,9 @@ class Fluorite12Test {
         assertEquals("""["","a","b"]""", eval(""" ",a,b" >> CSVD >> JSON """).string) // 先頭のカンマの前は空文字列になる
         assertEquals("""["a","b",""]""", eval(""" "a,b," >> CSVD >> JSON """).string) // 末尾のカンマの後は空文字列になる
         assertEquals("""["","a","","c",""]""", eval(""" " , a , , c , " >> CSVD >> JSON """).string) // 余計な空白はトリムされる
+
+        assertEquals("""["","a","","b",""]""", eval(""" " \t a \t \t b \t " >> CSVD[separator: "\t"] >> JSON """).string) // 区切り文字がタブの場合、タブを空白文字扱いしない
+        assertEquals("""["","a","","b",""]""", eval(""" "\t \ta\t \t \tb\t \t" >> CSVD[separator: " "] >> JSON """).string) // 区切り文字が半角空白の場合、半角空白を空白文字扱いしない
     }
 
     @Test
