@@ -64,7 +64,7 @@ class DocShellParser(private val filePath: String, private val lines: List<Strin
             out(")")
             out("actual=\$(echo \"\$actual\" | perl -lpE 's/[\\t ]+\$//g' | perl -0777 -pE 's/\\A\\n+//; s/\\n+\\Z/\\n/')")
             out("[ \"\$actual\" = \"\$expected\" ] || fail \"$filePath:${docShell.lineNumber}\" \"\$expected\" \"\$actual\"")
-            out("echo \"OK $filePath:${docShell.lineNumber}\"")
+            //out("echo \"OK $filePath:${docShell.lineNumber}\"")
         }
     }
 
