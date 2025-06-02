@@ -218,6 +218,39 @@ class MethodAccessGetter(
     override val code get() = "MethodAccessGetter[${receiverGetter.code};$variable;${mountCounts.joinToString { "$it" }};${name.escapeJsonString()};${argumentGetters.code};$isBinding,$isNullSafe]"
 }
 
+class FunctionalMethodAccessGetter(
+    private val receiverGetter: Getter,
+    private val functionGetter: Getter,
+    private val argumentGetters: List<Getter>,
+    private val isBinding: Boolean,
+    private val isNullSafe: Boolean,
+) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val receiver = receiverGetter.evaluate(env)
+        if (isNullSafe && receiver == FluoriteNull) {
+            return if (isBinding) {
+                FluoriteFunction { arguments2 ->
+                    FluoriteNull
+                }
+            } else {
+                FluoriteNull
+            }
+        }
+
+        val function = functionGetter.evaluate(env)
+        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
+        return if (isBinding) {
+            FluoriteFunction { arguments2 ->
+                receiver.callMethod(function, arguments + arguments2)
+            }
+        } else {
+            receiver.callMethod(function, arguments)
+        }
+    }
+
+    override val code get() = "FunctionalMethodAccessGetter[${receiverGetter.code};${functionGetter.code};${argumentGetters.code};$isBinding,$isNullSafe]"
+}
+
 class FunctionInvocationGetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val function = functionGetter.evaluate(env)

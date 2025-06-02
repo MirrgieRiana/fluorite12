@@ -108,6 +108,7 @@ import mirrg.fluorite12.operations.LinesGetter
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.LiteralStringGetter
 import mirrg.fluorite12.operations.MethodAccessGetter
+import mirrg.fluorite12.operations.FunctionalMethodAccessGetter
 import mirrg.fluorite12.operations.MinusGetter
 import mirrg.fluorite12.operations.ModGetter
 import mirrg.fluorite12.operations.MountGetter
@@ -300,12 +301,23 @@ fun Frame.createSimpleArgumentGetters(node: BracketsRightSimpleNode): List<Gette
 }
 
 fun Frame.compileToMethodAccessGetter(receiverNode: Node, methodNode: Node, argumentGetters: List<Getter>, isBinding: Boolean, isNullSafe: Boolean): Getter {
-    if (methodNode !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: $methodNode")
-    val receiverGetter = compileToGetter(receiverNode)
-    val name = methodNode.string
-    val variable = getVariable("::$name")
-    val mountCounts = getMountCounts()
-    return MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding, isNullSafe)
+    return when (methodNode) {
+        is IdentifierNode -> {
+            val receiverGetter = compileToGetter(receiverNode)
+            val name = methodNode.string
+            val variable = getVariable("::$name")
+            val mountCounts = getMountCounts()
+            MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding, isNullSafe)
+        }
+
+        is BracketsLiteralSimpleRoundNode -> {
+            val receiverGetter = compileToGetter(receiverNode)
+            val functionGetter = compileToGetter(methodNode)
+            FunctionalMethodAccessGetter(receiverGetter, functionGetter, argumentGetters, isBinding, isNullSafe)
+        }
+
+        else -> throw IllegalArgumentException("Must be IdentifierNode or BracketsLiteralSimpleRoundNode: $methodNode")
+    }
 }
 
 fun <T : BracketsRightNode> Frame.compileFunctionalAccessToGetter(node: T, isBinding: Boolean, argumentGettersFactory: (T) -> List<Getter>): Getter {

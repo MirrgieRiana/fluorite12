@@ -781,6 +781,9 @@ class Fluorite12Test {
         assertEquals(10, eval("A := {m: _ -> _.v}; a := A {v: 10}; a::m()").int) // メソッドの継承
 
         assertEquals("{&_:1}", eval("&{`&_`: 1}").string) // オブジェクトキーがメソッド名と衝突する場合でもオーバーライドしない
+
+        assertEquals(6, eval("mul := a, b -> a * b; 2::(mul)(3)").int) // 関数へのメソッド呼び出し
+        assertEquals(6, eval("2::(a, b -> a * b)(3)").int) // ラムダ式を使った関数へのメソッド呼び出し
     }
 
     @Test
@@ -794,6 +797,8 @@ class Fluorite12Test {
             out::push << "a"
             out
         """.let { assertEquals("[1;a]", eval(it).array()) }
+
+        assertEquals(6, eval("mul := a, b -> a * b; f := 2::(mul); f(3)").int) // 関数へのメソッド参照
     }
 
     @Test
@@ -811,6 +816,9 @@ class Fluorite12Test {
         assertEquals("1,NULL,3", eval("{m:_->1}{},NULL,{m:_->3}{}|_?::m()").stream()) // Null安全メソッド呼び出し
         assertEquals("1,NULL,3", eval("{m:_->1}{},NULL,{m:_->3}{}|_?::m[]()").stream()) // Null安全メソッド部分適用
         assertEquals("1,NULL,3", eval("{m:_->1}{},NULL,{m:_->3}{}|(_?::m)()").stream()) // Null安全メソッド参照
+        assertEquals("1,NULL,3", eval("m:=_->_.x;{x:1},NULL,{x:3}|_?::(m)()").stream()) // 関数へのNull安全メソッド呼び出し
+        assertEquals("1,NULL,3", eval("m:=_->_.x;{x:1},NULL,{x:3}|_?::(m)[]()").stream()) // 関数へのNull安全メソッド部分適用
+        assertEquals("1,NULL,3", eval("m:=_->_.x;{x:1},NULL,{x:3}|(_?::(m))()").stream()) // 関数へのNull安全メソッド参照
     }
 
     @Test
