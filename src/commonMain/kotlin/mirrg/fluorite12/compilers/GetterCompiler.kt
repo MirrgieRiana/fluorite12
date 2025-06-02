@@ -299,25 +299,20 @@ fun Frame.createSimpleArgumentGetters(node: BracketsRightSimpleNode): List<Gette
     return argumentNodes.map { compileToGetter(it) }
 }
 
+fun Frame.compileToMethodAccessGetter(receiverNode: Node, methodNode: Node, argumentGetters: List<Getter>, isBinding: Boolean, isNullSafe: Boolean): Getter {
+    if (methodNode !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: $methodNode")
+    val receiverGetter = compileToGetter(receiverNode)
+    val name = methodNode.string
+    val variable = getVariable("::$name")
+    val mountCounts = getMountCounts()
+    return MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding, isNullSafe)
+}
+
 fun <T : BracketsRightNode> Frame.compileFunctionalAccessToGetter(node: T, isBinding: Boolean, argumentGettersFactory: (T) -> List<Getter>): Getter {
     return if (node.receiver is InfixColonColonNode) { // メソッド呼出し
-        val receiverNode = node.receiver
-        if (receiverNode.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${receiverNode.right}")
-        val receiverGetter = compileToGetter(receiverNode.left)
-        val name = receiverNode.right.string
-        val variable = getVariable("::$name")
-        val mountCounts = getMountCounts()
-        val argumentGetters = argumentGettersFactory(node)
-        MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding, false)
+        compileToMethodAccessGetter(node.receiver.left, node.receiver.right, argumentGettersFactory(node), isBinding, false)
     } else if (node.receiver is InfixQuestionColonColonNode) {
-        val receiverNode = node.receiver
-        if (receiverNode.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${receiverNode.right}")
-        val receiverGetter = compileToGetter(receiverNode.left)
-        val name = receiverNode.right.string
-        val variable = getVariable("::$name")
-        val mountCounts = getMountCounts()
-        val argumentGetters = argumentGettersFactory(node)
-        MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding, true)
+        compileToMethodAccessGetter(node.receiver.left, node.receiver.right, argumentGettersFactory(node), isBinding, true)
     } else { // 関数呼び出し
         val functionGetter = compileToGetter(node.receiver)
         val argumentGetters = argumentGettersFactory(node)
@@ -368,25 +363,8 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
             ItemAccessGetter(receiverGetter, nameGetter, true)
         }
 
-        is InfixColonColonNode -> {
-            val receiverNode = node
-            if (receiverNode.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${receiverNode.right}")
-            val receiverGetter = compileToGetter(receiverNode.left)
-            val name = receiverNode.right.string
-            val variable = getVariable("::$name")
-            val mountCounts = getMountCounts()
-            MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true, false)
-        }
-
-        is InfixQuestionColonColonNode -> {
-            val receiverNode = node
-            if (receiverNode.right !is IdentifierNode) throw IllegalArgumentException("Must be an identifier: ${receiverNode.right}")
-            val receiverGetter = compileToGetter(receiverNode.left)
-            val name = receiverNode.right.string
-            val variable = getVariable("::$name")
-            val mountCounts = getMountCounts()
-            MethodAccessGetter(receiverGetter, variable, mountCounts, name, listOf(), true, true)
-        }
+        is InfixColonColonNode -> compileToMethodAccessGetter(node.left, node.right, listOf(), true, false)
+        is InfixQuestionColonColonNode -> compileToMethodAccessGetter(node.left, node.right, listOf(), true, true)
 
         is InfixPlusNode -> PlusGetter(compileToGetter(node.left), compileToGetter(node.right))
         is InfixAmpersandNode -> StringConcatenationGetter(listOf(ConversionStringGetter(compileToGetter(node.left)), ConversionStringGetter(compileToGetter(node.right))))
