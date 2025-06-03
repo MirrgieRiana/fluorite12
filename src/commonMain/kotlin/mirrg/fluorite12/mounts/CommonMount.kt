@@ -366,13 +366,13 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             val separator = parameters.pop("separator", {
                 val string = it.toFluoriteString().value
                 check(string.length == 1)
-                string.first()
-            }) { ',' }
+                string
+            }) { "," } // StringでやらないとJSの謎バグでChar同士の比較が成功しない
             val quote = parameters.pop("quote", {
                 val string = it.toFluoriteString().value
                 check(string.length == 1)
-                string.first()
-            }) { '"' }
+                string
+            }) { "\"" } // StringでやらないとJSの謎バグでChar同士の比較が成功しない
             if (parameters.isNotEmpty()) usage()
             val value = arguments.last()
 
@@ -397,7 +397,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                     }
                     if (needQuote) {
                         sb.append(quote)
-                        sb.append(string.replace("$quote", "$quote$quote"))
+                        sb.append(string.replace(quote, "$quote$quote"))
                         sb.append(quote)
                     } else {
                         sb.append(string)
@@ -431,13 +431,13 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             val separator = parameters.pop("separator", {
                 val string = it.toFluoriteString().value
                 check(string.length == 1)
-                string.first()
-            }) { ',' }
+                string
+            }) { "," } // StringでやらないとJSの謎バグでChar同士の比較が成功しない
             val quote = parameters.pop("quote", {
                 val string = it.toFluoriteString().value
                 check(string.length == 1)
-                string.first()
-            }) { '"' }
+                string
+            }) { "\"" } // StringでやらないとJSの謎バグでChar同士の比較が成功しない
             if (parameters.isNotEmpty()) usage()
             val value = arguments.last()
 
@@ -473,7 +473,8 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                     quoted.clear()
                 }
 
-                csv.toFluoriteString().value.forEach { ch ->
+                csv.toFluoriteString().value.forEach { ch2 ->
+                    val ch = ch2.toString()
                     if (state == STATE_NOT_QUOTED) {
                         if (ch == quote) {
                             state = STATE_QUOTED
