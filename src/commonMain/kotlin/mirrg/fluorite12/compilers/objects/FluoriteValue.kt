@@ -33,7 +33,7 @@ fun interface Callable {
 }
 
 private fun FluoriteValue.getPureMethod(name: String): FluoriteValue? {
-    var currentObject = parent
+    var currentObject = this.parent
     while (true) {
         if (currentObject == null) return null
 
@@ -45,8 +45,8 @@ private fun FluoriteValue.getPureMethod(name: String): FluoriteValue? {
 }
 
 suspend fun FluoriteValue.getMethod(name: String): Callable? {
-    val method = getPureMethod(name) ?: run {
-        val fallbackMethod = getPureMethod("_::_") ?: return null
+    val method = this.getPureMethod(name) ?: run {
+        val fallbackMethod = this.getPureMethod("_::_") ?: return null
         val actualMethod = this.callMethod(fallbackMethod, arrayOf(name.toFluoriteString()))
         if (actualMethod == FluoriteNull) return null
         return Callable { arguments ->
