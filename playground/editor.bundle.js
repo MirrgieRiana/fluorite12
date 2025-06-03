@@ -18432,8 +18432,8 @@
   const indentService = /*@__PURE__*/Facet.define();
   /**
   Facet for overriding the unit by which indentation happens. Should
-  be a string consisting either entirely of the same whitespace
-  character. When not set, this defaults to 2 spaces.
+  be a string consisting entirely of the same whitespace character.
+  When not set, this defaults to 2 spaces.
   */
   const indentUnit = /*@__PURE__*/Facet.define({
       combine: values => {
@@ -18602,7 +18602,8 @@
       let inner = ast.resolveInner(pos, -1).resolve(pos, 0).enterUnfinishedNodesBefore(pos);
       if (inner != stack.node) {
           let add = [];
-          for (let cur = inner; cur && !(cur.from == stack.node.from && cur.type == stack.node.type); cur = cur.parent)
+          for (let cur = inner; cur && !(cur.from < stack.node.from || cur.to > stack.node.to ||
+              cur.from == stack.node.from && cur.type == stack.node.type); cur = cur.parent)
               add.push(cur);
           for (let i = add.length - 1; i >= 0; i--)
               stack = { node: add[i], next: stack };
@@ -19097,7 +19098,7 @@
   to fold or unfold the line).
   */
   function foldGutter(config = {}) {
-      let fullConfig = Object.assign(Object.assign({}, foldGutterDefaults), config);
+      let fullConfig = { ...foldGutterDefaults, ...config };
       let canFold = new FoldMarker(fullConfig, true), canUnfold = new FoldMarker(fullConfig, false);
       let markers = ViewPlugin.fromClass(class {
           constructor(view) {
@@ -19132,7 +19133,9 @@
               initialSpacer() {
                   return new FoldMarker(fullConfig, false);
               },
-              domEventHandlers: Object.assign(Object.assign({}, domEventHandlers), { click: (view, line, event) => {
+              domEventHandlers: {
+                  ...domEventHandlers,
+                  click: (view, line, event) => {
                       if (domEventHandlers.click && domEventHandlers.click(view, line, event))
                           return true;
                       let folded = findFold(view.state, line.from, line.to);
@@ -19146,7 +19149,8 @@
                           return true;
                       }
                       return false;
-                  } })
+                  }
+              }
           }),
           codeFolding()
       ];
