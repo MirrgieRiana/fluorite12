@@ -894,6 +894,7 @@ class Fluorite12Test {
         assertEquals("10|[20]|30", eval(""" JOIN("|"; 10, [20], {`&_`: _ -> 30}{}) """).string) // ストリームは文字列化される
         assertEquals("a1b1c", eval(""" JOIN(1; "a", "b", "c") """).string) // セパレータも文字列化される
         assertEquals("a|b|c", eval(""" JOIN["|"]("a", "b", "c") """).string) // 部分適用を使用した例
+        assertEquals("a,b,c", eval(""" JOIN("a", "b", "c") """).string) // 引数を省略した場合はカンマ区切りになる
 
         // SPLIT
         assertEquals("a,b,c", eval(""" SPLIT("|"; "a|b|c") """).stream()) // SPLIT で文字列を分割できる
@@ -905,6 +906,7 @@ class Fluorite12Test {
         assertEquals("1,2,3", eval(""" SPLIT("0"; 10203) """).stream()) // 文字列は文字列化される
         assertEquals("a,b,c", eval(""" SPLIT(1; "a1b1c") """).stream()) // セパレータは文字列化される
         assertEquals("a,b,c", eval(""" SPLIT["|"]("a|b|c") """).stream()) // 部分適用を使用した例
+        assertEquals("a,b,c", eval(""" SPLIT("a,b,c") """).stream()) // 引数を省略した場合はカンマ区切りになる
 
         // パイプ連携
         assertEquals("10ABC20ABC30", eval(""" "10abc20abc30" >> SPLIT["abc"] >> JOIN["ABC"] """).string)

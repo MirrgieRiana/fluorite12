@@ -139,39 +139,59 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             }
         },
         "JOIN" to FluoriteFunction { arguments ->
-            if (arguments.size == 2) {
-                val separator = arguments[0].toFluoriteString().value
-                val stream = arguments[1]
-                if (stream is FluoriteStream) {
-                    val sb = StringBuilder()
-                    var isFirst = true
-                    stream.collect { value ->
-                        if (isFirst) {
-                            isFirst = false
-                        } else {
-                            sb.append(separator)
-                        }
-                        sb.append(value.toFluoriteString().value)
-                    }
-                    sb.toString().toFluoriteString()
-                } else {
-                    stream.toFluoriteString()
+            val separator: String
+            val stream: FluoriteValue
+            when (arguments.size) {
+                2 -> {
+                    separator = arguments[0].toFluoriteString().value
+                    stream = arguments[1]
                 }
+
+                1 -> {
+                    separator = ","
+                    stream = arguments[0]
+                }
+
+                else -> usage("JOIN([separator: STRING; ]stream: STREAM<STRING>): STRING")
+            }
+
+            if (stream is FluoriteStream) {
+                val sb = StringBuilder()
+                var isFirst = true
+                stream.collect { value ->
+                    if (isFirst) {
+                        isFirst = false
+                    } else {
+                        sb.append(separator)
+                    }
+                    sb.append(value.toFluoriteString().value)
+                }
+                sb.toString().toFluoriteString()
             } else {
-                usage("JOIN(separator: VALUE; stream: VALUE): STRING")
+                stream.toFluoriteString()
             }
         },
         "SPLIT" to FluoriteFunction { arguments ->
-            if (arguments.size == 2) {
-                val separator = arguments[0].toFluoriteString().value
-                val string = arguments[1]
-                if (separator.isEmpty()) {
-                    string.toFluoriteString().value.map { "$it".toFluoriteString() }.toFluoriteStream()
-                } else {
-                    string.toFluoriteString().value.split(separator).map { it.toFluoriteString() }.toFluoriteStream()
+            val separator: String
+            val string: FluoriteValue
+            when (arguments.size) {
+                2 -> {
+                    separator = arguments[0].toFluoriteString().value
+                    string = arguments[1]
                 }
+
+                1 -> {
+                    separator = ","
+                    string = arguments[0]
+                }
+
+                else -> usage("SPLIT([separator: STRING; ]string: STRING): STREAM<STRING>")
+            }
+
+            if (separator.isEmpty()) {
+                string.toFluoriteString().value.map { "$it".toFluoriteString() }.toFluoriteStream()
             } else {
-                usage("SPLIT(separator: VALUE; string: VALUE): STREAM<STRING>")
+                string.toFluoriteString().value.split(separator).map { it.toFluoriteString() }.toFluoriteStream()
             }
         },
         "KEYS" to FluoriteFunction { arguments ->

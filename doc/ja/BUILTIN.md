@@ -94,13 +94,16 @@ $ flc '1, 2, 3, 3, 3, 2, 1, 0 >> DISTINCT'
 
 ## `JOIN` ストリームを文字列に連結
 
-`JOIN(separator: VALUE; stream: VALUE): STRING`
+`JOIN([separator: STRING; ]stream: STREAM<STRING>): STRING`
 
-第2引数のストリームの各要素を第1引数のセパレータで連結した文字列を返します。
+第2引数のストリームの各要素を第1引数のセパレータで連結した文字列を返します。第1引数を省略した場合は `,` が使用されます。
 
 ```shell
 $ flc 'JOIN("|"; "a", "b", "c")'
 # a|b|c
+
+$ flc 'JOIN("a", "b", "c")'
+# a,b,c
 ```
 
 ---
@@ -123,9 +126,9 @@ $ flc '1 .. 3 | _ * 10 >> JOIN["|"]'
 
 ## `SPLIT` 文字列をストリームに分割
 
-`SPLIT(separator: VALUE; string: VALUE): STREAM<STRING>`
+`SPLIT([separator: STRING; ]string: STRING): STREAM<STRING>`
 
-第2引数の文字列を第1引数のセパレータで分割し、各部分をストリームとして返します。
+第2引数の文字列を第1引数のセパレータで分割し、各部分をストリームとして返します。第1引数を省略した場合は `,` が使用されます。
 
 パイプ演算子との親和性のために配列ではなくストリームとして返されることに注意してください。
 
@@ -133,6 +136,11 @@ $ flc '1 .. 3 | _ * 10 >> JOIN["|"]'
 
 ```shell
 $ flc 'SPLIT("|"; "a|b|c")'
+# a
+# b
+# c
+
+$ flc 'SPLIT("a,b,c")'
 # a
 # b
 # c
