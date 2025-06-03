@@ -19,6 +19,7 @@ import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.compilers.objects.toMutableList
+import mirrg.fluorite12.pop
 import mirrg.fluorite12.toFluoriteValueAsJson
 import mirrg.fluorite12.toJsonFluoriteValue
 import kotlin.math.E
@@ -342,16 +343,16 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                     key.value to value
                 }
                 .toMutableMap()
-            val separator = parameters.remove("separator")?.let {
+            val separator = parameters.pop("separator", {
                 val string = it.toFluoriteString().value
                 check(string.length == 1)
                 string.first()
-            } ?: ','
-            val quote = parameters.remove("quote")?.let {
+            }) { ',' }
+            val quote = parameters.pop("quote", {
                 val string = it.toFluoriteString().value
                 check(string.length == 1)
                 string.first()
-            } ?: '"'
+            }) { '"' }
             if (parameters.isNotEmpty()) usage()
             val value = arguments.last()
 
@@ -407,16 +408,16 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                     key.value to value
                 }
                 .toMutableMap()
-            val separator = parameters.remove("separator")?.let {
+            val separator = parameters.pop("separator", {
                 val string = it.toFluoriteString().value
                 check(string.length == 1)
                 string.first()
-            } ?: ','
-            val quote = parameters.remove("quote")?.let {
+            }) { ',' }
+            val quote = parameters.pop("quote", {
                 val string = it.toFluoriteString().value
                 check(string.length == 1)
                 string.first()
-            } ?: '"'
+            }) { '"' }
             if (parameters.isNotEmpty()) usage()
             val value = arguments.last()
 

@@ -251,3 +251,8 @@ fun String.removeExponent(): String {
 
     return result
 }
+
+// これを使わない場合、js環境で　null?.let { a(it) } ?: b　みたいに書くと a が実行されてしまうKotlin JSのバグを踏む
+suspend fun <T : Any> MutableMap<String, FluoriteValue>.pop(key: String, block: suspend (FluoriteValue) -> T, or: suspend () -> T): T {
+    return this.remove(key)?.let { block(it) } ?: or() // しかしなぜここの ?.let がうまくいくのかは謎
+}
