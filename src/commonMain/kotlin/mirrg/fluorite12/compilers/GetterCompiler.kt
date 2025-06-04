@@ -37,6 +37,7 @@ import mirrg.fluorite12.InfixEqualGreaterNode
 import mirrg.fluorite12.InfixEqualNode
 import mirrg.fluorite12.InfixExclamationQuestionNode
 import mirrg.fluorite12.InfixGreaterGreaterNode
+import mirrg.fluorite12.InfixIdentifierNode
 import mirrg.fluorite12.InfixLessEqualGreaterNode
 import mirrg.fluorite12.InfixLessLessNode
 import mirrg.fluorite12.InfixMinusGreaterNode
@@ -229,6 +230,8 @@ fun Frame.compileToGetter(node: Node): Getter {
         is BracketsRightSimpleCurlyNode -> compileObjectCreationToGetter(node.receiver, node.body)
 
         is InfixNode -> compileInfixOperatorToGetter(node)
+
+        is InfixIdentifierNode -> FunctionInvocationGetter(compileToGetter(node.infix), listOf(compileToGetter(node.left), compileToGetter(node.right)))
 
         is ComparisonsNode -> {
             val termGetters = node.nodes.map { compileToGetter(it) }

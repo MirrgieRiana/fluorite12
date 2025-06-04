@@ -1201,6 +1201,12 @@ class Fluorite12Test {
     }
 
     @Test
+    fun infixFunction() = runTest {
+        assertEquals(5, eval("add := a, b -> a + b; 2 add 3").int) // identifierを使った中置関数呼び出し
+        assertEquals(5, eval("add := a, b -> a + b; 2 `add` 3").int) // 引用符付きでもよい
+    }
+
+    @Test
     fun spaceship() = runTest {
         assertEquals(-1, eval("1 <=> 2").int) // <=> は左辺が小さい場合は-1
         assertEquals(0, eval("1 <=> 1").int) // 等しい場合は0
