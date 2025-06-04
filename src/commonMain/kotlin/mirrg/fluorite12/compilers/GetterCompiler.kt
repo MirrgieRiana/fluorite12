@@ -95,6 +95,7 @@ import mirrg.fluorite12.operations.FromJsonGetter
 import mirrg.fluorite12.operations.FunctionBindGetter
 import mirrg.fluorite12.operations.FunctionGetter
 import mirrg.fluorite12.operations.FunctionInvocationGetter
+import mirrg.fluorite12.operations.FunctionalMethodAccessGetter
 import mirrg.fluorite12.operations.GetLengthGetter
 import mirrg.fluorite12.operations.Getter
 import mirrg.fluorite12.operations.GetterObjectInitializer
@@ -109,7 +110,6 @@ import mirrg.fluorite12.operations.LinesGetter
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.LiteralStringGetter
 import mirrg.fluorite12.operations.MethodAccessGetter
-import mirrg.fluorite12.operations.FunctionalMethodAccessGetter
 import mirrg.fluorite12.operations.MinusGetter
 import mirrg.fluorite12.operations.ModGetter
 import mirrg.fluorite12.operations.MountGetter
