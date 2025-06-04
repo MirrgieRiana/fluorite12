@@ -89,6 +89,13 @@ class FluoriteString(val value: String) : FluoriteValue {
                         FluoriteString(left.value + right.toFluoriteString().value)
                     },
                     "_@_" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
+                    "replace" to FluoriteFunction { arguments ->
+                        if (arguments.size != 3) throw IllegalArgumentException("STRING::replace(old: STRING; new: STRING): STRING")
+                        val string = arguments[0] as FluoriteString
+                        val old = arguments[1].toFluoriteString().value
+                        val new = arguments[2].toFluoriteString().value
+                        FluoriteString(string.value.replace(old, new))
+                    },
                 )
             )
         }
