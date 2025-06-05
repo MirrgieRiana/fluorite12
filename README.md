@@ -62,7 +62,7 @@ Linux:
 curl -s https://raw.githubusercontent.com/MirrgieRiana/fluorite12/release/install.sh | sudo bash
 ```
 
-Download the `flc` binary to the `./fluorite12`, and register it in `/usr/local/bin`.
+Download the `flc` binary to `./fluorite12` and register it in `/usr/local/bin`.
 
 # DOCUMENTATION
 
