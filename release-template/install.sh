@@ -31,7 +31,7 @@ echo "@ENGINE@" > "$SCRIPT_DIR/default_engine" || exit
 echo "Updating /usr/local/bin/flc"
 destination=/usr/local/bin/flc
 rm -f "$destination" || exit
-ln -s "$SCRIPT_DIR"/bin/flc "$destination" || exit
+ln -s "$SCRIPT_DIR"/flc "$destination" || exit
 echo "Updating /usr/local/bin/flc-update"
 destination=/usr/local/bin/flc-update
 rm -f "$destination" || exit
