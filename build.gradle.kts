@@ -98,13 +98,30 @@ tasks.register<Exec>("compilePlayground") {
 
 // Release
 
+tasks.register<Copy>("generateInstallNative") {
+    from(file("release-template/install.sh"))
+    filteringCharset = "UTF-8"
+    filter {
+        it
+            .replace("@ENGINE@", "native")
+            .replace("@SCRIPT_NAME@", "install-native.sh")
+    }
+    fileMode = 0b111101101
+    rename("install.sh", "install-native.sh")
+    into("build/generateInstallNative")
+}
+
 tasks.register<Sync>("bundleRelease") {
-    dependsOn("build", "compilePlayground")
+    dependsOn("build", "compilePlayground", "generateInstallNative")
     into(layout.buildDirectory.dir("bundleRelease"))
-    from("release")
+    from("release") {
+        rename("gitignore", ".gitignore")
+    }
+    from("build/generateInstallNative")
     from("build/bin") { into("bin") }
     from("doc") { into("doc") }
     from("playground/build/out") { into("playground") }
+    println(this.excludes)
 }
 
 

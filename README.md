@@ -59,7 +59,7 @@ There is a web tool available online that can run fluorite12.
 Linux:
 
 ```shell
-curl -s https://raw.githubusercontent.com/MirrgieRiana/fluorite12/release/install.sh | sudo bash
+curl -s https://raw.githubusercontent.com/MirrgieRiana/fluorite12/release/install-native.sh | sudo bash
 ```
 
 Download the `flc` binary to `./fluorite12` and register it in `/usr/local/bin`.
