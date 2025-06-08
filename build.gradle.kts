@@ -71,6 +71,9 @@ kotlin {
 
 }
 
+
+// Executable Jar
+
 tasks.named<Jar>("jvmJar") {
     manifest {
         attributes["Main-Class"] = "JvmMainKt"
@@ -80,6 +83,9 @@ tasks.named<Jar>("jvmJar") {
         configurations["jvmRuntimeClasspath"].filter { it.name.endsWith(".jar") }.map { zipTree(it) }
     })
 }
+
+
+// Playground
 
 tasks.register<Exec>("compilePlayground") {
     workingDir = file("playground")
@@ -93,6 +99,9 @@ tasks.named("assemble") {
     dependsOn("compilePlayground")
 }
 
+
+// Utilities
+
 allprojects {
     tasks.register("downloadDependencies") {
         doLast {
@@ -100,6 +109,9 @@ allprojects {
         }
     }
 }
+
+
+// Doc Shell Tests
 
 tasks.register("generateDocShellTests") {
     val docsDir = file("doc/ja")
@@ -126,8 +138,5 @@ tasks.register("generateDocShellTests") {
 tasks.register<Exec>("runDocShellTests") {
     dependsOn("generateDocShellTests", "linkFlcReleaseExecutableLinuxX64")
     commandLine("bash", "build/docShellTests/ja.sh", "build/bin/linuxX64/flcReleaseExecutable/flc.kexe")
-}
-
-tasks.named("check") {
-    dependsOn("runDocShellTests")
+    tasks.named("check").get().dependsOn(this)
 }
