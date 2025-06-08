@@ -341,3 +341,14 @@ $ flc '"abc" & "def"'
 $ flc '"abcde"[1..3]'
 # bcd
 ```
+
+# 文字列の置換
+
+`STRING::replace(old: STRING; new: STRING): STRING`
+
+`replace` メソッドで文字列内の指定した文字列のすべての出現個所を別の文字列に置換できます。
+
+```shell
+$ flc '"abcabc"::replace("ab"; "AB")'
+# ABcABc
+```
