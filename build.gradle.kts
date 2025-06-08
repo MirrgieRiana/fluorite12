@@ -100,17 +100,6 @@ tasks.named("assemble") {
 }
 
 
-// Utilities
-
-allprojects {
-    tasks.register("downloadDependencies") {
-        doLast {
-            configurations.filter { it.isCanBeResolved }.forEach { it.resolve() }
-        }
-    }
-}
-
-
 // Doc Shell Tests
 
 tasks.register("generateDocShellTests") {
@@ -139,4 +128,15 @@ tasks.register<Exec>("runDocShellTests") {
     dependsOn("generateDocShellTests", "linkFlcReleaseExecutableLinuxX64")
     commandLine("bash", "build/docShellTests/ja.sh", "build/bin/linuxX64/flcReleaseExecutable/flc.kexe")
     tasks.named("check").get().dependsOn(this)
+}
+
+
+// Utilities
+
+allprojects {
+    tasks.register("downloadDependencies") {
+        doLast {
+            configurations.filter { it.isCanBeResolved }.forEach { it.resolve() }
+        }
+    }
 }
