@@ -32,6 +32,7 @@ echo "Updating /usr/local/bin/flc"
 destination=/usr/local/bin/flc
 rm -f "$destination" || exit
 ln -s "$SCRIPT_DIR"/flc "$destination" || exit
+chmod +x "$SCRIPT_DIR"/flc || exit
 echo "Updating /usr/local/bin/flc-update"
 destination=/usr/local/bin/flc-update
 rm -f "$destination" || exit
