@@ -95,8 +95,16 @@ tasks.register<Exec>("compilePlayground") {
     dependsOn("jsBrowserProductionWebpack")
 }
 
-tasks.named("assemble") {
-    dependsOn("compilePlayground")
+
+// Release
+
+tasks.register<Sync>("bundleRelease") {
+    dependsOn("build", "compilePlayground")
+    into(layout.buildDirectory.dir("bundleRelease"))
+    from("release")
+    from("build/bin") { into("bin") }
+    from("doc") { into("doc") }
+    from("playground/build/out") { into("playground") }
 }
 
 
