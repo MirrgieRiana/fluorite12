@@ -25,14 +25,16 @@ else
   git clone --single-branch --branch release --depth 1 https://github.com/MirrgieRiana/fluorite12.git "$SCRIPT_DIR" || exit
 fi
 
+echo "native" > "$SCRIPT_DIR/default_engine" || exit
+
 # /usr/local/bin にインストール
 echo "Updating /usr/local/bin/flc"
 destination=/usr/local/bin/flc
 rm -f "$destination" || exit
-ln -s "$SCRIPT_DIR"/bin/linuxX64/flcReleaseExecutable/flc.kexe "$destination" || exit
+ln -s "$SCRIPT_DIR"/bin/flc "$destination" || exit
 echo "Updating /usr/local/bin/flc-update"
 destination=/usr/local/bin/flc-update
 rm -f "$destination" || exit
-ln -s "$SCRIPT_DIR"/install.sh "$destination" || exit
+ln -s "$SCRIPT_DIR"/install-native.sh "$destination" || exit
 
 echo "OK"
