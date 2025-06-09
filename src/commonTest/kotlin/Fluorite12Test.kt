@@ -1315,4 +1315,10 @@ class Fluorite12Test {
 
         assertEquals(123, evaluator.get("register ( event => 9; 9; 9; 100 + event )").int) // クロージャは ; を文の区切りとして解釈する
     }
+
+    @Test
+    fun callFunction() = runTest {
+        assertEquals(3, eval("CALL((a, b -> a + b); [1; 2])").int)
+        assertEquals(123, eval("CALL(() -> 123; [])").int)
+    }
 }
