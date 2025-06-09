@@ -524,11 +524,10 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             }
         },
         "CALL" to FluoriteFunction { arguments ->
-            if (arguments.size != 2) usage("CALL(function: VALUE; array: ARRAY<VALUE>): VALUE")
+            if (arguments.size != 2) usage("CALL(function: FUNCTION; arguments: ARRAY<VALUE>): VALUE")
             val function = arguments[0]
-            val array = arguments[1] as? FluoriteArray
-                ?: usage("CALL(function: VALUE; array: ARRAY<VALUE>): VALUE")
-            function.invoke(array.values.toTypedArray())
+            val argumentsArray = arguments[1] as FluoriteArray
+            function.invoke(argumentsArray.values.toTypedArray())
         },
         "GENERATE" to FluoriteFunction { arguments ->
             if (arguments.size != 1) usage("GENERATE(generator: (yield: (value: VALUE) -> NULL) -> NULL | STREAM): STREAM<VALUE>")
