@@ -1318,7 +1318,8 @@ class Fluorite12Test {
 
     @Test
     fun callFunction() = runTest {
-        assertEquals(3, eval("CALL((a, b -> a + b); [1; 2])").int)
-        assertEquals(123, eval("CALL(() -> 123; [])").int)
+        assertEquals(6, eval("CALL(a, b -> a + b; [2; 3])").int) // 関数の呼び出し
+        assertEquals(123, eval("CALL(() -> 123; [])").int) // 空の引数
+        assertEquals(6, eval("CALL({m: a, b -> a.v + b}{v: 2}::m; [3])").int) // メソッド参照の呼び出し
     }
 }
