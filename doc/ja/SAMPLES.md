@@ -182,6 +182,32 @@ $ flc -q '
 #    -  41   -  43   -   -   -  47   -   -
 ```
 
+# ライフゲーム
+
+横40マス、縦40マス、待機時間0ミリ秒でライフゲームを実行します。
+
+```bash
+$ flc -q '
+  LifeGame := {
+    init: this -> this.b = [0 ~ this.h | [0 ~ this.w | RANDOM(2)]]
+    get: this, x, y -> this.b(y % this.h)(x % this.w)
+    neighbors: this, x, y -> -1 .. 1 | dx => -1 .. 1 | dy => dx == 0 && dy == 0 ? 0 : this::get(x + dx; y + dy) >> SUM
+    get_next: this -> [0 ~ this.h | y => [0 ~ this.w | x => this::neighbors(x; y) | +(this::get(x; y) ? _ == 2 || _ == 3 : _ == 3)]]
+    step: this -> this.b = this::get_next()
+    `&_`: this -> this.b() | l => (l() | _ ? "[]" : "  " >> JOIN[""]) >> JOIN["\n"]
+  }
+  
+  lifeGame := LifeGame{w: +ARGS.0; h: +ARGS.1}
+  lifeGame::init()
+  OUT << &lifeGame, "--------------"
+  1 .. 10000 | (
+    lifeGame::step()
+    OUT << &lifeGame, "--------------"
+    SLEEP(+ARGS.2)
+  )
+' 40 40 0
+```
+
 # [HTML上でテーブルを表示](https://mirrgieriana.github.io/fluorite12/playground/?s=eJxdkctOwzAURPf9ilFQJEAkacUK57FAIFGJxwap6yQ2iYWpI8dpEwH%2FjlM3NelufOdo7uh6s359eNuEVJbdF9tqQiqmHwUb9f2wppee7HTTae8qNIKpp%2FeXZ6TwswWQUL4Dp%2BmEoNWDYKlXSEWZCkopRN60jGBSMWrGq1oTrJZLP4bcMfUh5D4YCNpSGSr2xmATfYiyGriwC6DpjdM1vo82sOdU1wS3rI9Ps2nVbGirmf1Nj1YKTlGIvPx0gGa9DnLBq62pbW7A1OT92mLRv2aJzgvXMvFTrBCGuMMPeqSZvdLR1Mo9ztjhjLU8zUaox7Xx%2FSyJzGAWMEuPXLxzbL3o8FWR%2BatskfiLP%2BeugP4%3D&d=53.63)
 
 ```
