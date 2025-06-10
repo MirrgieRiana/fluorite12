@@ -191,12 +191,12 @@ $ flc -q '
 ```bash
 $ FLC_ENGINE=jvm flc -q '
   LifeGame := {
-    init: this -> this.b = [0 ~ this.h | [0 ~ this.w | RANDOM(2)]]
-    get: this, x, y -> this.b(y % this.h)(x % this.w)
+    init     : this -> this.b = [0 ~ this.h | [0 ~ this.w | RANDOM(2)]]
+    get      : this, x, y -> this.b(y % this.h)(x % this.w)
     neighbors: this, x, y -> -1 .. 1 | dx => -1 .. 1 | dy => dx == 0 && dy == 0 ? 0 : this::get(x + dx; y + dy) >> SUM
-    get_next: this -> [0 ~ this.h | y => [0 ~ this.w | x => this::neighbors(x; y) | +(this::get(x; y) ? _ == 2 || _ == 3 : _ == 3)]]
-    step: this -> this.b = this::get_next()
-    `&_`: this -> this.b() | l => (l() | _ ? "[]" : "  " >> JOIN[""]) >> JOIN["\n"]
+    get_next : this -> [0 ~ this.h | y => [0 ~ this.w | x => this::neighbors(x; y) | +(this::get(x; y) ? _ == 2 || _ == 3 : _ == 3)]]
+    step     : this -> this.b = this::get_next()
+    `&_`     : this -> this.b() | l => (l() | _ ? "[]" : "  " >> JOIN[""]) >> JOIN["\n"]
   }
   
   lifeGame := LifeGame{w: +ARGS.0; h: +ARGS.1}
