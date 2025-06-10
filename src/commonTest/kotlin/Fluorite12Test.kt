@@ -6,6 +6,7 @@ import mirrg.fluorite12.mounts.createCommonMount
 import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -865,6 +866,18 @@ class Fluorite12Test {
         assertEquals(10, eval("FLOOR(10.1)").int) // FLOOR関数は小数点以下を切り捨てて内部的な型をINTEGERにする
         assertEquals(10, eval("FLOOR(10)").int) // 整数はそのまま
         assertEquals(-11, eval("FLOOR(-10.1)").int) // 負の数も値が小さくなるように切り捨てる
+    }
+
+    @Test
+    fun randomFunctionTest() = runTest {
+        val d = eval("RANDOM()").double
+        assertTrue(d >= 0.0 && d < 1.0)
+
+        val i1 = eval("RANDOM(10)").int
+        assertTrue(i1 >= 0 && i1 < 10)
+
+        val i2 = eval("RANDOM(5; 10)").int
+        assertTrue(i2 >= 5 && i2 < 10)
     }
 
     @Test

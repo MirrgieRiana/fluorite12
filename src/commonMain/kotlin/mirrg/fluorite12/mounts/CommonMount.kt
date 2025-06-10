@@ -26,6 +26,7 @@ import kotlin.math.E
 import kotlin.math.PI
 import kotlin.math.floor
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 private fun usage(vararg usages: String): Nothing = throw IllegalArgumentException(listOf("Usage:", *usages.map { "  $it" }.toTypedArray()).joinToString("\n"))
 
@@ -72,6 +73,25 @@ fun createCommonMount(): Map<String, FluoriteValue> {
             when (arguments.size) {
                 1 -> FluoriteDouble(sqrt((arguments[0] as FluoriteNumber).toDouble()))
                 else -> usage("SQRT(number: NUMBER): NUMBER")
+            }
+        },
+        "RANDOM" to FluoriteFunction { arguments ->
+            when (arguments.size) {
+                0 -> FluoriteDouble(Random.nextDouble())
+                1 -> {
+                    val until = arguments[0].toFluoriteNumber().toInt()
+                    FluoriteInt(Random.nextInt(until))
+                }
+                2 -> {
+                    val from = arguments[0].toFluoriteNumber().toInt()
+                    val until = arguments[1].toFluoriteNumber().toInt()
+                    FluoriteInt(Random.nextInt(from, until))
+                }
+                else -> usage(
+                    "RANDOM(): DOUBLE",
+                    "RANDOM(until: NUMBER): INTEGER",
+                    "RANDOM(from: NUMBER; until: NUMBER): INTEGER",
+                )
             }
         },
         "TO_ARRAY" to FluoriteFunction { arguments ->
