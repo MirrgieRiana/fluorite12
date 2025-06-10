@@ -65,33 +65,15 @@ $ flc 'SQRT(100.0)'
 
 ## `RANDOM` 乱数の取得
 
-`RANDOM(): NUMBER`
+`RANDOM(): DOUBLE`
 
-`RANDOM(until: NUMBER): INTEGER`
+`RANDOM([from: NUMBER; ]until: NUMBER): INT`
 
-`RANDOM(from: NUMBER; until: NUMBER): INTEGER`
+引数なしで呼び出された場合、0以上1未満の小数を返します。
 
-引数の数によって返される値の範囲が変化します。
+1引数で呼び出された場合、0以上 `until` 未満の整数を返します。
 
-* 引数なし: 0以上1未満の小数を返します。
-* 1引数: 0以上`until`未満の整数を返します。
-* 2引数: `from`以上`until`未満の整数を返します。
-
-```shell
-$ flc 'RANDOM()'
-# 0.123456
-```
-
-```shell
-$ flc 'RANDOM(10)'
-# 3
-```
-
-```shell
-$ flc 'RANDOM(5; 10)'
-# 7
-```
-
+2引数で呼び出された場合、`from` 以上 `until` 未満の整数を返します。
 
 # ストリーム系関数
 

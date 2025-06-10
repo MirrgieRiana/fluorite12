@@ -1,7 +1,9 @@
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.Evaluator
+import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteNull
+import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.mounts.createCommonMount
 import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
@@ -870,14 +872,20 @@ class Fluorite12Test {
 
     @Test
     fun randomFunctionTest() = runTest {
-        val d = eval("RANDOM()").double
-        assertTrue(d >= 0.0 && d < 1.0)
+        val random = eval("RANDOM")
 
-        val i1 = eval("RANDOM(10)").int
-        assertTrue(i1 >= 0 && i1 < 10)
-
-        val i2 = eval("RANDOM(5; 10)").int
-        assertTrue(i2 >= 5 && i2 < 10)
+        repeat(100) {
+            val d = random.invoke(arrayOf()).double
+            assertTrue(d >= 0.0 && d < 1.0)
+        }
+        repeat(100) {
+            val i = random.invoke(arrayOf(FluoriteInt(4))).int
+            assertTrue(i >= 0 && i < 4)
+        }
+        repeat(100) {
+            val i = random.invoke(arrayOf(FluoriteInt(4), FluoriteInt(10))).int
+            assertTrue(i >= 4 && i < 10)
+        }
     }
 
     @Test

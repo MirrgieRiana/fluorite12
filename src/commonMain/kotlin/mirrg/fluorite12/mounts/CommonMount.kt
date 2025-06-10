@@ -77,20 +77,24 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         },
         "RANDOM" to FluoriteFunction { arguments ->
             when (arguments.size) {
-                0 -> FluoriteDouble(Random.nextDouble())
+                0 -> {
+                    FluoriteDouble(Random.nextDouble())
+                }
+
                 1 -> {
                     val until = arguments[0].toFluoriteNumber().toInt()
                     FluoriteInt(Random.nextInt(until))
                 }
+
                 2 -> {
                     val from = arguments[0].toFluoriteNumber().toInt()
                     val until = arguments[1].toFluoriteNumber().toInt()
                     FluoriteInt(Random.nextInt(from, until))
                 }
+
                 else -> usage(
                     "RANDOM(): DOUBLE",
-                    "RANDOM(until: NUMBER): INTEGER",
-                    "RANDOM(from: NUMBER; until: NUMBER): INTEGER",
+                    "RANDOM([from: NUMBER; ]until: NUMBER): INT",
                 )
             }
         },
