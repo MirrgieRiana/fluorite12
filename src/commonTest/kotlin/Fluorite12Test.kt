@@ -1,11 +1,14 @@
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.Evaluator
+import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteNull
+import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.mounts.createCommonMount
 import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -865,6 +868,24 @@ class Fluorite12Test {
         assertEquals(10, eval("FLOOR(10.1)").int) // FLOOR関数は小数点以下を切り捨てて内部的な型をINTEGERにする
         assertEquals(10, eval("FLOOR(10)").int) // 整数はそのまま
         assertEquals(-11, eval("FLOOR(-10.1)").int) // 負の数も値が小さくなるように切り捨てる
+    }
+
+    @Test
+    fun randomFunctionTest() = runTest {
+        val random = eval("RANDOM")
+
+        repeat(100) {
+            val d = random.invoke(arrayOf()).double
+            assertTrue(d >= 0.0 && d < 1.0)
+        }
+        repeat(100) {
+            val i = random.invoke(arrayOf(FluoriteInt(4))).int
+            assertTrue(i >= 0 && i < 4)
+        }
+        repeat(100) {
+            val i = random.invoke(arrayOf(FluoriteInt(4), FluoriteInt(10))).int
+            assertTrue(i >= 4 && i < 10)
+        }
     }
 
     @Test
