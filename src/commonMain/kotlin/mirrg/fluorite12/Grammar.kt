@@ -161,6 +161,14 @@ class Fluorite12Grammar : Grammar<Node>() {
     val quotedIdentifierContent: Parser<Pair<List<TokenMatch>, String>> by OrCombinator(
         -NotParser(bQuote or bSlash or br) * AnyParser map { Pair(listOf(it), it.text) }, // ' \ 改行以外の文字
         br map { Pair(listOf(it), "\n") }, // 改行
+        bSlash * lU *
+            (number or lA or uA or lB or uB or lC or uC or lD or uD or lE or uE or lF or uF) *
+            (number or lA or uA or lB or uB or lC or uC or lD or uD or lE or uE or lF or uF) *
+            (number or lA or uA or lB or uB or lC or uC or lD or uD or lE or uE or lF or uF) *
+            (number or lA or uA or lB or uB or lC or uC or lD or uD or lE or uE or lF or uF) map {
+            val code = "" + it.t3.text + it.t4.text + it.t5.text + it.t6.text
+            Pair(listOf(it.t1, it.t2, it.t3, it.t4, it.t5, it.t6), code.toInt(16).toChar().toString())
+        },
         bSlash * -NotParser(br) * AnyParser map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた改行以外の文字
         bSlash * br map { Pair(listOf(it.t1, it.t2), "\n") }, // エスケープされた改行
     )
@@ -198,6 +206,10 @@ class Fluorite12Grammar : Grammar<Node>() {
         bSlash * (lT) map { Pair(listOf(it.t1, it.t2), "\t") },
         bSlash * (lR) map { Pair(listOf(it.t1, it.t2), "\r") },
         bSlash * (lN) map { Pair(listOf(it.t1, it.t2), "\n") },
+        bSlash * lU * hexadecimalCharacter * hexadecimalCharacter * hexadecimalCharacter * hexadecimalCharacter map {
+            val code = "" + it.t3.text + it.t4.text + it.t5.text + it.t6.text
+            Pair(listOf(it.t1, it.t2, it.t3, it.t4, it.t5, it.t6), code.toInt(16).toChar().toString())
+        },
     )
     val formatterFlag by OrCombinator(
         minus map { Pair(it, FormatterFlag.LEFT_ALIGNED) },
