@@ -157,6 +157,7 @@ class Fluorite12Test {
         assertEquals("あ", eval(""" "あ" """).string) // マルチバイト文字
         assertEquals("㎡", eval(""" "㎡" """).string) // MS932
         assertEquals("🍰", eval(""" "🍰" """).string) // サロゲートペア
+        assertEquals("あ", eval("\"\\u3042\"").string) // Unicodeエスケープ
 
         assertEquals(""" " $ \ """, eval(""" " \" \$ \\ " """).string) // エスケープが必要な記号
         assertEquals(" \r \n \t ", eval(""" " \r \n \t " """).string) // 制御文字のエスケープ
@@ -1088,6 +1089,7 @@ class Fluorite12Test {
         assertEquals(123, eval("{`abc`: 123}.abc").int) // エントリーキーのクォート識別子
         assertEquals(123, eval("{abc: 123}.`abc`").int) // プロパティアクセスのクォート識別子
         assertEquals(123, eval("{abc: this -> 123}{}::`abc`()").int) // メソッドのクォート識別子
+        assertEquals(123, eval("`\\u3042` := 123; あ").int) // Unicodeエスケープ
     }
 
     @Test

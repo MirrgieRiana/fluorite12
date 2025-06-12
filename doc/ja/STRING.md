@@ -56,6 +56,7 @@ $ flc \''abc$def\nop'\'
 | `\t`                  | タブ文字         |
 | `\r`                  | CR           |
 | `\n`                  | LF           |
+| `\uXXXX`             | 指定したUnicodeの1文字 |
 | 上記以外の ` \ ` で始まるシーケンス | 構文エラー        |
 | CRLF                  | LF           |
 | CR                    | LF           |
@@ -77,6 +78,13 @@ $ flc \''abc$def\nop'\'
 $ flc ' "abc\"def\\ghi\njkl" '
 # abc"def\ghi
 # jkl
+```
+
+Unicodeを指定するエスケープシーケンスも利用できます。
+
+```shell
+$ flc ' "\u3042" '
+# あ
 ```
 
 ## 改行コンテント
