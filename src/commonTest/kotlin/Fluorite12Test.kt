@@ -1228,6 +1228,12 @@ class Fluorite12Test {
     }
 
     @Test
+    fun infixFunctionExclamation() = runTest {
+        assertEquals(false, eval("lt := a, b -> a < b; 2 !lt 3").boolean)
+        assertEquals(false, eval("lt := a, b -> a < b; !lt(2; 3)").boolean)
+    }
+
+    @Test
     fun spaceship() = runTest {
         assertEquals(-1, eval("1 <=> 2").int) // <=> は左辺が小さい場合は-1
         assertEquals(0, eval("1 <=> 1").int) // 等しい場合は0

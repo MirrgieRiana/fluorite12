@@ -322,8 +322,13 @@ class Fluorite12Grammar : Grammar<Node>() {
     val range: Parser<Node> by leftAssociative(add, -s * rangeOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
     val infixIdentifierOperator: Parser<IdentifierNode> by identifier or quotedIdentifier
     val infixIdentifier: Parser<Node> by leftAssociative(range, -s * infixIdentifierOperator * -b) { left, operator, right -> InfixIdentifierNode(left, operator, right) }
+    val bangInfixOperator: Parser<Pair<List<TokenMatch>, IdentifierNode>> by +exclamation * infixIdentifierOperator map { Pair(it.t1, it.t2) }
+    val bangInfixIdentifier: Parser<Node> by range * -s * bangInfixOperator * -b * cachedParser { range } map {
+        UnaryExclamationNode(it.t2.first, InfixIdentifierNode(it.t1, it.t2.second, it.t3), Side.LEFT)
+    }
+    val infixIdentifierBase: Parser<Node> by bangInfixIdentifier or infixIdentifier
     val spaceshipOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by +(less * equal * greater) map { Pair(it, ::InfixLessEqualGreaterNode) }
-    val spaceship: Parser<Node> by leftAssociative(infixIdentifier, -s * spaceshipOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
+    val spaceship: Parser<Node> by leftAssociative(infixIdentifierBase, -s * spaceshipOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
     val comparisonOperator: Parser<Pair<List<TokenMatch>, ComparisonOperatorType>> by OrCombinator(
         +(equal * equal) map { Pair(it, ComparisonOperatorType.EQUAL) }, // ==
         +(exclamation * equal) map { Pair(it, ComparisonOperatorType.EXCLAMATION_EQUAL) }, // !=
