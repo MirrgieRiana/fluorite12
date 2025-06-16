@@ -1225,6 +1225,8 @@ class Fluorite12Test {
     fun infixFunction() = runTest {
         assertEquals(5, eval("add := a, b -> a + b; 2 add 3").int) // identifierを使った中置関数呼び出し
         assertEquals(5, eval("add := a, b -> a + b; 2 `add` 3").int) // 引用符付きでもよい
+        assertEquals(true, eval("lt := a, b -> a < b; 2  lt 3").boolean) // 論理値を返す中置換数
+        assertEquals(false, eval("lt := a, b -> a < b; 2 !lt 3").boolean) // 否定中置換数
     }
 
     @Test

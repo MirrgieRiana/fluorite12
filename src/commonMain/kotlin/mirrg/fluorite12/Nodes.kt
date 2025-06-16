@@ -71,6 +71,7 @@ class InfixLessLessNode(left: Node, operator: List<TokenMatch>, right: Node) : I
 class InfixColonEqualNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixEqualGreaterNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixIdentifierNode(val left: Node, val infix: IdentifierNode, val right: Node) : Node()
+class InfixExclamationIdentifierNode(val left: Node, val prefix: List<TokenMatch>, val infix: IdentifierNode, val right: Node) : Node()
 class ComparisonsNode(val nodes: List<Node>, val operators: List<Pair<List<TokenMatch>, ComparisonOperatorType>>) : Node()
 class ConditionNode(val condition: Node, val question: TokenMatch, val ok: Node, val colon: TokenMatch, val ng: Node) : Node()
 class CommasNode(val nodes: List<Node>, val operators: List<TokenMatch>) : Node()

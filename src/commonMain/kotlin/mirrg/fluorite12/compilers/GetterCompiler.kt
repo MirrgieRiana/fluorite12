@@ -35,6 +35,7 @@ import mirrg.fluorite12.InfixColonEqualNode
 import mirrg.fluorite12.InfixColonNode
 import mirrg.fluorite12.InfixEqualGreaterNode
 import mirrg.fluorite12.InfixEqualNode
+import mirrg.fluorite12.InfixExclamationIdentifierNode
 import mirrg.fluorite12.InfixExclamationQuestionNode
 import mirrg.fluorite12.InfixGreaterGreaterNode
 import mirrg.fluorite12.InfixIdentifierNode
@@ -232,6 +233,7 @@ fun Frame.compileToGetter(node: Node): Getter {
         is InfixNode -> compileInfixOperatorToGetter(node)
 
         is InfixIdentifierNode -> FunctionInvocationGetter(compileToGetter(node.infix), listOf(compileToGetter(node.left), compileToGetter(node.right)))
+        is InfixExclamationIdentifierNode -> ToNegativeBooleanGetter(FunctionInvocationGetter(compileToGetter(node.infix), listOf(compileToGetter(node.left), compileToGetter(node.right))))
 
         is ComparisonsNode -> {
             val termGetters = node.nodes.map { compileToGetter(it) }
