@@ -263,6 +263,18 @@ class Fluorite12Grammar : Grammar<Node>() {
     val nonFloatFactor: Parser<Node> by hexadecimal or identifier or quotedIdentifier or integer or rawString or templateString or embeddedString or brackets
     val factor: Parser<Node> by hexadecimal or identifier or quotedIdentifier or float or integer or rawString or templateString or embeddedString or brackets
 
+    val unaryOperator: Parser<(List<TokenMatch>, Node, Side) -> Node> by OrCombinator(
+        +plus map { { prefix, main, side -> UnaryPlusNode(prefix + it, main, side) } },
+        +minus map { { prefix, main, side -> UnaryMinusNode(prefix + it, main, side) } },
+        +question map { { prefix, main, side -> UnaryQuestionNode(prefix + it, main, side) } },
+        +(exclamation * exclamation) map { { prefix, main, side -> UnaryExclamationExclamationNode(prefix + it, main, side) } },
+        +exclamation map { { prefix, main, side -> UnaryExclamationNode(prefix + it, main, side) } },
+        +ampersand map { { prefix, main, side -> UnaryAmpersandNode(prefix + it, main, side) } },
+        +(dollar * sharp) map { { prefix, main, side -> UnaryDollarSharpNode(prefix + it, main, side) } },
+        +(dollar * ampersand) map { { prefix, main, side -> UnaryDollarAmpersandNode(prefix + it, main, side) } },
+        +(dollar * asterisk) map { { prefix, main, side -> UnaryDollarAsteriskNode(prefix + it, main, side) } },
+        +at map { { prefix, main, side -> UnaryAtNode(prefix + it, main, side) } },
+    )
     val rightOperator: Parser<(Node) -> Node> by OrCombinator(
         -s * lRound * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> BracketsRightArrowedRoundNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
         -s * lSquare * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> BracketsRightArrowedSquareNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
@@ -276,16 +288,7 @@ class Fluorite12Grammar : Grammar<Node>() {
         -b * +(colon * colon) * -b * nonFloatFactor map { { main -> InfixColonColonNode(main, it.t1, it.t2) } },
         -b * +(question * colon * colon) * -b * nonFloatFactor map { { main -> InfixQuestionColonColonNode(main, it.t1, it.t2) } },
 
-        -b * +(period * plus) map { { main -> UnaryPlusNode(it, main, Side.RIGHT) } },
-        -b * +(period * minus) map { { main -> UnaryMinusNode(it, main, Side.RIGHT) } },
-        -b * +(period * question) map { { main -> UnaryQuestionNode(it, main, Side.RIGHT) } },
-        -b * +(period * exclamation * exclamation) map { { main -> UnaryExclamationExclamationNode(it, main, Side.RIGHT) } },
-        -b * +(period * exclamation) map { { main -> UnaryExclamationNode(it, main, Side.RIGHT) } },
-        -b * +(period * ampersand) map { { main -> UnaryAmpersandNode(it, main, Side.RIGHT) } },
-        -b * +(period * dollar * sharp) map { { main -> UnaryDollarSharpNode(it, main, Side.RIGHT) } },
-        -b * +(period * dollar * ampersand) map { { main -> UnaryDollarAmpersandNode(it, main, Side.RIGHT) } },
-        -b * +(period * dollar * asterisk) map { { main -> UnaryDollarAsteriskNode(it, main, Side.RIGHT) } },
-        -b * +(period * at) map { { main -> UnaryAtNode(it, main, Side.RIGHT) } },
+        -b * +period * unaryOperator map { { main -> it.t2(it.t1, main, Side.RIGHT) } },
     )
     val right: Parser<Node> by factor * zeroOrMore(rightOperator) map { it.t2.fold(it.t1) { node, f -> f(node) } }
     val pow: Parser<Node> by right * optional(-s * +circumflex * -b * cachedParser { left }) map {
@@ -296,19 +299,7 @@ class Fluorite12Grammar : Grammar<Node>() {
             it.t1
         }
     }
-    val leftOperator: Parser<(Node) -> Node> by OrCombinator(
-        +plus map { { main -> UnaryPlusNode(it, main, Side.LEFT) } },
-        +minus map { { main -> UnaryMinusNode(it, main, Side.LEFT) } },
-        +question map { { main -> UnaryQuestionNode(it, main, Side.LEFT) } },
-        +(exclamation * exclamation) map { { main -> UnaryExclamationExclamationNode(it, main, Side.LEFT) } },
-        +exclamation map { { main -> UnaryExclamationNode(it, main, Side.LEFT) } },
-        +ampersand map { { main -> UnaryAmpersandNode(it, main, Side.LEFT) } },
-        +(dollar * sharp) map { { main -> UnaryDollarSharpNode(it, main, Side.LEFT) } },
-        +(dollar * ampersand) map { { main -> UnaryDollarAmpersandNode(it, main, Side.LEFT) } },
-        +(dollar * asterisk) map { { main -> UnaryDollarAsteriskNode(it, main, Side.LEFT) } },
-        +at map { { main -> UnaryAtNode(it, main, Side.LEFT) } },
-    )
-    val left: Parser<Node> by zeroOrMore(leftOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(node) } }
+    val left: Parser<Node> by zeroOrMore(unaryOperator * -b) * pow map { it.t1.foldRight(it.t2) { f, node -> f(listOf(), node, Side.LEFT) } }
 
     val mulOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
         +asterisk map { Pair(it, ::InfixAsteriskNode) },
