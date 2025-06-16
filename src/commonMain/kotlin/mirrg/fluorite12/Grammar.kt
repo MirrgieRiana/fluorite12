@@ -148,6 +148,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val uAlphabet by uA or uB or uC or uD or uE or uF or uG or uH or uI or uJ or uK or uL or uM or uN or uO or uP or uQ or uR or uS or uT or uU or uV or uW or uX or uY or uZ
     val lAlphabet by lA or lB or lC or lD or lE or lF or lG or lH or lI or lJ or lK or lL or lM or lN or lO or lP or lQ or lR or lS or lT or lU or lV or lW or lX or lY or lZ
     val number by zero or nonZero
+    val hexadecimalNumber by number or lA or uA or lB or uB or lC or uC or lD or uD or lE or uE or lF or uF
 
     val identifier: Parser<IdentifierNode> by (uAlphabet or lAlphabet or underscore or other) * zeroOrMore(uAlphabet or lAlphabet or underscore or other or number) map {
         IdentifierNode(
@@ -161,6 +162,10 @@ class Fluorite12Grammar : Grammar<Node>() {
     val quotedIdentifierContent: Parser<Pair<List<TokenMatch>, String>> by OrCombinator(
         -NotParser(bQuote or bSlash or br) * AnyParser map { Pair(listOf(it), it.text) }, // ' \ 改行以外の文字
         br map { Pair(listOf(it), "\n") }, // 改行
+        bSlash * lU * hexadecimalNumber * hexadecimalNumber * hexadecimalNumber * hexadecimalNumber map {
+            val ch = "${it.t3.text}${it.t4.text}${it.t5.text}${it.t6.text}".toInt(16).toChar()
+            Pair(listOf(it.t1, it.t2, it.t3, it.t4, it.t5, it.t6), ch.toString())
+        }, // 文字参照
         bSlash * -NotParser(br) * AnyParser map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた改行以外の文字
         bSlash * br map { Pair(listOf(it.t1, it.t2), "\n") }, // エスケープされた改行
     )
@@ -180,8 +185,7 @@ class Fluorite12Grammar : Grammar<Node>() {
 
     val integer: Parser<Node> by oneOrMore(number) map { IntegerNode(it, it.joinToString("") { t -> t.text }) }
 
-    val hexadecimalCharacter by number or lA or uA or lB or uB or lC or uC or lD or uD or lE or uE or lF or uF
-    val hexadecimal: Parser<Node> by uH * sharp * oneOrMore(hexadecimalCharacter) map { HexadecimalNode(listOf(it.t1, it.t2, *it.t3.toTypedArray()), it.t3.joinToString("") { t -> t.text }) }
+    val hexadecimal: Parser<Node> by uH * sharp * oneOrMore(hexadecimalNumber) map { HexadecimalNode(listOf(it.t1, it.t2, *it.t3.toTypedArray()), it.t3.joinToString("") { t -> t.text }) }
 
     val rawStringCharacter by OrCombinator(
         -NotParser(sQuote or br) * AnyParser map { Pair(listOf(it), it.text) }, // ' 以外の文字
@@ -198,6 +202,10 @@ class Fluorite12Grammar : Grammar<Node>() {
         bSlash * (lT) map { Pair(listOf(it.t1, it.t2), "\t") },
         bSlash * (lR) map { Pair(listOf(it.t1, it.t2), "\r") },
         bSlash * (lN) map { Pair(listOf(it.t1, it.t2), "\n") },
+        bSlash * lU * hexadecimalNumber * hexadecimalNumber * hexadecimalNumber * hexadecimalNumber map {
+            val ch = "${it.t3.text}${it.t4.text}${it.t5.text}${it.t6.text}".toInt(16).toChar()
+            Pair(listOf(it.t1, it.t2, it.t3, it.t4, it.t5, it.t6), ch.toString())
+        }, // 文字参照
     )
     val formatterFlag by OrCombinator(
         minus map { Pair(it, FormatterFlag.LEFT_ALIGNED) },
