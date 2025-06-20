@@ -873,7 +873,7 @@ class Fluorite12Test {
 
     @Test
     fun randomFunctionTest() = runTest {
-        val random = eval("RANDOM")
+        val random = eval("RAND")
 
         repeat(100) {
             val d = random.invoke(arrayOf()).double

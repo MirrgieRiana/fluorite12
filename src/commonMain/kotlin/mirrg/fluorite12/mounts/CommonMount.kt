@@ -75,7 +75,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 else -> usage("SQRT(number: NUMBER): NUMBER")
             }
         },
-        "RANDOM" to FluoriteFunction { arguments ->
+        "RAND" to FluoriteFunction { arguments ->
             when (arguments.size) {
                 0 -> {
                     FluoriteDouble(Random.nextDouble())
@@ -93,8 +93,8 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 }
 
                 else -> usage(
-                    "RANDOM(): DOUBLE",
-                    "RANDOM([from: NUMBER; ]until: NUMBER): INT",
+                    "RAND(): DOUBLE",
+                    "RAND([from: NUMBER; ]until: NUMBER): INT",
                 )
             }
         },
