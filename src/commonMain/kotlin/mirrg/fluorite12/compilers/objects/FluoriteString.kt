@@ -1,5 +1,6 @@
 package mirrg.fluorite12.compilers.objects
 
+import mirrg.fluorite12.OperatorMethod
 import mirrg.fluorite12.toFluoriteIntAsCompared
 
 class FluoriteString(val value: String) : FluoriteValue {
@@ -7,15 +8,15 @@ class FluoriteString(val value: String) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "_._" to FluoriteFunction { arguments ->
+                    OperatorMethod.PROPERTY.methodName to FluoriteFunction { arguments ->
                         val string = arguments[0] as FluoriteString
                         val index = arguments[1].toFluoriteNumber().roundToInt()
                         string.value.getOrNull(index)?.toString()?.toFluoriteString() ?: FluoriteNull
                     },
-                    "_._=" to FluoriteFunction { arguments ->
+                    OperatorMethod.SET_PROPERTY.methodName to FluoriteFunction { arguments ->
                         throw IllegalArgumentException("Cannot set item to string") // TODO
                     },
-                    "_()" to FluoriteFunction { arguments ->
+                    OperatorMethod.CALL.methodName to FluoriteFunction { arguments ->
                         val string = (arguments[0] as FluoriteString).value
                         when (arguments.size) {
                             1 -> {
@@ -47,7 +48,7 @@ class FluoriteString(val value: String) : FluoriteValue {
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
-                    "_[]" to FluoriteFunction { arguments ->
+                    OperatorMethod.BIND.methodName to FluoriteFunction { arguments ->
                         val string = arguments[0] as FluoriteString
                         when (arguments.size) {
                             1 -> string
@@ -79,23 +80,23 @@ class FluoriteString(val value: String) : FluoriteValue {
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
-                    "+_" to FluoriteFunction { arguments ->
+                    OperatorMethod.TO_NUMBER.methodName to FluoriteFunction { arguments ->
                         val string = (arguments[0] as FluoriteString).value
                         string.toFluoriteNumber()
                     },
-                    "?_" to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
-                    "&_" to FluoriteFunction { it[0] as FluoriteString },
-                    "_+_" to FluoriteFunction { arguments ->
+                    OperatorMethod.TO_BOOLEAN.methodName to FluoriteFunction { ((it[0] as FluoriteString).value != "").toFluoriteBoolean() },
+                    OperatorMethod.TO_STRING.methodName to FluoriteFunction { it[0] as FluoriteString },
+                    OperatorMethod.PLUS.methodName to FluoriteFunction { arguments ->
                         val left = arguments[0] as FluoriteString
                         val right = arguments[1]
                         FluoriteString(left.value + right.toFluoriteString().value)
                     },
-                    "_<=>_" to FluoriteFunction { arguments ->
+                    OperatorMethod.COMPARE.methodName to FluoriteFunction { arguments ->
                         val left = arguments[0] as FluoriteString
                         val right = arguments[1].toFluoriteString()
                         left.value.compareTo(right.value).toFluoriteIntAsCompared()
                     },
-                    "_@_" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
+                    OperatorMethod.CONTAINS.methodName to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
                     "replace" to FluoriteFunction { arguments ->
                         if (arguments.size != 3) throw IllegalArgumentException("STRING::replace(old: STRING; new: STRING): STRING")
                         val string = arguments[0] as FluoriteString

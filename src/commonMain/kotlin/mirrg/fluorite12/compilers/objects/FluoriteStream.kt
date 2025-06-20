@@ -3,13 +3,14 @@ package mirrg.fluorite12.compilers.objects
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import mirrg.fluorite12.OperatorMethod
 
 class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -> Unit) : FluoriteValue {
     companion object {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "+_" to FluoriteFunction { arguments ->
+                    OperatorMethod.TO_NUMBER.methodName to FluoriteFunction { arguments ->
                         var intSum = 0
                         var doubleSum = 0.0
                         (arguments[0] as FluoriteStream).collect { item ->
@@ -20,7 +21,7 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
                         }
                         if (doubleSum == 0.0) FluoriteInt(intSum) else FluoriteDouble(intSum + doubleSum)
                     },
-                    "?_" to FluoriteFunction { arguments ->
+                    OperatorMethod.TO_BOOLEAN.methodName to FluoriteFunction { arguments ->
                         flow {
                             (arguments[0] as FluoriteStream).collect {
                                 if (it.toBoolean()) emit(FluoriteBoolean.TRUE)
@@ -28,7 +29,7 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
                             emit(FluoriteBoolean.FALSE)
                         }.first()
                     },
-                    "&_" to FluoriteFunction { arguments ->
+                    OperatorMethod.TO_STRING.methodName to FluoriteFunction { arguments ->
                         val stream = arguments[0] as FluoriteStream
                         val sb = StringBuilder()
                         stream.collect { item ->

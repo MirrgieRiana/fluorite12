@@ -2,6 +2,7 @@ package mirrg.fluorite12.operations
 
 import mirrg.fluorite12.Environment
 import mirrg.fluorite12.LocalVariable
+import mirrg.fluorite12.OperatorMethod
 import mirrg.fluorite12.compilers.objects.Callable
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
@@ -330,7 +331,7 @@ class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter
         val receiver = receiverGetter.evaluate(env)
         if (isNullSafe && receiver == FluoriteNull) return FluoriteNull
         val key = keyGetter.evaluate(env)
-        return receiver.callMethod("_._", arrayOf(key))
+        return receiver.callMethod(OperatorMethod.PROPERTY.methodName, arrayOf(key))
     }
 
     override val code get() = "ItemAccessGetter[${receiverGetter.code};${keyGetter.code};$isNullSafe]"

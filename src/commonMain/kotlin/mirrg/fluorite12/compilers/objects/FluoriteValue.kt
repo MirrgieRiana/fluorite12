@@ -1,5 +1,6 @@
 package mirrg.fluorite12.compilers.objects
 
+import mirrg.fluorite12.OperatorMethod
 import mirrg.fluorite12.operations.FluoriteException
 
 interface FluoriteValue {
@@ -10,7 +11,7 @@ interface FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 null, mutableMapOf(
-                    "&_" to FluoriteFunction { "${it[0]}".toFluoriteString() },
+                    OperatorMethod.TO_STRING.methodName to FluoriteFunction { "${it[0]}".toFluoriteString() },
                 )
             )
         }
@@ -46,7 +47,7 @@ private fun FluoriteValue.getPureMethod(name: String): FluoriteValue? {
 
 suspend fun FluoriteValue.getMethod(name: String): Callable? {
     val method = this.getPureMethod(name) ?: run {
-        val fallbackMethod = this.getPureMethod("_::_") ?: return null
+        val fallbackMethod = this.getPureMethod(OperatorMethod.METHOD.methodName) ?: return null
         val actualMethod = this.callMethod(fallbackMethod, arrayOf(name.toFluoriteString()))
         if (actualMethod == FluoriteNull) return null
         return Callable { arguments ->
@@ -71,12 +72,12 @@ suspend fun FluoriteValue.callMethod(method: FluoriteValue, arguments: Array<Flu
     }
 }
 
-suspend fun FluoriteValue.invoke(arguments: Array<FluoriteValue>) = this.callMethod("_()", arguments)
-suspend fun FluoriteValue.bind(arguments: Array<FluoriteValue>) = this.callMethod("_[]", arguments)
-suspend fun FluoriteValue.toFluoriteNumber(): FluoriteNumber = this.callMethod("+_").let { if (it is FluoriteNumber) it else it.toFluoriteNumber() }
-suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod("&_").let { if (it is FluoriteString) it else it.toFluoriteString() }
-suspend fun FluoriteValue.toFluoriteBoolean(): FluoriteBoolean = this.callMethod("?_").let { if (it is FluoriteBoolean) it else it.toFluoriteBoolean() }
+suspend fun FluoriteValue.invoke(arguments: Array<FluoriteValue>) = this.callMethod(OperatorMethod.CALL.methodName, arguments)
+suspend fun FluoriteValue.bind(arguments: Array<FluoriteValue>) = this.callMethod(OperatorMethod.BIND.methodName, arguments)
+suspend fun FluoriteValue.toFluoriteNumber(): FluoriteNumber = this.callMethod(OperatorMethod.TO_NUMBER.methodName).let { if (it is FluoriteNumber) it else it.toFluoriteNumber() }
+suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod(OperatorMethod.TO_STRING.methodName).let { if (it is FluoriteString) it else it.toFluoriteString() }
+suspend fun FluoriteValue.toFluoriteBoolean(): FluoriteBoolean = this.callMethod(OperatorMethod.TO_BOOLEAN.methodName).let { if (it is FluoriteBoolean) it else it.toFluoriteBoolean() }
 suspend fun FluoriteValue.toBoolean() = this.toFluoriteBoolean().value
-suspend fun FluoriteValue.contains(value: FluoriteValue) = this.callMethod("_@_", arrayOf(value)).toFluoriteBoolean()
-suspend fun FluoriteValue.plus(value: FluoriteValue) = this.callMethod("_+_", arrayOf(value))
-suspend fun FluoriteValue.compareTo(value: FluoriteValue) = this.callMethod("_<=>_", arrayOf(value)) as FluoriteInt
+suspend fun FluoriteValue.contains(value: FluoriteValue) = this.callMethod(OperatorMethod.CONTAINS.methodName, arrayOf(value)).toFluoriteBoolean()
+suspend fun FluoriteValue.plus(value: FluoriteValue) = this.callMethod(OperatorMethod.PLUS.methodName, arrayOf(value))
+suspend fun FluoriteValue.compareTo(value: FluoriteValue) = this.callMethod(OperatorMethod.COMPARE.methodName, arrayOf(value)) as FluoriteInt

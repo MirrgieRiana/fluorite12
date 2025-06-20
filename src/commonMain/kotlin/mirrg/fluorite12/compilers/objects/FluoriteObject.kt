@@ -1,23 +1,25 @@
 package mirrg.fluorite12.compilers.objects
 
+import mirrg.fluorite12.OperatorMethod
+
 class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<String, FluoriteValue>) : FluoriteValue {
     companion object {
         val fluoriteClass: FluoriteObject by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "_._" to FluoriteFunction { arguments ->
+                    OperatorMethod.PROPERTY.methodName to FluoriteFunction { arguments ->
                         val obj = arguments[0] as FluoriteObject
                         val key = arguments[1].toFluoriteString().value
                         obj.map[key] ?: FluoriteNull
                     },
-                    "_._=" to FluoriteFunction { arguments ->
+                    OperatorMethod.SET_PROPERTY.methodName to FluoriteFunction { arguments ->
                         val obj = arguments[0] as FluoriteObject
                         val key = arguments[1].toFluoriteString().value
                         val value = arguments[2]
                         obj.map[key] = value
                         FluoriteNull
                     },
-                    "_()" to FluoriteFunction { arguments ->
+                    OperatorMethod.CALL.methodName to FluoriteFunction { arguments ->
                         val obj = arguments[0] as FluoriteObject
                         when (arguments.size) {
                             1 -> {
@@ -46,7 +48,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
-                    "_[]" to FluoriteFunction { arguments ->
+                    OperatorMethod.BIND.methodName to FluoriteFunction { arguments ->
                         // TODO
                         val obj = arguments[0] as FluoriteObject
                         val arguments1 = arguments.sliceArray(1 until arguments.size)
@@ -54,7 +56,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                             obj.invoke(arguments1 + arguments2)
                         }
                     },
-                    "&_" to FluoriteFunction { arguments ->
+                    OperatorMethod.TO_STRING.methodName to FluoriteFunction { arguments ->
                         val sb = StringBuilder()
                         sb.append('{')
                         (arguments[0] as FluoriteObject).map.entries.forEachIndexed { i, (key, value) ->
@@ -66,16 +68,16 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                         sb.append('}')
                         sb.toString().toFluoriteString()
                     },
-                    "?_" to FluoriteFunction { (it[0] as FluoriteObject).map.isNotEmpty().toFluoriteBoolean() },
-                    "_+_" to FluoriteFunction { arguments ->
+                    OperatorMethod.TO_BOOLEAN.methodName to FluoriteFunction { (it[0] as FluoriteObject).map.isNotEmpty().toFluoriteBoolean() },
+                    OperatorMethod.PLUS.methodName to FluoriteFunction { arguments ->
                         val left = arguments[0] as FluoriteObject
                         val right = arguments[1] as FluoriteObject
                         val map = mutableMapOf<String, FluoriteValue>()
                         map += left.map
                         map += right.map
-                        FluoriteObject(FluoriteObject.fluoriteClass, map)
+                        FluoriteObject(fluoriteClass, map)
                     },
-                    "_@_" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteObject).map).toFluoriteBoolean() },
+                    OperatorMethod.CONTAINS.methodName to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteObject).map).toFluoriteBoolean() },
                 )
             )
         }

@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.promise
+import mirrg.fluorite12.OperatorMethod
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
@@ -23,12 +24,12 @@ class FluoriteJsObject(val value: dynamic) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "_()" to FluoriteFunction { arguments ->
+                    OperatorMethod.CALL.methodName to FluoriteFunction { arguments ->
                         val jsObject = arguments[0] as FluoriteJsObject
                         val actualArguments = arguments.drop(1).map { it.toJsObject() }.toTypedArray()
                         convertToFluoriteValue(jsObject.value.apply(undefined, actualArguments))
                     },
-                    "_._" to FluoriteFunction { arguments ->
+                    OperatorMethod.PROPERTY.methodName to FluoriteFunction { arguments ->
                         if (arguments.size != 2) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         val jsObject = arguments[0] as FluoriteJsObject
                         val key: dynamic = run {
@@ -39,7 +40,7 @@ class FluoriteJsObject(val value: dynamic) : FluoriteValue {
                         }
                         convertToFluoriteValue(jsObject.value[key])
                     },
-                    "_._=" to FluoriteFunction { arguments ->
+                    OperatorMethod.SET_PROPERTY.methodName to FluoriteFunction { arguments ->
                         if (arguments.size != 3) throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         val jsObject = arguments[0] as FluoriteJsObject
                         val key: dynamic = run {
@@ -52,7 +53,7 @@ class FluoriteJsObject(val value: dynamic) : FluoriteValue {
                         jsObject.value[key] = value
                         FluoriteNull
                     },
-                    "_::_" to FluoriteFunction { arguments ->
+                    OperatorMethod.METHOD.methodName to FluoriteFunction { arguments ->
                         val jsObject = arguments[0] as FluoriteJsObject
                         val method = arguments[1] as FluoriteString
                         FluoriteFunction { arguments2 ->

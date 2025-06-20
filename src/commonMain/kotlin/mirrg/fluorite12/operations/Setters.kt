@@ -2,6 +2,7 @@ package mirrg.fluorite12.operations
 
 import mirrg.fluorite12.Environment
 import mirrg.fluorite12.LocalVariable
+import mirrg.fluorite12.OperatorMethod
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteValue
@@ -33,7 +34,7 @@ class ItemAccessSetter(private val receiverGetter: Getter, private val keyGetter
         val receiver = receiverGetter.evaluate(env)
         val key = keyGetter.evaluate(env)
         return {
-            receiver.callMethod("_._=", arrayOf(key, it))
+            receiver.callMethod(OperatorMethod.SET_PROPERTY.methodName, arrayOf(key, it))
         }
     }
 

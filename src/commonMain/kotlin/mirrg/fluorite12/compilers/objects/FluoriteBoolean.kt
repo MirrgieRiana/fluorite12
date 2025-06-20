@@ -1,5 +1,7 @@
 package mirrg.fluorite12.compilers.objects
 
+import mirrg.fluorite12.OperatorMethod
+
 enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
     TRUE(true),
     FALSE(false),
@@ -9,8 +11,8 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
-                    "+_" to FluoriteFunction { if ((it[0] as FluoriteBoolean).value) FluoriteInt.ONE else FluoriteInt.ZERO },
-                    "?_" to FluoriteFunction { it[0] as FluoriteBoolean },
+                    OperatorMethod.TO_NUMBER.methodName to FluoriteFunction { if ((it[0] as FluoriteBoolean).value) FluoriteInt.ONE else FluoriteInt.ZERO },
+                    OperatorMethod.TO_BOOLEAN.methodName to FluoriteFunction { it[0] as FluoriteBoolean },
                 )
             )
         }
