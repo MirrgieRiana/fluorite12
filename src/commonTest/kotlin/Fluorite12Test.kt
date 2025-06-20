@@ -2,6 +2,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.Evaluator
 import mirrg.fluorite12.compilers.objects.FluoriteNull
+import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.mounts.createCommonMount
 import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
@@ -96,6 +97,7 @@ class Fluorite12Test {
         assertEquals(FluoriteNull, eval("NULL"))
         assertEquals(true, eval("TRUE").boolean)
         assertEquals(false, eval("FALSE").boolean)
+        assertEquals(true, eval("LOOP") is FluoriteStream)
     }
 
     @Test
