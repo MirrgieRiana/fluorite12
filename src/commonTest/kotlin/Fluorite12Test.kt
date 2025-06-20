@@ -1233,9 +1233,16 @@ class Fluorite12Test {
 
     @Test
     fun spaceship() = runTest {
+        // 数値
         assertEquals(-1, eval("1 <=> 2").int) // <=> は左辺が小さい場合は-1
         assertEquals(0, eval("1 <=> 1").int) // 等しい場合は0
         assertEquals(1, eval("2 <=> 1").int) // 左辺が大きい場合は1
+
+        // 文字列
+        assertEquals(-1, eval(" 'a' <=> 'b' ").int) // <=> は左辺が小さい場合は-1
+        assertEquals(0, eval(" 'a' <=> 'a' ").int) // 等しい場合は0
+        assertEquals(1, eval(" 'b' <=> 'a' ").int) // 左辺が大きい場合は1
+        assertEquals(true, eval(" 'aa' > 'a' ").boolean) // 末尾に付け足した場合は大きい扱い
 
         // 宇宙船演算子のオーバーライド
         """

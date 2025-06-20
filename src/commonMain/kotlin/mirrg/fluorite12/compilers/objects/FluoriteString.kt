@@ -1,5 +1,7 @@
 package mirrg.fluorite12.compilers.objects
 
+import mirrg.fluorite12.toFluoriteIntAsCompared
+
 class FluoriteString(val value: String) : FluoriteValue {
     companion object {
         val fluoriteClass by lazy {
@@ -87,6 +89,11 @@ class FluoriteString(val value: String) : FluoriteValue {
                         val left = arguments[0] as FluoriteString
                         val right = arguments[1]
                         FluoriteString(left.value + right.toFluoriteString().value)
+                    },
+                    "_<=>_" to FluoriteFunction { arguments ->
+                        val left = arguments[0] as FluoriteString
+                        val right = arguments[1].toFluoriteString()
+                        left.value.compareTo(right.value).toFluoriteIntAsCompared()
                     },
                     "_@_" to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
                     "replace" to FluoriteFunction { arguments ->
