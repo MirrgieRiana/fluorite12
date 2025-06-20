@@ -23,12 +23,13 @@
 
 各種、特別な値を表す定数です。
 
-| 定数          | 意味      |
-|-------------|---------|
-| `NULL` `N`  | NULL値   |
-| `TRUE` `T`  | 真       |
-| `FALSE` `F` | 偽       |
-| `EMPTY` `E` | 空のストリーム |
+| 定数          | 意味                |
+|-------------|-------------------|
+| `NULL` `N`  | NULL値             |
+| `TRUE` `T`  | 真                 |
+| `FALSE` `F` | 偽                 |
+| `EMPTY` `E` | 空のストリーム           |
+| `LOOP`      | 無限にNULLを生成するストリーム |
 
 ---
 
@@ -63,11 +64,11 @@ $ flc 'SQRT(100.0)'
 # 10.0
 ```
 
-## `RANDOM` 乱数の取得
+## `RAND` 乱数の取得
 
-`RANDOM(): DOUBLE`
+`RAND(): DOUBLE`
 
-`RANDOM([from: NUMBER; ]until: NUMBER): INT`
+`RAND([from: NUMBER; ]until: NUMBER): INT`
 
 引数なしで呼び出された場合、0以上1未満の小数を返します。
 
