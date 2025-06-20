@@ -8,6 +8,8 @@ import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.mounts.createCommonMount
 import kotlin.js.Promise
 
+actual fun getEnv(): Map<String, String> = throw AssertionError()
+
 @Suppress("unused")
 @JsName("evaluate")
 fun evaluate(src: String, quiet: Boolean, out: suspend (FluoriteValue) -> Unit) = GlobalScope.promise {
