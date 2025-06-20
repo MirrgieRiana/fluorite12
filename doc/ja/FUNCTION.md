@@ -206,6 +206,26 @@ $ flc '
 # 123
 ```
 
+### 否定中置換数呼び出し
+
+`!` を `a !function b` のように関数名の前に書くことで、その結果を否定できます。
+この書き方は `!(a function b)` と同じ意味になります。
+
+```shell
+$ flc -q '
+  in := item, array -> item @ array
+
+  OUT << "banana"  in ["apple", "banana"] // TRUE
+  OUT << "cherry"  in ["apple", "banana"] // FALSE
+  OUT << "banana" !in ["apple", "banana"] // FALSE
+  OUT << "cherry" !in ["apple", "banana"] // TRUE
+'
+# TRUE
+# FALSE
+# FALSE
+# TRUE
+```
+
 # メソッド呼び出し
 
 メソッド呼び出し演算子 `receiver::method(argument; ...)` は、 `receiver` の祖先のオブジェクトに登録された関数を、 `receiver` とともに呼び出す演算子です。

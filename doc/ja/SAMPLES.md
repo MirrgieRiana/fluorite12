@@ -1,6 +1,6 @@
 # FizzBuzz
 
-以下の条件に従って1から100までの数値を出力します。
+以下の条件に従って数値を出力します。
 
 - その数が3で割り切れる場合、 `Fizz` を出力。
 - その数が5で割り切れる場合、 `Buzz` を出力。
@@ -29,7 +29,7 @@ $ flc '1~17|&(_%3?E:"Fizz",_%5?E:"Buzz")||_'
 
 ---
 
-`1~100` は1以上100未満の整数を順番に生成するストリームです。
+`1~17` は1以上17未満の整数を順番に生成するストリームです。
 
 `|` は左辺のストリームの各要素について、右辺を評価する演算子です。
 
@@ -180,6 +180,34 @@ $ flc -q '
 #    -   -   -  23   -   -   -   -   -  29
 #    -  31   -   -   -   -   -  37   -   -
 #    -  41   -  43   -   -   -  47   -   -
+```
+
+# ライフゲーム
+
+横40マス、縦40マス、待機時間200ミリ秒でライフゲームを実行します。
+
+パフォーマンスのためにjvm版で起動します。
+
+```bash
+$ FLC_ENGINE=jvm flc -q '
+  LifeGame := {
+    init     : this -> this.b = [0 ~ this.h | [0 ~ this.w | RANDOM(2)]]
+    get      : this, x, y -> this.b(y % this.h)(x % this.w)
+    neighbors: this, x, y -> -1 .. 1 | dx => -1 .. 1 | dy => dx == 0 && dy == 0 ? 0 : this::get(x + dx; y + dy) >> SUM
+    get_next : this -> [0 ~ this.h | y => [0 ~ this.w | x => this::neighbors(x; y) | +(this::get(x; y) ? _ == 2 || _ == 3 : _ == 3)]]
+    step     : this -> this.b = this::get_next()
+    `&_`     : this -> this.b() | l => (l() | _ ? "[]" : "  " >> JOIN[""]) >> JOIN["\n"]
+  }
+  
+  lifeGame := LifeGame{w: +ARGS.0; h: +ARGS.1}
+  lifeGame::init()
+  OUT << "$lifeGame\n$("--" * +ARGS.0)"
+  1 .. 10000 | (
+    lifeGame::step()
+    OUT << "$lifeGame\n$("--" * +ARGS.0)"
+    SLEEP(+ARGS.2)
+  )
+' 40 40 200
 ```
 
 # [HTML上でテーブルを表示](https://mirrgieriana.github.io/fluorite12/playground/?s=eJxdkctOwzAURPf9ilFQJEAkacUK57FAIFGJxwap6yQ2iYWpI8dpEwH%2FjlM3NelufOdo7uh6s359eNuEVJbdF9tqQiqmHwUb9f2wppee7HTTae8qNIKpp%2FeXZ6TwswWQUL4Dp%2BmEoNWDYKlXSEWZCkopRN60jGBSMWrGq1oTrJZLP4bcMfUh5D4YCNpSGSr2xmATfYiyGriwC6DpjdM1vo82sOdU1wS3rI9Ps2nVbGirmf1Nj1YKTlGIvPx0gGa9DnLBq62pbW7A1OT92mLRv2aJzgvXMvFTrBCGuMMPeqSZvdLR1Mo9ztjhjLU8zUaox7Xx%2FSyJzGAWMEuPXLxzbL3o8FWR%2BatskfiLP%2BeugP4%3D&d=53.63)

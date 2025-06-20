@@ -7752,8 +7752,7 @@
                   closestRect = rect;
                   closestX = dx;
                   closestY = dy;
-                  let side = dy ? (y < rect.top ? -1 : 1) : dx ? (x < rect.left ? -1 : 1) : 0;
-                  closestOverlap = !side || (side > 0 ? i < rects.length - 1 : i > 0);
+                  closestOverlap = !dx ? true : x < rect.left ? i > 0 : i < rects.length - 1;
               }
               if (dx == 0) {
                   if (y > rect.bottom && (!aboveRect || aboveRect.bottom < rect.bottom)) {
@@ -7929,13 +7928,24 @@
   // line before. This is used to detect such a result so that it can be
   // ignored (issue #401).
   function isSuspiciousSafariCaretResult(node, offset, x) {
-      let len;
+      let len, scan = node;
       if (node.nodeType != 3 || offset != (len = node.nodeValue.length))
           return false;
-      for (let next = node.nextSibling; next; next = next.nextSibling)
-          if (next.nodeType != 1 || next.nodeName != "BR")
+      for (;;) { // Check that there is no content after this node
+          let next = scan.nextSibling;
+          if (next) {
+              if (next.nodeName == "BR")
+                  break;
               return false;
-      return textRange(node, len - 1, len).getBoundingClientRect().left > x;
+          }
+          else {
+              let parent = scan.parentNode;
+              if (!parent || parent.nodeName == "DIV")
+                  break;
+              scan = parent;
+          }
+      }
+      return textRange(node, len - 1, len).getBoundingClientRect().right > x;
   }
   // Chrome will move positions between lines to the start of the next line
   function isSuspiciousChromeCaretResult(node, offset, x) {
