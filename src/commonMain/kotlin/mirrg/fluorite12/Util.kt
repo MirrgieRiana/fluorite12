@@ -256,3 +256,11 @@ fun String.removeExponent(): String {
 suspend fun <T : Any> MutableMap<String, FluoriteValue>.pop(key: String, block: suspend (FluoriteValue) -> T, or: suspend () -> T): T {
     return this.remove(key)?.let { block(it) } ?: or() // しかしなぜここの ?.let がうまくいくのかは謎
 }
+
+fun Int.toFluoriteIntAsCompared(): FluoriteInt {
+    return when {
+        this < 0 -> FluoriteInt.MINUS_ONE
+        this == 0 -> FluoriteInt.ZERO
+        else -> FluoriteInt.ONE
+    }
+}

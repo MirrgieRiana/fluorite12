@@ -1,6 +1,7 @@
 package mirrg.fluorite12.compilers.objects
 
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
+import mirrg.fluorite12.toFluoriteIntAsCompared
 import kotlin.math.roundToInt
 
 interface FluoriteNumber : FluoriteValue {
@@ -28,8 +29,8 @@ class FluoriteInt(val value: Int) : FluoriteNumber {
                     "_<=>_" to FluoriteFunction { arguments ->
                         val left = arguments[0] as FluoriteInt
                         when (val right = arguments[1]) {
-                            is FluoriteInt -> FluoriteInt(left.value.compareTo(right.value))
-                            is FluoriteDouble -> FluoriteInt(left.value.compareTo(right.value))
+                            is FluoriteInt -> left.value.compareTo(right.value).toFluoriteIntAsCompared()
+                            is FluoriteDouble -> left.value.compareTo(right.value).toFluoriteIntAsCompared()
                             else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
                         }
                     },
@@ -69,8 +70,8 @@ class FluoriteDouble(val value: Double) : FluoriteNumber {
                     "_<=>_" to FluoriteFunction { arguments ->
                         val left = arguments[0] as FluoriteDouble
                         when (val right = arguments[1]) {
-                            is FluoriteInt -> FluoriteInt(left.value.compareTo(right.value))
-                            is FluoriteDouble -> FluoriteInt(left.value.compareTo(right.value))
+                            is FluoriteInt -> left.value.compareTo(right.value).toFluoriteIntAsCompared()
+                            is FluoriteDouble -> left.value.compareTo(right.value).toFluoriteIntAsCompared()
                             else -> throw IllegalArgumentException("Can not convert to number: ${right::class}")
                         }
                     },
