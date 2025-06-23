@@ -167,8 +167,8 @@ tasks.register("generateDocShellTests") {
 tasks.register<Exec>("runDocShellTests") {
     dependsOn("generateDocShellTests", "linkFlcReleaseExecutableLinuxX64")
     commandLine("bash", "build/docShellTests/ja.sh", "build/bin/linuxX64/flcReleaseExecutable/flc.kexe")
-    tasks.named("check").get().dependsOn(this)
 }
+tasks.named("check").get().dependsOn(tasks.named("runDocShellTests"))
 
 
 // Utilities
