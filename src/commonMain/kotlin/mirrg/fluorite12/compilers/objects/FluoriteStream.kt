@@ -11,15 +11,12 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     OperatorMethod.TO_NUMBER.methodName to FluoriteFunction { arguments ->
-                        var intSum = 0
-                        var doubleSum = 0.0
+                        var sum: FluoriteValue? = null
                         (arguments[0] as FluoriteStream).collect { item ->
-                            when (val number = item.toFluoriteNumber()) {
-                                is FluoriteInt -> intSum += number.value
-                                is FluoriteDouble -> doubleSum += number.value
-                            }
+                            val number = item.toFluoriteNumber()
+                            sum = sum?.callMethod(OperatorMethod.PLUS.methodName, arrayOf(number)) ?: number
                         }
-                        if (doubleSum == 0.0) FluoriteInt(intSum) else FluoriteDouble(intSum + doubleSum)
+                        sum ?: FluoriteInt.ZERO
                     },
                     OperatorMethod.TO_BOOLEAN.methodName to FluoriteFunction { arguments ->
                         flow {
