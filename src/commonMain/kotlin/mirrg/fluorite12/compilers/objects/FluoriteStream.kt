@@ -34,6 +34,22 @@ class FluoriteStream(val flowProvider: suspend FlowCollector<FluoriteValue>.() -
                         }
                         "$sb".toFluoriteString()
                     },
+                    OperatorMethod.METHOD.methodName to FluoriteFunction { arguments ->
+                        val stream = arguments[0] as FluoriteStream
+                        val method = arguments[1] as FluoriteString
+                        FluoriteFunction { arguments2 ->
+                            FluoriteStream {
+                                stream.collect { item ->
+                                    val result = item.callMethod(method.value, arguments2)
+                                    if (result is FluoriteStream) {
+                                        result.flowProvider(this)
+                                    } else {
+                                        emit(result)
+                                    }
+                                }
+                            }
+                        }
+                    },
                 )
             )
         }

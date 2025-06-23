@@ -1312,6 +1312,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun streamMethod() = runTest {
+        // ストリームの通常メソッド呼び出しは各要素のメソッド呼び出しの結合になる
+        assertEquals("caa,aca,aac", eval(" 'baa', 'aba', 'aab'  | _::replace('b'; 'c')").stream())
+        assertEquals("caa,aca,aac", eval("('baa', 'aba', 'aab')    ::replace('b'; 'c')").stream())
+    }
+
+    @Test
     fun generate() = runTest {
         // GENERATE で関数からストリームを生成する
         """
