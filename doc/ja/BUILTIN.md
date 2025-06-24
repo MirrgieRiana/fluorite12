@@ -316,6 +316,52 @@ $ flc '1, 2, 3, 4, 5 >> CHUNK[2]'
 # [5]
 ```
 
+## `TAKE` ストリームの先頭を取得
+
+`TAKE(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+第2引数のストリームから先頭 `count` 個の要素を取り出したストリームを返します。
+
+```shell
+$ flc '1, 2, 3 >> TAKE[2]'
+# 1
+# 2
+```
+
+## `TAKER` ストリームの末尾を取得
+
+`TAKER(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+第2引数のストリームから末尾 `count` 個の要素を取り出したストリームを返します。
+
+```shell
+$ flc '1, 2, 3 >> TAKER[2]'
+# 2
+# 3
+```
+
+## `DROP` ストリームの先頭を破棄
+
+`DROP(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+第2引数のストリームから先頭 `count` 個の要素を取り除いたストリームを返します。
+
+```shell
+$ flc '1, 2, 3 >> DROP[2]'
+# 3
+```
+
+## `DROPR` ストリームの末尾を破棄
+
+`DROPR(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+第2引数のストリームから末尾 `count` 個の要素を取り除いたストリームを返します。
+
+```shell
+$ flc '1, 2, 3 >> DROPR[2]'
+# 1
+```
+
 ## `REDUCE` ストリームの要素を累積する
 
 `REDUCE(function: VALUE, VALUE -> VALUE; stream: STREAM<VALUE>): VALUE`
