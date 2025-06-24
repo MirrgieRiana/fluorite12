@@ -412,6 +412,63 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("TAKER(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>")
             }
         },
+        "DROP" to FluoriteFunction { arguments ->
+            if (arguments.size == 2) {
+                val count = arguments[0].toFluoriteNumber().roundToInt()
+                require(count >= 0)
+                val stream = arguments[1]
+                FluoriteStream {
+                    val flow = flow {
+                        if (stream is FluoriteStream) {
+                            stream.collect { item ->
+                                emit(item)
+                            }
+                        } else {
+                            emit(stream)
+                        }
+                    }
+
+                    var remaining = count
+                    flow.collect { item ->
+                        if (remaining > 0) {
+                            remaining--
+                        } else {
+                            emit(item)
+                        }
+                    }
+                }
+            } else {
+                usage("DROP(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>")
+            }
+        },
+        "DROPR" to FluoriteFunction { arguments ->
+            if (arguments.size == 2) {
+                val count = arguments[0].toFluoriteNumber().roundToInt()
+                require(count >= 0)
+                val stream = arguments[1]
+                FluoriteStream {
+                    val flow = flow {
+                        if (stream is FluoriteStream) {
+                            stream.collect { item ->
+                                emit(item)
+                            }
+                        } else {
+                            emit(stream)
+                        }
+                    }
+
+                    val deque = ArrayDeque<FluoriteValue>()
+                    flow.collect { item ->
+                        deque += item
+                        if (deque.size > count) {
+                            emit(deque.removeFirst())
+                        }
+                    }
+                }
+            } else {
+                usage("DROPR(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>")
+            }
+        },
         "SLEEP" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 val time = arguments[0] as FluoriteNumber

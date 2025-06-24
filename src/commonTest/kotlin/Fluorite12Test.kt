@@ -995,14 +995,28 @@ class Fluorite12Test {
     @Test
     fun takeTest() = runTest {
         assertEquals("1,2", eval("TAKE(2; 1, 2, 3)").stream()) // TAKE で先頭を取得
+        assertEquals("1,2", eval("TAKE(2; 1, 2)").stream()) // 要素が丁度の場合はそのまま返す
         assertEquals("1", eval("TAKE(2; 1)").stream()) // 要素が足りない場合はある分だけ返す
         assertEquals("", eval("TAKE(0; 1, 2)").stream()) // 0個取得の場合は空ストリームになる
         assertEquals("", eval("TAKE(2; ,)").stream()) // 空ストリームの場合、空ストリームになる
 
         assertEquals("2,3", eval("TAKER(2; 1, 2, 3)").stream()) // TAKER で末尾を取得
+        assertEquals("1,2", eval("TAKER(2; 1, 2)").stream()) // 要素が丁度の場合はそのまま返す
         assertEquals("1", eval("TAKER(2; 1)").stream()) // 要素が足りない場合はある分だけ返す
         assertEquals("", eval("TAKER(0; 1, 2)").stream()) // 0個取得の場合は空ストリームになる
         assertEquals("", eval("TAKER(2; ,)").stream()) // 空ストリームの場合、空ストリームになる
+
+        assertEquals("3", eval("DROP(2; 1, 2, 3)").stream()) // DROP で先頭を破棄
+        assertEquals("", eval("DROP(2; 1, 2)").stream()) // 要素が丁度の場合は空ストリームになる
+        assertEquals("", eval("DROP(2; 1)").stream()) // 要素が足りない場合は空ストリームになる
+        assertEquals("1,2", eval("DROP(0; 1, 2)").stream()) // 0個破棄の場合は元のストリームになる
+        assertEquals("", eval("DROP(2; ,)").stream()) // 空ストリームの場合、空ストリームになる
+
+        assertEquals("1", eval("DROPR(2; 1, 2, 3)").stream()) // DROPR で末尾を破棄
+        assertEquals("", eval("DROPR(2; 1, 2)").stream()) // 要素が丁度の場合は空ストリームになる
+        assertEquals("", eval("DROPR(2; 1)").stream()) // 要素が足りない場合は空ストリームになる
+        assertEquals("1,2", eval("DROPR(0; 1, 2)").stream()) // 0個破棄の場合は元のストリームになる
+        assertEquals("", eval("DROPR(2; ,)").stream()) // 空ストリームの場合、空ストリームになる
     }
 
     @Test
