@@ -264,3 +264,5 @@ fun Int.toFluoriteIntAsCompared(): FluoriteInt {
         else -> FluoriteInt.ONE
     }
 }
+
+object IterationAborted : Throwable()

@@ -1,6 +1,8 @@
 package mirrg.fluorite12.mounts
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import mirrg.fluorite12.IterationAborted
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteDouble
@@ -349,28 +351,65 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("CHUNK(size: NUMBER; stream: STREAM<VALUE>): STREAM<ARRAY<VALUE>>")
             }
         },
-        "HEAD" to FluoriteFunction { arguments ->
+        "TAKE" to FluoriteFunction { arguments ->
             if (arguments.size == 2) {
                 val count = arguments[0].toFluoriteNumber().roundToInt()
                 require(count >= 0)
                 val stream = arguments[1]
                 FluoriteStream {
-                    var remaining = count
-                    if (stream is FluoriteStream) {
-                        stream.collect { item ->
-                            if (remaining > 0) {
+                    val flow = flow {
+                        if (stream is FluoriteStream) {
+                            stream.collect { item ->
                                 emit(item)
-                                remaining--
                             }
-                        }
-                    } else {
-                        if (remaining > 0) {
+                        } else {
                             emit(stream)
                         }
                     }
+
+                    if (count <= 0) return@FluoriteStream
+                    var remaining = count
+                    try {
+                        flow.collect { item ->
+                            emit(item)
+                            remaining--
+                            if (remaining <= 0) throw IterationAborted
+                        }
+                    } catch (_: IterationAborted) {
+
+                    }
                 }
             } else {
-                usage("HEAD(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>")
+                usage("TAKE(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>")
+            }
+        },
+        "TAKER" to FluoriteFunction { arguments ->
+            if (arguments.size == 2) {
+                val count = arguments[0].toFluoriteNumber().roundToInt()
+                require(count >= 0)
+                val stream = arguments[1]
+                FluoriteStream {
+                    val flow = flow {
+                        if (stream is FluoriteStream) {
+                            stream.collect { item ->
+                                emit(item)
+                            }
+                        } else {
+                            emit(stream)
+                        }
+                    }
+
+                    val deque = ArrayDeque<FluoriteValue>()
+                    flow.collect { item -> // count == 0 の場合でもイテレーション自体はする
+                        deque += item
+                        if (deque.size > count) deque.removeFirst()
+                    }
+                    deque.forEach { item ->
+                        emit(item)
+                    }
+                }
+            } else {
+                usage("TAKER(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>")
             }
         },
         "SLEEP" to FluoriteFunction { arguments ->
