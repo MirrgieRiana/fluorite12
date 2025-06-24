@@ -316,6 +316,18 @@ $ flc '1, 2, 3, 4, 5 >> CHUNK[2]'
 # [5]
 ```
 
+## `HEAD` ストリームの先頭を取得
+
+`HEAD(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+第2引数のストリームから先頭 `count` 個の要素を取り出したストリームを返します。
+
+```shell
+$ flc '1, 2, 3 >> HEAD[2]'
+# 1
+# 2
+```
+
 ## `REDUCE` ストリームの要素を累積する
 
 `REDUCE(function: VALUE, VALUE -> VALUE; stream: STREAM<VALUE>): VALUE`

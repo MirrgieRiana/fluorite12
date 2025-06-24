@@ -993,6 +993,14 @@ class Fluorite12Test {
     }
 
     @Test
+    fun headTest() = runTest {
+        assertEquals("1,2", eval("HEAD(2; 1, 2, 3)").stream()) // HEAD で先頭を取得
+        assertEquals("1", eval("HEAD(2; 1)").stream()) // 要素が足りない場合はある分だけ返す
+        assertEquals("", eval("HEAD(0; 1, 2)").stream()) // 0個取得の場合は空ストリームになる
+        assertEquals("", eval("HEAD(2; ,)").stream()) // 空ストリームの場合、空ストリームになる
+    }
+
+    @Test
     fun keysValuesTest() = runTest {
         assertEquals("a,b,c", eval("KEYS({a: 1; b: 2; c: 3})").stream()) // KEYS でオブジェクトのキーを得る
         assertEquals("1,2,3", eval("VALUES({a: 1; b: 2; c: 3})").stream()) // VALUES でオブジェクトの値を得る

@@ -349,6 +349,30 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("CHUNK(size: NUMBER; stream: STREAM<VALUE>): STREAM<ARRAY<VALUE>>")
             }
         },
+        "HEAD" to FluoriteFunction { arguments ->
+            if (arguments.size == 2) {
+                val count = arguments[0].toFluoriteNumber().roundToInt()
+                require(count >= 0)
+                val stream = arguments[1]
+                FluoriteStream {
+                    var remaining = count
+                    if (stream is FluoriteStream) {
+                        stream.collect { item ->
+                            if (remaining > 0) {
+                                emit(item)
+                                remaining--
+                            }
+                        }
+                    } else {
+                        if (remaining > 0) {
+                            emit(stream)
+                        }
+                    }
+                }
+            } else {
+                usage("HEAD(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>")
+            }
+        },
         "SLEEP" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 val time = arguments[0] as FluoriteNumber
