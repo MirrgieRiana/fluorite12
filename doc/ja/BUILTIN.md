@@ -362,6 +362,18 @@ $ flc '1, 2, 3 >> DROPR[2]'
 # 1
 ```
 
+## `FILTER` ストリームを条件で抽出
+
+`FILTER(predicate: VALUE -> BOOLEAN; stream: STREAM<VALUE>): STREAM<VALUE>`
+
+第2引数のストリームの各要素に `predicate` を適用し、その結果が真となった要素のみを含むストリームを返します。
+
+```shell
+$ flc '1, 2, 3, 4, 5 >> FILTER [ x => x % 2 == 0 ]'
+# 2
+# 4
+```
+
 ## `REDUCE` ストリームの要素を累積する
 
 `REDUCE(function: VALUE, VALUE -> VALUE; stream: STREAM<VALUE>): VALUE`
