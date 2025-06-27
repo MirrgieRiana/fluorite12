@@ -82,9 +82,9 @@ $ flc '
 $ flc '
   quicksort := list -> $#list < 2 ? list : (
     pivot  := list.0
-    high   := [list() | _ >  pivot ? _ : (,)]
-    middle := [list() | _ == pivot ? _ : (,)]
-    low    := [list() | _ <  pivot ? _ : (,)]
+    high   := [list() >> FILTER [ _ => _ >  pivot ]]
+    middle := [list() >> FILTER [ _ => _ == pivot ]]
+    low    := [list() >> FILTER [ _ => _ <  pivot ]]
     quicksort(low) + middle + quicksort(high)
   )
   quicksort([3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5])
