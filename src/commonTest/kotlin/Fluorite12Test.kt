@@ -1020,6 +1020,11 @@ class Fluorite12Test {
     }
 
     @Test
+    fun filterTest() = runTest {
+        assertEquals("2,4", eval("1 .. 5 >> FILTER [ x => x %% 2 ]").stream()) // FILTER で条件を満たす要素のみを抽出する
+    }
+
+    @Test
     fun keysValuesTest() = runTest {
         assertEquals("a,b,c", eval("KEYS({a: 1; b: 2; c: 3})").stream()) // KEYS でオブジェクトのキーを得る
         assertEquals("1,2,3", eval("VALUES({a: 1; b: 2; c: 3})").stream()) // VALUES でオブジェクトの値を得る

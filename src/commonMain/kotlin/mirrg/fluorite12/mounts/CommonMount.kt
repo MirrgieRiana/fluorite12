@@ -17,6 +17,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.compareTo
 import mirrg.fluorite12.compilers.objects.invoke
+import mirrg.fluorite12.compilers.objects.toBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
@@ -467,6 +468,27 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 }
             } else {
                 usage("DROPR(count: INT; stream: STREAM<VALUE>): STREAM<VALUE>")
+            }
+        },
+        "FILTER" to FluoriteFunction { arguments ->
+            if (arguments.size == 2) {
+                val predicate = arguments[0]
+                val stream = arguments[1]
+                FluoriteStream {
+                    if (stream is FluoriteStream) {
+                        stream.collect { item ->
+                            if (predicate.invoke(arrayOf(item)).toBoolean()) {
+                                emit(item)
+                            }
+                        }
+                    } else {
+                        if (predicate.invoke(arrayOf(stream)).toBoolean()) {
+                            emit(stream)
+                        }
+                    }
+                }
+            } else {
+                usage("FILTER(predicate: VALUE -> BOOLEAN; stream: STREAM<VALUE>): STREAM<VALUE>")
             }
         },
         "SLEEP" to FluoriteFunction { arguments ->
