@@ -360,7 +360,7 @@ class Fluorite12Test {
 
         assertEquals(false, eval("?(FALSE, FALSE, FALSE)").boolean) // ストリームは各要素のORを取る
         assertEquals(true, eval("?(FALSE, TRUE, FALSE)").boolean) // 1個でもTRUEがあればTRUE
-        assertEquals(false, eval("?(,)").boolean) // 空ストリームはFALSE
+        assertEquals(false, eval("?EMPTY").boolean) // 空ストリームはFALSE
 
 
         assertEquals(false, eval("!TRUE").boolean) // TRUEはFALSE
@@ -704,7 +704,7 @@ class Fluorite12Test {
         assertEquals(2.0, eval(""" SQRT << SQRT << 16 """).double, 0.001) // << を並べると、右から左に実行される
 
         // パイプの連結
-        assertEquals("55:33:11", eval(""" JOIN[":"] << 1 .. 5 | _ %% 2 ? (,) : _ | _ & _ >> REVERSE """).string) // TODO FILTER [_ %% 2]
+        assertEquals("55:33:11", eval(""" JOIN[":"] << 1 .. 5 >> FILTER[x -> !(x %% 2)] | _ & _ >> REVERSE """).string)
 
         // パイプと代入系演算子は相互に右優先結合だが、パイプ同士の連結部分だけは左優先結合になる
         assertEquals("1-21-2", eval("x := 0; f := s -> s >> SPLIT[','] >> JOIN['-'] | x = _ | _ * 2; f('1,2'); x").string)
