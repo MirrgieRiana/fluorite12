@@ -879,9 +879,22 @@ class Fluorite12Test {
     @Test
     fun divFunctionTest() = runTest {
         assertEquals(3, eval("DIV(10; 3)").int) // DIV関数は小数点以下を絶対値の小さい方に切り捨てる
-        assertEquals(-3, eval("DIV(10; -3)").int) // 負の場合は符号だけが変わる
-        assertEquals(-3, eval("DIV(-10; 3)").int) // 負の場合は符号だけが変わる
-        assertEquals(3, eval("DIV(-10; -3)").int) // 負の場合は符号だけが変わる
+
+        // 負の場合は符号だけが変わる
+        assertEquals(3, eval("DIV(10; 3)").int)
+        assertEquals(-3, eval("DIV(10; -3)").int)
+        assertEquals(-3, eval("DIV(-10; 3)").int)
+        assertEquals(3, eval("DIV(-10; -3)").int)
+
+        // 浮動小数点の場合も整数化する
+        assertEquals(3, eval("DIV(10; 3)").int)
+        assertEquals(3.0, eval("DIV(10; 3.0)").double)
+        assertEquals(3.0, eval("DIV(10.0; 3)").double)
+        assertEquals(3.0, eval("DIV(10.0; 3.0)").double)
+        assertEquals(-3, eval("DIV(-10; 3)").int)
+        assertEquals(-3.0, eval("DIV(-10; 3.0)").double)
+        assertEquals(-3.0, eval("DIV(-10.0; 3)").double)
+        assertEquals(-3.0, eval("DIV(-10.0; 3.0)").double)
     }
 
     @Test

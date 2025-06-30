@@ -84,13 +84,13 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 when (left) {
                     is FluoriteInt -> when (right) {
                         is FluoriteInt -> FluoriteInt(left.value / right.value)
-                        is FluoriteDouble -> FluoriteDouble(left.value / right.value)
+                        is FluoriteDouble -> FluoriteDouble((left.value / right.value).let { it - it.rem(1.0) })
                         else -> usage("DIV(x: NUMBER; y: NUMBER): NUMBER")
                     }
 
                     is FluoriteDouble -> when (right) {
-                        is FluoriteInt -> FluoriteDouble(left.value / right.value)
-                        is FluoriteDouble -> FluoriteDouble(left.value / right.value)
+                        is FluoriteInt -> FluoriteDouble((left.value / right.value).let { it - it.rem(1.0) })
+                        is FluoriteDouble -> FluoriteDouble((left.value / right.value).let { it - it.rem(1.0) })
                         else -> usage("DIV(x: NUMBER; y: NUMBER): NUMBER")
                     }
 
