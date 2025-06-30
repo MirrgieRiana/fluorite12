@@ -77,6 +77,29 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 else -> usage("FLOOR(number: NUMBER): INTEGER")
             }
         },
+        "DIV" to FluoriteFunction { arguments ->
+            if (arguments.size == 2) {
+                val left = arguments[0]
+                val right = arguments[1]
+                when (left) {
+                    is FluoriteInt -> when (right) {
+                        is FluoriteInt -> FluoriteInt(left.value / right.value)
+                        is FluoriteDouble -> FluoriteDouble(left.value / right.value)
+                        else -> usage("DIV(x: NUMBER; y: NUMBER): NUMBER")
+                    }
+
+                    is FluoriteDouble -> when (right) {
+                        is FluoriteInt -> FluoriteDouble(left.value / right.value)
+                        is FluoriteDouble -> FluoriteDouble(left.value / right.value)
+                        else -> usage("DIV(x: NUMBER; y: NUMBER): NUMBER")
+                    }
+
+                    else -> usage("DIV(x: NUMBER; y: NUMBER): NUMBER")
+                }
+            } else {
+                usage("DIV(x: NUMBER; y: NUMBER): NUMBER")
+            }
+        },
         "SQRT" to FluoriteFunction { arguments ->
             when (arguments.size) {
                 1 -> FluoriteDouble(sqrt((arguments[0] as FluoriteNumber).toDouble()))

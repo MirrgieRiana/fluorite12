@@ -877,6 +877,14 @@ class Fluorite12Test {
     }
 
     @Test
+    fun divFunctionTest() = runTest {
+        assertEquals(3, eval("DIV(10; 3)").int) // DIV関数は小数点以下を絶対値の小さい方に切り捨てる
+        assertEquals(-3, eval("DIV(10; -3)").int) // 負の場合は符号だけが変わる
+        assertEquals(-3, eval("DIV(-10; 3)").int) // 負の場合は符号だけが変わる
+        assertEquals(3, eval("DIV(-10; -3)").int) // 負の場合は符号だけが変わる
+    }
+
+    @Test
     fun randomFunctionTest() = runTest {
         val random = eval("RAND")
 
