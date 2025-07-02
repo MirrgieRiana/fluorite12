@@ -53,6 +53,17 @@ $ flc 'FLOOR(1.5)'
 # 1
 ```
 
+## `DIV` 除算の整数部
+
+`DIV(x: NUMBER; y: NUMBER): NUMBER`
+
+`x` を `y` で割り、その結果の整数部分を返します。
+
+```shell
+$ flc 'DIV(10; 3)'
+# 3
+```
+
 ## `SQRT` 平方根の取得
 
 `SQRT(number: NUMBER): NUMBER`

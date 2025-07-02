@@ -10863,13 +10863,16 @@
           display: "flex",
           height: "100%",
           boxSizing: "border-box",
-          insetInlineStart: 0,
-          zIndex: 200
+          zIndex: 200,
       },
+      ".cm-gutters-before": { insetInlineStart: 0 },
+      ".cm-gutters-after": { insetInlineEnd: 0 },
       "&light .cm-gutters": {
           backgroundColor: "#f5f5f5",
           color: "#6c6c6c",
-          borderRight: "1px solid #ddd"
+          border: "0px solid #ddd",
+          "&.cm-gutters-before": { borderRightWidth: "1px" },
+          "&.cm-gutters-after": { borderLeftWidth: "1px" },
       },
       "&dark .cm-gutters": {
           backgroundColor: "#333338",
@@ -11060,7 +11063,7 @@
               else
                   this.flush();
           });
-          if (window.EditContext && view.constructor.EDIT_CONTEXT !== false &&
+          if (window.EditContext && browser.android && view.constructor.EDIT_CONTEXT !== false &&
               // Chrome <126 doesn't support inverted selections in edit context (#1392)
               !(browser.chrome && browser.chrome_version < 126)) {
               this.editContext = new EditContextManager(view);
@@ -14896,7 +14899,8 @@
       lineMarkerChange: null,
       initialSpacer: null,
       updateSpacer: null,
-      domEventHandlers: {}
+      domEventHandlers: {},
+      side: "before"
   };
   const activeGutters = /*@__PURE__*/Facet.define();
   /**
@@ -14928,15 +14932,20 @@
   const gutterView = /*@__PURE__*/ViewPlugin.fromClass(class {
       constructor(view) {
           this.view = view;
+          this.domAfter = null;
           this.prevViewport = view.viewport;
           this.dom = document.createElement("div");
-          this.dom.className = "cm-gutters";
+          this.dom.className = "cm-gutters cm-gutters-before";
           this.dom.setAttribute("aria-hidden", "true");
           this.dom.style.minHeight = (this.view.contentHeight / this.view.scaleY) + "px";
           this.gutters = view.state.facet(activeGutters).map(conf => new SingleGutterView(view, conf));
-          for (let gutter of this.gutters)
-              this.dom.appendChild(gutter.dom);
           this.fixed = !view.state.facet(unfixGutters);
+          for (let gutter of this.gutters) {
+              if (gutter.config.side == "after")
+                  this.getDOMAfter().appendChild(gutter.dom);
+              else
+                  this.dom.appendChild(gutter.dom);
+          }
           if (this.fixed) {
               // FIXME IE11 fallback, which doesn't support position: sticky,
               // by using position: relative + event handlers that realign the
@@ -14945,6 +14954,17 @@
           }
           this.syncGutters(false);
           view.scrollDOM.insertBefore(this.dom, view.contentDOM);
+      }
+      getDOMAfter() {
+          if (!this.domAfter) {
+              this.domAfter = document.createElement("div");
+              this.domAfter.className = "cm-gutters cm-gutters-after";
+              this.domAfter.setAttribute("aria-hidden", "true");
+              this.domAfter.style.minHeight = (this.view.contentHeight / this.view.scaleY) + "px";
+              this.domAfter.style.position = this.fixed ? "sticky" : "";
+              this.view.scrollDOM.appendChild(this.domAfter);
+          }
+          return this.domAfter;
       }
       update(update) {
           if (this.updateGutters(update)) {
@@ -14956,18 +14976,26 @@
               this.syncGutters(vpOverlap < (vpB.to - vpB.from) * 0.8);
           }
           if (update.geometryChanged) {
-              this.dom.style.minHeight = (this.view.contentHeight / this.view.scaleY) + "px";
+              let min = (this.view.contentHeight / this.view.scaleY) + "px";
+              this.dom.style.minHeight = min;
+              if (this.domAfter)
+                  this.domAfter.style.minHeight = min;
           }
           if (this.view.state.facet(unfixGutters) != !this.fixed) {
               this.fixed = !this.fixed;
               this.dom.style.position = this.fixed ? "sticky" : "";
+              if (this.domAfter)
+                  this.domAfter.style.position = this.fixed ? "sticky" : "";
           }
           this.prevViewport = update.view.viewport;
       }
       syncGutters(detach) {
           let after = this.dom.nextSibling;
-          if (detach)
+          if (detach) {
               this.dom.remove();
+              if (this.domAfter)
+                  this.domAfter.remove();
+          }
           let lineClasses = RangeSet.iter(this.view.state.facet(gutterLineClass), this.view.viewport.from);
           let classSet = [];
           let contexts = this.gutters.map(gutter => new UpdateContext(gutter, this.view.viewport, -this.view.documentPadding.top));
@@ -15001,8 +15029,11 @@
           }
           for (let cx of contexts)
               cx.finish();
-          if (detach)
+          if (detach) {
               this.view.scrollDOM.insertBefore(this.dom, after);
+              if (this.domAfter)
+                  this.view.scrollDOM.appendChild(this.domAfter);
+          }
       }
       updateGutters(update) {
           let prev = update.startState.facet(activeGutters), cur = update.state.facet(activeGutters);
@@ -15031,8 +15062,12 @@
                   if (gutters.indexOf(g) < 0)
                       g.destroy();
               }
-              for (let g of gutters)
-                  this.dom.appendChild(g.dom);
+              for (let g of gutters) {
+                  if (g.config.side == "after")
+                      this.getDOMAfter().appendChild(g.dom);
+                  else
+                      this.dom.appendChild(g.dom);
+              }
               this.gutters = gutters;
           }
           return change;
@@ -15041,15 +15076,18 @@
           for (let view of this.gutters)
               view.destroy();
           this.dom.remove();
+          if (this.domAfter)
+              this.domAfter.remove();
       }
   }, {
       provide: plugin => EditorView.scrollMargins.of(view => {
           let value = view.plugin(plugin);
           if (!value || value.gutters.length == 0 || !value.fixed)
               return null;
+          let before = value.dom.offsetWidth * view.scaleX, after = value.domAfter ? value.domAfter.offsetWidth * view.scaleX : 0;
           return view.textDirection == Direction.LTR
-              ? { left: value.dom.offsetWidth * view.scaleX }
-              : { right: value.dom.offsetWidth * view.scaleX };
+              ? { left: before, right: after }
+              : { right: before, left: after };
       })
   });
   function asArray(val) { return (Array.isArray(val) ? val : [val]); }
@@ -15291,7 +15329,8 @@
           let max = formatNumber(update.view, maxLineNumber(update.view.state.doc.lines));
           return max == spacer.number ? spacer : new NumberMarker(max);
       },
-      domEventHandlers: state.facet(lineNumberConfig).domEventHandlers
+      domEventHandlers: state.facet(lineNumberConfig).domEventHandlers,
+      side: "before"
   }));
   /**
   Create a line number gutter extension.
@@ -18890,6 +18929,8 @@
           return Decoration.none;
       },
       update(folded, tr) {
+          if (tr.isUserEvent("delete"))
+              tr.changes.iterChangedRanges((fromA, toA) => folded = clearTouchedFolds(folded, fromA, toA));
           folded = folded.map(tr.changes);
           for (let e of tr.effects) {
               if (e.is(foldEffect) && !foldExists(folded, e.value.from, e.value.to)) {
@@ -18904,17 +18945,8 @@
               }
           }
           // Clear folded ranges that cover the selection head
-          if (tr.selection) {
-              let onSelection = false, { head } = tr.selection.main;
-              folded.between(head, head, (a, b) => { if (a < head && b > head)
-                  onSelection = true; });
-              if (onSelection)
-                  folded = folded.update({
-                      filterFrom: head,
-                      filterTo: head,
-                      filter: (a, b) => b <= head || a >= head
-                  });
-          }
+          if (tr.selection)
+              folded = clearTouchedFolds(folded, tr.selection.main.head);
           return folded;
       },
       provide: f => EditorView.decorations.from(f),
@@ -18936,6 +18968,16 @@
           return Decoration.set(ranges, true);
       }
   });
+  function clearTouchedFolds(folded, from, to = from) {
+      let touched = false;
+      folded.between(from, to, (a, b) => { if (a < to && b > from)
+          touched = true; });
+      return !touched ? folded : folded.update({
+          filterFrom: from,
+          filterTo: to,
+          filter: (a, b) => a >= to || b <= from
+      });
+  }
   function findFold(state, from, to) {
       var _a;
       let found = null;
