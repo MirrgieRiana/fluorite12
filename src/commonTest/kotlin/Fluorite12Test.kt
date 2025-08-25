@@ -1426,4 +1426,17 @@ class Fluorite12Test {
         assertEquals(123, eval("CALL(() -> 123; [])").int) // 空の引数
         assertEquals(6, eval("CALL({m: a, b -> a.v * b}{v: 2}::m; [3])").int) // メソッド参照の呼び出し
     }
+
+    @Test
+    fun firstLastTest() = runTest {
+        // FIRST
+        assertEquals(4, eval("FIRST(4, 5, 6)").int)
+        assertEquals(4, eval("FIRST(4)").int)
+        assertEquals(FluoriteNull, eval("FIRST(,)"))
+
+        // LAST
+        assertEquals(6, eval("LAST(4, 5, 6)").int)
+        assertEquals(6, eval("LAST(6)").int)
+        assertEquals(FluoriteNull, eval("LAST(,)"))
+    }
 }

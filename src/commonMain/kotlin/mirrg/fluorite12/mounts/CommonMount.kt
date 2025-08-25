@@ -347,6 +347,43 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("COUNT(stream: STREAM<VALUE>): INT")
             }
         },
+        "FIRST" to FluoriteFunction { arguments ->
+            if (arguments.size == 1) {
+                val value = arguments[0]
+                if (value is FluoriteStream) {
+                    var result: FluoriteValue? = null
+                    try {
+                        value.collect { item ->
+                            result = item
+                            throw IterationAborted
+                        }
+                    } catch (_: IterationAborted) {
+
+                    }
+                    result ?: FluoriteNull
+                } else {
+                    value
+                }
+            } else {
+                usage("FIRST(stream: STREAM<VALUE>): VALUE")
+            }
+        },
+        "LAST" to FluoriteFunction { arguments ->
+            if (arguments.size == 1) {
+                val value = arguments[0]
+                if (value is FluoriteStream) {
+                    var result: FluoriteValue? = null
+                    value.collect { item ->
+                        result = item
+                    }
+                    result ?: FluoriteNull
+                } else {
+                    value
+                }
+            } else {
+                usage("LAST(stream: STREAM<VALUE>): VALUE")
+            }
+        },
         "REDUCE" to FluoriteFunction { arguments ->
             if (arguments.size == 2) {
                 val function = arguments[0]
@@ -415,7 +452,6 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                             remaining--
                             if (remaining <= 0) throw IterationAborted
                         }
-
                     } catch (_: IterationAborted) {
 
                     }
