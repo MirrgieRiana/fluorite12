@@ -1059,6 +1059,13 @@ class Fluorite12Test {
     }
 
     @Test
+    fun countFunctionTest() = runTest {
+        assertEquals(0, eval("COUNT(,)").int) // 空ストリームなら0
+        assertEquals(1, eval("COUNT(1)").int) // 非ストリームなら1
+        assertEquals(2, eval("COUNT(1, 2)").int) // 複数要素なら個数
+    }
+
+    @Test
     fun reverseTest() = runTest {
         assertEquals("3,2,1", eval("REVERSE(1, 2, 3)").stream()) // REVERSE でストリームを逆順にする
         assertEquals("3:2:1", eval(" '1-2-3' >> SPLIT['-'] >> REVERSE >> JOIN[':'] ").string) // REVERSE はパイプと組み合わせて使うと便利
