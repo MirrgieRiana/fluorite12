@@ -254,6 +254,63 @@ $ flc 'MAX(,)'
 # NULL
 ```
 
+## `COUNT` ストリームの要素数
+
+`COUNT(stream: STREAM<VALUE>): INT`
+
+第1引数のストリームの要素数を返します。
+
+非ストリームの場合、1を返します。
+
+```shell
+$ flc 'COUNT(1, 2, 3)'
+# 3
+
+$ flc 'COUNT(1)'
+# 1
+
+$ flc 'COUNT(,)'
+# 0
+```
+
+## `FIRST` ストリームの先頭要素を取得
+
+`FIRST(stream: STREAM<VALUE>): VALUE`
+
+第1引数のストリームの先頭要素を返します。ストリームが空の場合は `NULL` を返します。
+
+非ストリームを渡した場合は、その値をそのまま返します。
+
+```shell
+$ flc 'FIRST(4, 5, 6)'
+# 4
+
+$ flc 'FIRST(4)'
+# 4
+
+$ flc 'FIRST(,)'
+# NULL
+```
+
+## `LAST` ストリームの末尾要素を取得
+
+`LAST(stream: STREAM<VALUE>): VALUE`
+
+第1引数のストリームの末尾要素を返します。ストリームが空の場合は `NULL` を返します。
+
+非ストリームを渡した場合は、その値をそのまま返します。
+
+```shell
+$ flc 'LAST(4, 5, 6)'
+# 6
+
+$ flc 'LAST(6)'
+# 6
+
+$ flc 'LAST(,)'
+# NULL
+```
+
 ## `SORT` ストリームを昇順にソートする
 
 ストリームを昇順にソートします。
@@ -312,6 +369,44 @@ $ flc '1 .. 9 >> SORT[by: x -> x % 3] >> JOIN[" "]'
 ```shell
 $ flc '3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5 >> SORTR >> JOIN[" "]'
 # 9 6 5 5 5 4 3 3 2 1 1
+```
+
+## `GROUP` ストリームをキーでグループ化
+
+`<T, K> GROUP(by = key_getter: T -> K; stream: T,): [K; [T,]],`
+
+`stream` の各要素に対して `key_getter` を適用し、同一のキーとなる値をエントリー配列にまとめてストリームで返します。
+
+エントリー配列は、最初にそのキーが現れた順序になります。
+
+```shell
+$ flc '
+  {category: "fruit" ; value: "apple" },
+  {category: "fruit" ; value: "banana"},
+  {category: "animal"; value: "cat"   },
+  >> GROUP[by: x -> x.category]
+'
+# [fruit;[{category:fruit;value:apple};{category:fruit;value:banana}]]
+# [animal;[{category:animal;value:cat}]]
+```
+
+---
+
+キーが文字列化可能な場合、 `TO_OBJECT` 関数によって簡単にオブジェクトにまとめることができます。
+
+```shell
+$ flc '
+  object := (
+    {category: "fruit" ; value: "apple" },
+    {category: "fruit" ; value: "banana"},
+    {category: "animal"; value: "cat"   },
+    >> GROUP[by: x -> x.category]
+    >> TO_OBJECT
+  )
+  object.fruit() | _.value
+'
+# apple
+# banana
 ```
 
 ## `CHUNK` ストリームを一定サイズの配列に分割

@@ -8075,6 +8075,29 @@
               return pos;
       }
   }
+  function skipAtomsForSelection(atoms, sel) {
+      let ranges = null;
+      for (let i = 0; i < sel.ranges.length; i++) {
+          let range = sel.ranges[i], updated = null;
+          if (range.empty) {
+              let pos = skipAtomicRanges(atoms, range.from, 0);
+              if (pos != range.from)
+                  updated = EditorSelection.cursor(pos, -1);
+          }
+          else {
+              let from = skipAtomicRanges(atoms, range.from, -1);
+              let to = skipAtomicRanges(atoms, range.to, 1);
+              if (from != range.from || to != range.to)
+                  updated = EditorSelection.range(range.from == range.anchor ? from : to, range.from == range.head ? from : to);
+          }
+          if (updated) {
+              if (!ranges)
+                  ranges = sel.ranges.slice();
+              ranges[i] = updated;
+          }
+      }
+      return ranges ? EditorSelection.create(ranges, sel.mainIndex) : sel;
+  }
   function skipAtoms(view, oldPos, pos) {
       let newPos = skipAtomicRanges(view.state.facet(atomicRanges).map(f => f(view)), pos.from, oldPos.head > pos.from ? -1 : 1);
       return newPos == pos.from ? pos : EditorSelection.cursor(newPos, newPos < pos.from ? 1 : -1);
@@ -8310,6 +8333,8 @@
               if (view.inputState.lastSelectionOrigin == "select")
                   scrollIntoView = true;
               userEvent = view.inputState.lastSelectionOrigin;
+              if (userEvent == "select.pointer")
+                  newSel = skipAtomsForSelection(view.state.facet(atomicRanges).map(f => f(view)), newSel);
           }
           view.dispatch({ selection: newSel, scrollIntoView, userEvent });
           return true;
@@ -8787,31 +8812,8 @@
           if (this.dragging === false)
               this.select(this.lastEvent);
       }
-      skipAtoms(sel) {
-          let ranges = null;
-          for (let i = 0; i < sel.ranges.length; i++) {
-              let range = sel.ranges[i], updated = null;
-              if (range.empty) {
-                  let pos = skipAtomicRanges(this.atoms, range.from, 0);
-                  if (pos != range.from)
-                      updated = EditorSelection.cursor(pos, -1);
-              }
-              else {
-                  let from = skipAtomicRanges(this.atoms, range.from, -1);
-                  let to = skipAtomicRanges(this.atoms, range.to, 1);
-                  if (from != range.from || to != range.to)
-                      updated = EditorSelection.range(range.from == range.anchor ? from : to, range.from == range.head ? from : to);
-              }
-              if (updated) {
-                  if (!ranges)
-                      ranges = sel.ranges.slice();
-                  ranges[i] = updated;
-              }
-          }
-          return ranges ? EditorSelection.create(ranges, sel.mainIndex) : sel;
-      }
       select(event) {
-          let { view } = this, selection = this.skipAtoms(this.style.get(event, this.extend, this.multiple));
+          let { view } = this, selection = skipAtomsForSelection(this.atoms, this.style.get(event, this.extend, this.multiple));
           if (this.mustSelect || !selection.eq(view.state.selection, this.dragging === false))
               this.view.dispatch({
                   selection,
@@ -8963,6 +8965,9 @@
               mouseSel.start(event);
               return mouseSel.dragging === false;
           }
+      }
+      else {
+          view.inputState.setSelectionOrigin("select.pointer");
       }
       return false;
   };
@@ -9368,7 +9373,7 @@
       heightForLine(length) {
           if (!this.lineWrapping)
               return this.lineHeight;
-          let lines = 1 + Math.max(0, Math.ceil((length - this.lineLength) / (this.lineLength - 5)));
+          let lines = 1 + Math.max(0, Math.ceil((length - this.lineLength) / Math.max(1, this.lineLength - 5)));
           return lines * this.lineHeight;
       }
       setDoc(doc) { this.doc = doc; return this; }
@@ -10338,7 +10343,7 @@
                   refresh = true;
               if (refresh || oracle.lineWrapping && Math.abs(contentWidth - this.contentDOMWidth) > oracle.charWidth) {
                   let { lineHeight, charWidth, textHeight } = view.docView.measureTextSize();
-                  refresh = lineHeight > 0 && oracle.refresh(whiteSpace, lineHeight, charWidth, textHeight, contentWidth / charWidth, lineHeights);
+                  refresh = lineHeight > 0 && oracle.refresh(whiteSpace, lineHeight, charWidth, textHeight, Math.max(5, contentWidth / charWidth), lineHeights);
                   if (refresh) {
                       view.docView.minWidth = 0;
                       result |= 16 /* UpdateFlag.Geometry */;
@@ -12288,7 +12293,7 @@
       }
       /**
       Find the line block (see
-      [`lineBlockAt`](https://codemirror.net/6/docs/ref/#view.EditorView.lineBlockAt) at the given
+      [`lineBlockAt`](https://codemirror.net/6/docs/ref/#view.EditorView.lineBlockAt)) at the given
       height, again interpreted relative to the [top of the
       document](https://codemirror.net/6/docs/ref/#view.EditorView.documentTop).
       */
@@ -13074,6 +13079,8 @@
           else if (isChar && (event.altKey || event.metaKey || event.ctrlKey) &&
               // Ctrl-Alt may be used for AltGr on Windows
               !(browser.windows && event.ctrlKey && event.altKey) &&
+              // Alt-combinations on macOS tend to be typed characters
+              !(browser.mac && event.altKey && !(event.ctrlKey || event.metaKey)) &&
               (baseName = base[event.keyCode]) && baseName != name) {
               if (runFor(scopeObj[prefix + modifiers(baseName, event, true)])) {
                   handled = true;
