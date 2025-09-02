@@ -102,6 +102,12 @@ $ flc 'REVERSE(1 .. 3)'
 # 1
 ```
 
+## `SHUFFLE` ストリームをランダムな順序にする
+
+`<T> SHUFFLE(stream: T,): T,`
+
+`stream` の要素をランダムに並べ替えたストリームを返します。
+
 ## `DISTINCT` ストリームの重複要素を除去
 
 `DISTINCT(stream: STREAM<VALUE>): STREAM<VALUE>`
