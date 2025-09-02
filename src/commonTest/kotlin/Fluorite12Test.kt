@@ -1449,4 +1449,12 @@ class Fluorite12Test {
         assertEquals("[1;[14]],[2;[25]],[3;[36]]", eval("14, 25, 36 >> GROUP[by: _ -> _.&.0]").stream()) // 3要素でもよい
         assertEquals("[1;[14;15]],[3;[36]]", eval("14, 15, 36 >> GROUP[by: _ -> _.&.0]").stream()) // 部分的にグループ化されてもよい
     }
+
+    @Test
+    fun shuffleTest() = runTest {
+        assertEquals("1,2,3", eval("1, 2, 3 >> SHUFFLE >> SORT").stream()) // SHUFFLEでシャッフルする
+        assertEquals("1", eval("1, >> SHUFFLE").stream()) // 1要素のストリームはその要素だけのストリームを返す
+        assertEquals(1, eval("1 >> SHUFFLE").int) // 非ストリームはその要素を返す
+        assertEquals("", eval(", >> SHUFFLE").stream()) // 空ストリームは空ストリームを返す
+    }
 }
