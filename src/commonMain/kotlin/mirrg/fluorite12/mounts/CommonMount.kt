@@ -794,6 +794,41 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 }
             }
         },
+        "GROUP" to FluoriteFunction { arguments ->
+            fun error(): Nothing = usage("<T, K> GROUP(by = key_getter: T -> K; stream: T,): [K; [T,]],")
+
+            if (arguments.size != 2) error()
+            val entry = arguments[0]
+            if (entry !is FluoriteArray) error()
+            if (entry.values.size != 2) error()
+            val parameterName = entry.values[0]
+            if (parameterName !is FluoriteString) error()
+            if (parameterName.value != "by") error()
+            val keyGetter = entry.values[1]
+            val stream = arguments[1]
+
+            return@FluoriteFunction FluoriteStream {
+                val groups = mutableMapOf<FluoriteValue, MutableList<FluoriteValue>>()
+
+                suspend fun add(value: FluoriteValue) {
+                    val key = keyGetter.invoke(arrayOf(value))
+                    val list = groups.getOrPut(key) { mutableListOf() }
+                    list += value
+                }
+
+                if (stream is FluoriteStream) {
+                    stream.collect { item ->
+                        add(item)
+                    }
+                } else {
+                    add(stream)
+                }
+
+                groups.forEach { (key, list) ->
+                    emit(FluoriteArray(mutableListOf(key, FluoriteArray(list.toMutableList()))))
+                }
+            }
+        },
     )
 }
 

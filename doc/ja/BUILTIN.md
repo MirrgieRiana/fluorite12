@@ -371,6 +371,44 @@ $ flc '3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5 >> SORTR >> JOIN[" "]'
 # 9 6 5 5 5 4 3 3 2 1 1
 ```
 
+## `GROUP` ストリームをキーでグループ化
+
+`<T, K> GROUP(by = key_getter: T -> K; stream: T,): [K; [T,]],`
+
+`stream` の各要素に対して `key_getter` を適用し、同一のキーとなる値をエントリー配列にまとめてストリームで返します。
+
+エントリー配列は、最初にそのキーが現れた順序になります。
+
+```shell
+$ flc '
+  {category: "fruit" ; value: "apple" },
+  {category: "fruit" ; value: "banana"},
+  {category: "animal"; value: "cat"   },
+  >> GROUP[by: x -> x.category]
+'
+# [fruit;[{category:fruit;value:apple};{category:fruit;value:banana}]]
+# [animal;[{category:animal;value:cat}]]
+```
+
+---
+
+キーが文字列化可能な場合、 `TO_OBJECT` 関数によって簡単にオブジェクトにまとめることができます。
+
+```shell
+$ flc '
+  object := (
+    {category: "fruit" ; value: "apple" },
+    {category: "fruit" ; value: "banana"},
+    {category: "animal"; value: "cat"   },
+    >> GROUP[by: x -> x.category]
+    >> TO_OBJECT
+  )
+  object.fruit() | _.value
+'
+# apple
+# banana
+```
+
 ## `CHUNK` ストリームを一定サイズの配列に分割
 
 `CHUNK(size: NUMBER; stream: STREAM<VALUE>): STREAM<ARRAY<VALUE>>`

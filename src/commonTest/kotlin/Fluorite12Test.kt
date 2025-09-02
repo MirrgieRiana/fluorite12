@@ -1439,4 +1439,14 @@ class Fluorite12Test {
         assertEquals(6, eval("LAST(6)").int)
         assertEquals(FluoriteNull, eval("LAST(,)"))
     }
+
+    @Test
+    fun group() = runTest {
+        assertEquals("[1;[14]],[2;[25]]", eval("14, 25 >> GROUP[by: _ -> _.&.0]").stream()) // GROUPでグループのストリームになる
+        assertEquals("[1;[14]]", eval("14 >> GROUP[by: _ -> _.&.0]").stream()) // 要素が1個でもよい
+        assertEquals("", eval(", >> GROUP[by: _ -> _.&.0]").stream()) // 要素が0個でもよい
+        assertEquals("[1;[14;15]]", eval("14, 15 >> GROUP[by: _ -> _.&.0]").stream()) // すべてが同じグループになってもよい
+        assertEquals("[1;[14]],[2;[25]],[3;[36]]", eval("14, 25, 36 >> GROUP[by: _ -> _.&.0]").stream()) // 3要素でもよい
+        assertEquals("[1;[14;15]],[3;[36]]", eval("14, 15, 36 >> GROUP[by: _ -> _.&.0]").stream()) // 部分的にグループ化されてもよい
+    }
 }
