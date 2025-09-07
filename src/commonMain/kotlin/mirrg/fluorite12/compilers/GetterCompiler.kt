@@ -342,19 +342,7 @@ fun <T : BracketsRightNode> Frame.compileFunctionalAccessToGetter(node: T, isBin
 }
 
 fun Frame.compileFunctionBodyToGetter(arguments: Node, body: Node): Getter {
-    val identifierNodes = when (val commasNode = arguments) {
-        is EmptyNode -> listOf()
-        is CommasNode -> commasNode.nodes
-        is SemicolonsNode -> commasNode.nodes
-        else -> listOf(commasNode)
-    }
-    val variables = identifierNodes.mapNotNull {
-        when (it) {
-            is IdentifierNode -> it.string
-            is EmptyNode -> null
-            else -> throw IllegalArgumentException("Invalid argument: $it")
-        }
-    }
+    val variables = parseArguments(arguments)
     val newFrame = Frame(this)
     val argumentsVariableIndex = newFrame.defineVariable("__")
     val variableIndices = variables.map { newFrame.defineVariable(it) }
@@ -437,19 +425,7 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
             } else {
                 node.left
             }
-            val identifierNodes = when (commasNode) {
-                is EmptyNode -> listOf()
-                is CommasNode -> commasNode.nodes
-                is SemicolonsNode -> commasNode.nodes
-                else -> listOf(commasNode)
-            }
-            val variables = identifierNodes.mapNotNull {
-                when (it) {
-                    is IdentifierNode -> it.string
-                    is EmptyNode -> null
-                    else -> throw IllegalArgumentException("Invalid argument: $it")
-                }
-            }
+            val variables = parseArguments(commasNode)
             val newFrame = Frame(this)
             val argumentsVariableIndex = newFrame.defineVariable("__")
             val variableIndices = variables.map { newFrame.defineVariable(it) }
@@ -485,4 +461,21 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
 
         else -> throw IllegalArgumentException("Unknown operator: A ${node.operator.text} B")
     }
+}
+
+private fun parseArguments(argumentsNode: Node): List<String> {
+    val identifierNodes = when (argumentsNode) {
+        is EmptyNode -> listOf()
+        is CommasNode -> argumentsNode.nodes
+        is SemicolonsNode -> argumentsNode.nodes
+        else -> listOf(argumentsNode)
+    }
+    val strings = identifierNodes.mapNotNull {
+        when (it) {
+            is IdentifierNode -> it.string
+            is EmptyNode -> null
+            else -> throw IllegalArgumentException("Invalid argument: $it")
+        }
+    }
+    return strings
 }
