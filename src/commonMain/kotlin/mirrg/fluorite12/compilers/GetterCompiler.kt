@@ -348,9 +348,12 @@ fun Frame.compileFunctionBodyToGetter(arguments: Node, body: Node): Getter {
         is SemicolonsNode -> commasNode.nodes
         else -> listOf(commasNode)
     }
-    val variables = identifierNodes.map {
-        require(it is IdentifierNode)
-        it.string
+    val variables = identifierNodes.mapNotNull {
+        when (it) {
+            is IdentifierNode -> it.string
+            is EmptyNode -> null
+            else -> throw IllegalArgumentException("Invalid argument: $it")
+        }
     }
     val newFrame = Frame(this)
     val argumentsVariableIndex = newFrame.defineVariable("__")
@@ -440,9 +443,12 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
                 is SemicolonsNode -> commasNode.nodes
                 else -> listOf(commasNode)
             }
-            val variables = identifierNodes.map {
-                require(it is IdentifierNode)
-                it.string
+            val variables = identifierNodes.mapNotNull {
+                when (it) {
+                    is IdentifierNode -> it.string
+                    is EmptyNode -> null
+                    else -> throw IllegalArgumentException("Invalid argument: $it")
+                }
             }
             val newFrame = Frame(this)
             val argumentsVariableIndex = newFrame.defineVariable("__")
