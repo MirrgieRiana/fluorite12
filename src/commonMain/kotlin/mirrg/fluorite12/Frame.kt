@@ -27,6 +27,9 @@ class Environment(val parent: Environment?, variableCount: Int, mountCount: Int)
     } else {
         arrayOf(Array(mountCount) { mapOf() })
     }
+
+    // ラベルテーブル（クロージャ単位で独立）。名前ごとにスタックを持つ。
+    val labelTable: MutableMap<String, MutableList<Any>> = mutableMapOf()
 }
 
 interface Variable {

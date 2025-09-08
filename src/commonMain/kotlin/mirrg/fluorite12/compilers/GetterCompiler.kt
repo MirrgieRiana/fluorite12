@@ -36,6 +36,7 @@ import mirrg.fluorite12.InfixColonNode
 import mirrg.fluorite12.InfixEqualGreaterNode
 import mirrg.fluorite12.InfixEqualNode
 import mirrg.fluorite12.InfixExclamationIdentifierNode
+import mirrg.fluorite12.InfixExclamationNode
 import mirrg.fluorite12.InfixExclamationQuestionNode
 import mirrg.fluorite12.InfixGreaterGreaterNode
 import mirrg.fluorite12.InfixIdentifierNode
@@ -105,6 +106,8 @@ import mirrg.fluorite12.operations.GreaterEqualComparator
 import mirrg.fluorite12.operations.IfGetter
 import mirrg.fluorite12.operations.InstanceOfComparator
 import mirrg.fluorite12.operations.ItemAccessGetter
+import mirrg.fluorite12.operations.LabelBreakGetter
+import mirrg.fluorite12.operations.LabelScopeGetter
 import mirrg.fluorite12.operations.LessComparator
 import mirrg.fluorite12.operations.LessEqualComparator
 import mirrg.fluorite12.operations.LinesGetter
@@ -140,6 +143,8 @@ import mirrg.fluorite12.operations.TryCatchWithVariableGetter
 import mirrg.fluorite12.operations.VariableDefinitionObjectInitializer
 import mirrg.fluorite12.operations.VariableGetter
 import mirrg.fluorite12.text
+import mirrg.fluorite12.InfixExclamationColonNode
+import mirrg.fluorite12.InfixExclamationNode
 
 fun Frame.compileToGetter(node: Node): Getter {
     return when (node) {
@@ -310,7 +315,7 @@ fun Frame.compileToMethodAccessGetter(receiverNode: Node, methodNode: Node, argu
         is IdentifierNode -> {
             val receiverGetter = compileToGetter(receiverNode)
             val name = methodNode.string
-            val variable = getVariable("::$name")
+            val variable = getVariable("::${'$'}name")
             val mountCounts = getMountCounts()
             MethodAccessGetter(receiverGetter, variable, mountCounts, name, argumentGetters, isBinding, isNullSafe)
         }
@@ -321,7 +326,7 @@ fun Frame.compileToMethodAccessGetter(receiverNode: Node, methodNode: Node, argu
             FunctionalMethodAccessGetter(receiverGetter, functionGetter, argumentGetters, isBinding, isNullSafe)
         }
 
-        else -> throw IllegalArgumentException("Must be IdentifierNode or BracketsLiteralSimpleRoundNode: $methodNode")
+        else -> throw IllegalArgumentException("Must be IdentifierNode or BracketsLiteralSimpleRoundNode: ${'$'}methodNode")
     }
 }
 
@@ -459,7 +464,22 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
             FunctionInvocationGetter(functionGetter, listOf(valueGetter))
         }
 
-        else -> throw IllegalArgumentException("Unknown operator: A ${node.operator.text} B")
+        // 追加: ラベル構文
+        is InfixExclamationColonNode -> {
+            require(node.right is IdentifierNode) { "Label must be identifier: ${'$'}{node.right}" }
+            val label = (node.right as IdentifierNode).string
+            val content = compileToGetter(node.left)
+            LabelScopeGetter(label, content)
+        }
+
+        is InfixExclamationNode -> {
+            require(node.left is IdentifierNode) { "Label must be identifier: ${'$'}{node.left}" }
+            val label = (node.left as IdentifierNode).string
+            val valueGetter = compileToGetter(node.right)
+            LabelBreakGetter(label, valueGetter)
+        }
+
+        else -> throw IllegalArgumentException("Unknown operator: A ${'$'}{node.operator.text} B")
     }
 }
 
@@ -474,7 +494,7 @@ private fun parseArguments(argumentsNode: Node): List<String> {
         when (it) {
             is IdentifierNode -> it.string
             is EmptyNode -> null
-            else -> throw IllegalArgumentException("Invalid argument: $it")
+            else -> throw IllegalArgumentException("Invalid argument: ${'$'}it")
         }
     }
     return strings

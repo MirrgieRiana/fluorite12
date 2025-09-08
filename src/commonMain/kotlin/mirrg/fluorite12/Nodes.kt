@@ -113,3 +113,7 @@ enum class FormatterConversion {
     FLOAT,
     STRING,
 }
+
+// Additions for label break syntax
+class InfixExclamationColonNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixExclamationNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)

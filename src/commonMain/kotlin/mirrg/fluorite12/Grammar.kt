@@ -377,12 +377,21 @@ class Fluorite12Grammar : Grammar<Node>() {
         +(minus * greater) map { Pair(it, ::InfixMinusGreaterNode) }, // ->
     )
 
+    // 追加: ラベル制御用演算子 '!:','!'（単体）
+    val labelOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +(exclamation * colon) map { Pair(it, ::InfixExclamationColonNode) }, // !:
+        +(exclamation * -NotParser(equal or exclamation or question or colon)) map { Pair(it, ::InfixExclamationNode) }, // ! (単体)
+    )
+
     val pipeOperatorPart: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by -b * pipeOperator * -b or -s * argumentsOperator * -b
     val executionOperatorPart: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by -b * executionOperator * -b
     val assignmentOperatorPart: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by -s * assignmentOperator * -b
+    // 追加
+    val labelOperatorPart: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by -s * labelOperator * -b
 
     val pipeRight: Parser<Node> by OrCombinator(
         commas * pipeOperatorPart * cachedParser { pipeRight } map { it.t2.second(it.t1, it.t2.first, it.t3) },
+        commas * labelOperatorPart * cachedParser { pipeRight } map { it.t2.second(it.t1, it.t2.first, it.t3) },
         commas * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
         commas,
     )
@@ -393,6 +402,8 @@ class Fluorite12Grammar : Grammar<Node>() {
     val streamRightPart: Parser<(Node) -> Node> by OrCombinator(
         pipeOperatorPart * pipeRight map { { left -> it.t1.second(left, it.t1.first, it.t2) } },
         executionOperatorPart * executionRight map { { left -> it.t1.second(left, it.t1.first, it.t2) } },
+        // 追加
+        labelOperatorPart * pipeRight map { { left -> it.t1.second(left, it.t1.first, it.t2) } },
     )
     val stream: Parser<Node> by OrCombinator(
         commas * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
