@@ -766,6 +766,8 @@ class Fluorite12Test {
         assertEquals(10, eval("(() -> 10)()").int) // () で引数を無しにできる
         assertEquals(10, eval("(a -> a)(10)").int) // 引数がある場合、 ( ) は省略してもよい
         assertEquals(12, eval("(a, b -> a * b)(3; 4)").int) // 引数が複数の場合も ( ) を省略できる
+        assertEquals(12, eval("((, a, , b, ) -> a * b)(3; 4)").int) // 区切り文字を余計に書いてもよい
+        assertEquals(10, eval("(, -> 10)()").int) // , 1個でも引数無しを表せる
 
         assertEquals("[1;2;3;4]", eval("(s -> &[s])(1, 2, 3, 4)").string) // 引数で , を使うとストリームを渡せる
 
