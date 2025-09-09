@@ -73,6 +73,7 @@ suspend fun FluoriteValue.callMethod(method: FluoriteValue, arguments: Array<Flu
 }
 
 suspend fun FluoriteValue.invoke(arguments: Array<FluoriteValue>) = this.callMethod(OperatorMethod.CALL.methodName, arguments)
+suspend fun FluoriteValue.setInvoke(arguments: Array<FluoriteValue>) = run { this.callMethod(OperatorMethod.SET_CALL.methodName, arguments); Unit }
 suspend fun FluoriteValue.bind(arguments: Array<FluoriteValue>) = this.callMethod(OperatorMethod.BIND.methodName, arguments)
 suspend fun FluoriteValue.toFluoriteNumber(): FluoriteNumber = this.callMethod(OperatorMethod.TO_NUMBER.methodName).let { if (it is FluoriteNumber) it else it.toFluoriteNumber() }
 suspend fun FluoriteValue.toFluoriteString(): FluoriteString = this.callMethod(OperatorMethod.TO_STRING.methodName).let { if (it is FluoriteString) it else it.toFluoriteString() }

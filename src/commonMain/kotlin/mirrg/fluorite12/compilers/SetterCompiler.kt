@@ -7,7 +7,7 @@ import mirrg.fluorite12.InfixPeriodNode
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.getVariable
-import mirrg.fluorite12.operations.ArrayItemSetter
+import mirrg.fluorite12.operations.FunctionInvocationSetter
 import mirrg.fluorite12.operations.ItemAccessSetter
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.Setter
@@ -21,7 +21,7 @@ fun Frame.compileToSetter(node: Node): Setter {
             VariableSetter(frameIndex, variableIndex)
         }
 
-        is BracketsRightSimpleRoundNode -> ArrayItemSetter(compileToGetter(node.receiver), compileToGetter(node.body))
+        is BracketsRightSimpleRoundNode -> FunctionInvocationSetter(compileToGetter(node.receiver), createSimpleArgumentGetters(node))
 
         is InfixPeriodNode -> {
             val receiverGetter = compileToGetter(node.left)

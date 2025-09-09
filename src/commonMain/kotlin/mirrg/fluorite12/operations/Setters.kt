@@ -3,11 +3,9 @@ package mirrg.fluorite12.operations
 import mirrg.fluorite12.Environment
 import mirrg.fluorite12.LocalVariable
 import mirrg.fluorite12.OperatorMethod
-import mirrg.fluorite12.compilers.objects.FluoriteArray
-import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.callMethod
-import mirrg.fluorite12.compilers.objects.toFluoriteNumber
+import mirrg.fluorite12.compilers.objects.setInvoke
 
 class VariableSetter(private val frameIndex: Int, private val variableIndex: Int) : Setter {
     override suspend fun evaluate(env: Environment): suspend (FluoriteValue) -> Unit {
@@ -41,15 +39,14 @@ class ItemAccessSetter(private val receiverGetter: Getter, private val keyGetter
     override val code get() = "ItemAccessSetter[${receiverGetter.code};${keyGetter.code}]"
 }
 
-class ArrayItemSetter(private val arrayGetter: Getter, private val indexGetter: Getter) : Setter {
+class FunctionInvocationSetter(private val functionGetter: Getter, private val argumentGetters: List<Getter>) : Setter {
     override suspend fun evaluate(env: Environment): suspend (FluoriteValue) -> Unit {
-        val array = arrayGetter.evaluate(env) as FluoriteArray
-        val index = indexGetter.evaluate(env).toFluoriteNumber().roundToInt()
-        return {
-            if (it is FluoriteStream) throw IllegalArgumentException("Stream assignment is not supported")
-            array.values[index] = it
+        val function = functionGetter.evaluate(env)
+        val arguments = Array(argumentGetters.size) { argumentGetters[it].evaluate(env) }
+        return { value ->
+            function.setInvoke(arguments + value)
         }
     }
 
-    override val code get() = "ArrayItemSetter[${arrayGetter.code};${indexGetter.code}]"
+    override val code get() = "FunctionInvocationSetter[${functionGetter.code};${argumentGetters.code}]"
 }

@@ -8,7 +8,14 @@ class FluoriteFunction(val function: suspend (Array<FluoriteValue>) -> FluoriteV
             FluoriteObject(
                 FluoriteValue.fluoriteClass, mutableMapOf(
                     OperatorMethod.CALL.methodName to FluoriteFunction { arguments ->
-                        (arguments[0] as FluoriteFunction).function(arguments.sliceArray(1 until arguments.size))
+                        val function = arguments[0] as FluoriteFunction
+                        val arguments1 = arguments.sliceArray(1 until arguments.size)
+                        function.function(arguments1)
+                    },
+                    OperatorMethod.SET_CALL.methodName to FluoriteFunction { arguments ->
+                        val function = arguments[0] as FluoriteFunction
+                        val arguments1 = arguments.sliceArray(1 until arguments.size)
+                        function.function(arguments1)
                     },
                     OperatorMethod.BIND.methodName to FluoriteFunction { arguments ->
                         val function = arguments[0] as FluoriteFunction

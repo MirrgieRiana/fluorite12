@@ -5,6 +5,7 @@ enum class OperatorMethod(val methodName: String) {
     SET_PROPERTY("_._="),
     METHOD("_::_"),
     CALL("_()"),
+    SET_CALL("_()=_"),
     BIND("_[]"),
     TO_NUMBER("+_"),
     TO_BOOLEAN("?_"),

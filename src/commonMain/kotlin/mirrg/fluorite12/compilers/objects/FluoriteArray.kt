@@ -45,6 +45,20 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                             else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
                         }
                     },
+                    OperatorMethod.SET_CALL.methodName to FluoriteFunction { arguments ->
+                        val array = arguments[0] as FluoriteArray
+                        when (arguments.size) {
+                            3 -> {
+                                val index = arguments[1].toFluoriteNumber().roundToInt()
+                                val value = arguments[2]
+                                if (value is FluoriteStream) throw IllegalArgumentException("Stream assignment is not supported")
+                                array.values[index] = value
+                                FluoriteNull
+                            }
+
+                            else -> throw IllegalArgumentException("Invalid number of arguments: ${arguments.size}")
+                        }
+                    },
                     OperatorMethod.BIND.methodName to FluoriteFunction { arguments ->
                         val array = arguments[0] as FluoriteArray
                         when (arguments.size) {
