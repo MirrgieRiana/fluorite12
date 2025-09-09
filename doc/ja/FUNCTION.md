@@ -103,6 +103,26 @@ $ flc '
 # 123
 ```
 
+### 引数名の省略
+
+区切り文字で区切られた引数名は省略できます。
+
+その場合、余分な区切り文字は単に無視されます。
+
+```shell
+$ flc '
+  f := (x; ; y) -> x + y
+  f(100; 23)
+'
+# 123
+
+$ flc '
+  f := , -> 123
+  f()
+'
+# 123
+```
+
 ## 引数列
 
 変数 `__` には、与えられたすべての引数が配列で渡されます。
@@ -225,6 +245,48 @@ $ flc -q '
 # FALSE
 # TRUE
 ```
+
+## 関数呼び出しへの代入
+
+関数呼び出しに対して代入すると、関数は、代入される値を引数列の末尾に受け取ります。
+
+関数の戻り値は使われません。
+
+```shell
+$ flc -q '
+  map := {}
+  properties := key, value -> map.(key) = value
+
+  properties("fruit") = "apple"
+
+  OUT << map
+'
+# {fruit:apple}
+```
+
+---
+
+この動作は、 `_()=_` メソッドをオーバーライドすることでカスタマイズできます。
+
+```shell
+$ flc -q '
+  Properties := {
+    `_()=_`: this, key, value -> this.map.(key) = value
+    new: () -> Properties{map: {}}
+  }
+
+  properties := Properties.new()
+
+  properties("fruit") = "apple"
+
+  OUT << properties
+'
+# {map:{fruit:apple}}
+```
+
+---
+
+配列要素への代入も、技術的には関数呼び出しへの代入として実装されています。
 
 # メソッド呼び出し
 
