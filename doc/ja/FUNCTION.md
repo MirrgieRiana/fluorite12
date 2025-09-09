@@ -246,6 +246,48 @@ $ flc -q '
 # TRUE
 ```
 
+## 関数呼び出しへの代入
+
+関数呼び出しに対して代入すると、関数は、代入される値を引数列の末尾に受け取ります。
+
+関数の戻り値は使われません。
+
+```shell
+$ flc -q '
+  map := {}
+  properties := key, value -> map.(key) = value
+
+  properties("fruit") = "apple"
+
+  OUT << map
+'
+# {fruit:apple}
+```
+
+---
+
+この動作は、 `_()=_` メソッドをオーバーライドすることでカスタマイズできます。
+
+```shell
+$ flc -q '
+  Properties := {
+    `_()=_`: this, key, value -> this.map.(key) = value
+    new: () -> Properties{map: {}}
+  }
+
+  properties := Properties.new()
+
+  properties("fruit") = "apple"
+
+  OUT << properties
+'
+# {map:{fruit:apple}}
+```
+
+---
+
+配列要素への代入も、技術的には関数呼び出しへの代入として実装されています。
+
 # メソッド呼び出し
 
 メソッド呼び出し演算子 `receiver::method(argument; ...)` は、 `receiver` の祖先のオブジェクトに登録された関数を、 `receiver` とともに呼び出す演算子です。

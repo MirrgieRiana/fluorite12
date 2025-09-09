@@ -1459,4 +1459,35 @@ class Fluorite12Test {
         assertEquals(1, eval("1 >> SHUFFLE").int) // 非ストリームはその要素を返す
         assertEquals("", eval(", >> SHUFFLE").stream()) // 空ストリームは空ストリームを返す
     }
+
+    @Test
+    fun setCallTest() = runTest {
+
+        // 代入呼び出しができる
+        """
+            value := NULL
+            function := new -> value = new
+            function() = 123
+            value
+        """.let { assertEquals(123, eval(it).int) }
+
+        // 代入値は引数列の最後に受け取る
+        """
+            value := NULL
+            function := a, new -> value = a + new
+            function(100) = 23
+            value
+        """.let { assertEquals(123, eval(it).int) }
+
+        // メソッドのオーバーライドが可能
+        """
+            value := NULL
+            function := {
+                `_()=_`: this, new -> value = new
+            }{}
+            function() = 123
+            value
+        """.let { assertEquals(123, eval(it).int) }
+
+    }
 }
