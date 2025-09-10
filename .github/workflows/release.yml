@@ -36,7 +36,7 @@ jobs:
       - name: ビルド
         run: |
           cd build-dir
-          bash gradlew bundleRelease
+          bash gradlew clean :bundleRelease
 
       - name: リポジトリのチェックアウト（リリース用）
         uses: actions/checkout@v4

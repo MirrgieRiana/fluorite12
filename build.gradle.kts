@@ -114,7 +114,7 @@ tasks.register<Copy>("generateInstallJvm") {
 
 
 tasks.register<Sync>("bundleRelease") {
-    dependsOn("build", ":playground:compilePlayground", "generateInstallNative", "generateInstallJvm")
+    dependsOn("build", ":playground:build", "generateInstallNative", "generateInstallJvm")
     into(layout.buildDirectory.dir("bundleRelease"))
     from("release") {
         rename("gitignore", ".gitignore")

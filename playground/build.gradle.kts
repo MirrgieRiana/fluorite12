@@ -1,22 +1,16 @@
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.Delete
-import org.gradle.api.tasks.Exec
-
-tasks.register<Delete>("cleanPlayground") {
+tasks.register<Delete>("clean") {
     delete("build")
 }
 
-tasks.register<Exec>("compilePlaygroundEditor") {
+tasks.register<Exec>("compileEditor") {
     workingDir = projectDir
     commandLine("bash", "compile-editor.sh")
     standardOutput = System.out
     errorOutput = System.err
 }
 
-tasks.register<Copy>("compilePlayground") {
-    mustRunAfter("cleanPlayground")
-    dependsOn("cleanPlayground")
-    dependsOn("compilePlaygroundEditor")
+tasks.register<Copy>("build") {
+    dependsOn("compileEditor")
     dependsOn(":jsBrowserProductionWebpack")
     from("src") {
         filesMatching("/index.html") {
