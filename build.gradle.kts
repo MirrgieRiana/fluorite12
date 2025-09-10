@@ -87,12 +87,26 @@ tasks.named<Jar>("jvmJar") {
 
 // Playground
 
-tasks.register<Exec>("compilePlayground") {
+tasks.register<Delete>("cleanPlayground") {
+    delete("playground/build")
+}
+
+tasks.register<Exec>("compilePlaygroundEditor") {
     workingDir = file("playground")
     commandLine("bash", "compile.sh")
     standardOutput = System.out
     errorOutput = System.err
+}
+
+tasks.register<Copy>("compilePlayground") {
+    mustRunAfter("cleanPlayground")
+    dependsOn("cleanPlayground")
+    dependsOn("compilePlaygroundEditor")
     dependsOn("jsBrowserProductionWebpack")
+    from("playground/src")
+    from("playground/build/editor")
+    from(layout.buildDirectory.dir("distributions"))
+    into("playground/build/out")
 }
 
 
