@@ -93,7 +93,7 @@ tasks.register<Delete>("cleanPlayground") {
 
 tasks.register<Exec>("compilePlaygroundEditor") {
     workingDir = file("playground")
-    commandLine("bash", "compile.sh")
+    commandLine("bash", "compile-editor.sh")
     standardOutput = System.out
     errorOutput = System.err
 }
