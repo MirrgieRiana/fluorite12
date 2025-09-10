@@ -85,38 +85,6 @@ tasks.named<Jar>("jvmJar") {
 }
 
 
-// Playground
-
-tasks.register<Delete>("cleanPlayground") {
-    delete("playground/build")
-}
-
-tasks.register<Exec>("compilePlaygroundEditor") {
-    workingDir = file("playground")
-    commandLine("bash", "compile-editor.sh")
-    standardOutput = System.out
-    errorOutput = System.err
-}
-
-tasks.register<Copy>("compilePlayground") {
-    mustRunAfter("cleanPlayground")
-    dependsOn("cleanPlayground")
-    dependsOn("compilePlaygroundEditor")
-    dependsOn("jsBrowserProductionWebpack")
-    from("playground/src") {
-        filesMatching("/index.html") {
-            filteringCharset = "UTF-8"
-            filter {
-                it.replace("<%= APP_VERSION %>", System.getenv("APP_VERSION") ?: "nightly build")
-            }
-        }
-    }
-    from("playground/build/editor")
-    from(layout.buildDirectory.dir("distributions"))
-    into("playground/build/out")
-}
-
-
 // Release
 
 tasks.register<Copy>("generateInstallNative") {
@@ -146,7 +114,7 @@ tasks.register<Copy>("generateInstallJvm") {
 
 
 tasks.register<Sync>("bundleRelease") {
-    dependsOn("build", "compilePlayground", "generateInstallNative", "generateInstallJvm")
+    dependsOn("build", ":playground:compilePlayground", "generateInstallNative", "generateInstallJvm")
     into(layout.buildDirectory.dir("bundleRelease"))
     from("release") {
         rename("gitignore", ".gitignore")
