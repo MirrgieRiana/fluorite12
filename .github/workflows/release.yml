@@ -37,6 +37,8 @@ jobs:
         run: |
           cd build-dir
           bash gradlew clean :bundleRelease
+        env:
+          APP_VERSION: ${{ github.ref_name }}
 
       - name: リポジトリのチェックアウト（リリース用）
         uses: actions/checkout@v4
