@@ -103,7 +103,14 @@ tasks.register<Copy>("compilePlayground") {
     dependsOn("cleanPlayground")
     dependsOn("compilePlaygroundEditor")
     dependsOn("jsBrowserProductionWebpack")
-    from("playground/src")
+    from("playground/src") {
+        filesMatching("/index.html") {
+            filteringCharset = "UTF-8"
+            filter {
+                it.replace("<%= APP_VERSION %>", System.getenv("APP_VERSION") ?: "nightly build")
+            }
+        }
+    }
     from("playground/build/editor")
     from(layout.buildDirectory.dir("distributions"))
     into("playground/build/out")
