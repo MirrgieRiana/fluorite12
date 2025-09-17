@@ -253,22 +253,26 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val embeddedString by percent * greater * zeroOrMore(embeddedStringContent) * less * percent map { EmbeddedStringNode(listOf(it.t1, it.t2), it.t3, listOf(it.t4, it.t5)) } // %>string<%
 
-    val arrowRound: Parser<Node> by lRound * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { BracketsLiteralArrowedRoundNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
-    val arrowSquare: Parser<Node> by lSquare * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsLiteralArrowedSquareNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
-    val arrowCurly: Parser<Node> by lCurly * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsLiteralArrowedCurlyNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
+    val arrowRound: Parser<Node> by lRound * -b * optional(cachedParser { label } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { BracketsLiteralArrowedRoundNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
+    val arrowSquare: Parser<Node> by lSquare * -b * optional(cachedParser { label } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsLiteralArrowedSquareNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
+    val arrowCurly: Parser<Node> by lCurly * -b * optional(cachedParser { label } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsLiteralArrowedCurlyNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
     val round: Parser<Node> by lRound * -b * optional(cachedParser { expression } * -b) * rRound map { BracketsLiteralSimpleRoundNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
     val square: Parser<Node> by lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsLiteralSimpleSquareNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
     val curly: Parser<Node> by lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsLiteralSimpleCurlyNode(it.t1, it.t2 ?: EmptyNode, it.t3) }
     val brackets by arrowRound or arrowSquare or arrowCurly or round or square or curly
-    val nonFloatFactor: Parser<Node> by hexadecimal or identifier or quotedIdentifier or integer or rawString or templateString or embeddedString or brackets
-    val factor: Parser<Node> by hexadecimal or identifier or quotedIdentifier or float or integer or rawString or templateString or embeddedString or brackets
+
+    val jump: Parser<Node> by OrCombinator(
+        +(exclamation * exclamation) * -b * cachedParser { commas } map { ThrowNode(it.t1, it.t2) },
+    )
+
+    val nonFloatFactor: Parser<Node> by jump or hexadecimal or identifier or quotedIdentifier or integer or rawString or templateString or embeddedString or brackets
+    val factor: Parser<Node> by jump or hexadecimal or identifier or quotedIdentifier or float or integer or rawString or templateString or embeddedString or brackets
 
     val unaryOperator: Parser<(List<TokenMatch>, Node, Side) -> Node> by OrCombinator(
         +plus map { { prefix, main, side -> UnaryPlusNode(prefix + it, main, side) } },
         +minus map { { prefix, main, side -> UnaryMinusNode(prefix + it, main, side) } },
         +question map { { prefix, main, side -> UnaryQuestionNode(prefix + it, main, side) } },
-        +(exclamation * exclamation) map { { prefix, main, side -> UnaryExclamationExclamationNode(prefix + it, main, side) } },
-        +exclamation map { { prefix, main, side -> UnaryExclamationNode(prefix + it, main, side) } },
+        +exclamation * -NotParser(exclamation) map { { prefix, main, side -> UnaryExclamationNode(prefix + it, main, side) } },
         +ampersand map { { prefix, main, side -> UnaryAmpersandNode(prefix + it, main, side) } },
         +(dollar * sharp) map { { prefix, main, side -> UnaryDollarSharpNode(prefix + it, main, side) } },
         +(dollar * ampersand) map { { prefix, main, side -> UnaryDollarAmpersandNode(prefix + it, main, side) } },
@@ -276,9 +280,9 @@ class Fluorite12Grammar : Grammar<Node>() {
         +at map { { prefix, main, side -> UnaryAtNode(prefix + it, main, side) } },
     )
     val rightOperator: Parser<(Node) -> Node> by OrCombinator(
-        -s * lRound * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> BracketsRightArrowedRoundNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
-        -s * lSquare * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> BracketsRightArrowedSquareNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
-        -s * lCurly * -b * optional(cachedParser { commas } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> BracketsRightArrowedCurlyNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
+        -s * lRound * -b * optional(cachedParser { label } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> BracketsRightArrowedRoundNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
+        -s * lSquare * -b * optional(cachedParser { label } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> BracketsRightArrowedSquareNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
+        -s * lCurly * -b * optional(cachedParser { label } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> BracketsRightArrowedCurlyNode(main, it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) } },
         -s * lRound * -b * optional(cachedParser { expression } * -b) * rRound map { { main -> BracketsRightSimpleRoundNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -s * lSquare * -b * optional(cachedParser { expression } * -b) * rSquare map { { main -> BracketsRightSimpleSquareNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
         -s * lCurly * -b * optional(cachedParser { expression } * -b) * rCurly map { { main -> BracketsRightSimpleCurlyNode(main, it.t1, it.t2 ?: EmptyNode, it.t3) } },
@@ -350,7 +354,6 @@ class Fluorite12Grammar : Grammar<Node>() {
     val condition: Parser<Node> by OrCombinator(
         or * -b * question * -b * cachedParser { condition } * -b * (colon * -NotParser(colon)) * -b * cachedParser { condition } map { ConditionNode(it.t1, it.t2, it.t3, it.t4, it.t5) },
         or * -b * +(question * colon) * -b * cachedParser { condition } map { InfixQuestionColonNode(it.t1, it.t2, it.t3) },
-        or * -b * +(exclamation * question) * -b * cachedParser { condition } map { InfixExclamationQuestionNode(it.t1, it.t2, it.t3) },
         or,
     )
 
@@ -359,6 +362,11 @@ class Fluorite12Grammar : Grammar<Node>() {
         condition map { Pair(listOf(it), listOf()) },
     )
     val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommasNode(it.first, it.second) }
+
+    val labelOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +(exclamation * question) map { Pair(it, ::InfixExclamationQuestionNode) },
+    )
+    val label: Parser<Node> by leftAssociative(commas, -s * labelOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
 
     val pipeOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
         +pipe map { Pair(it, ::InfixPipeNode) }, // |
@@ -382,21 +390,21 @@ class Fluorite12Grammar : Grammar<Node>() {
     val assignmentOperatorPart: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by -s * assignmentOperator * -b
 
     val pipeRight: Parser<Node> by OrCombinator(
-        commas * pipeOperatorPart * cachedParser { pipeRight } map { it.t2.second(it.t1, it.t2.first, it.t3) },
-        commas * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
-        commas,
+        label * pipeOperatorPart * cachedParser { pipeRight } map { it.t2.second(it.t1, it.t2.first, it.t3) },
+        label * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
+        label,
     )
     val executionRight: Parser<Node> by OrCombinator(
-        commas * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
-        commas,
+        label * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
+        label,
     )
     val streamRightPart: Parser<(Node) -> Node> by OrCombinator(
         pipeOperatorPart * pipeRight map { { left -> it.t1.second(left, it.t1.first, it.t2) } },
         executionOperatorPart * executionRight map { { left -> it.t1.second(left, it.t1.first, it.t2) } },
     )
     val stream: Parser<Node> by OrCombinator(
-        commas * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
-        commas * zeroOrMore(streamRightPart) map { it.t2.fold(it.t1) { left, part -> part(left) } },
+        label * assignmentOperatorPart * cachedParser { stream } map { it.t2.second(it.t1, it.t2.first, it.t3) },
+        label * zeroOrMore(streamRightPart) map { it.t2.fold(it.t1) { left, part -> part(left) } },
     )
 
     val semicolonsPart: Parser<Pair<List<Node>, List<TokenMatch>>> by OrCombinator(

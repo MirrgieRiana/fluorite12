@@ -383,7 +383,6 @@ class Fluorite12Test {
         assertEquals(parse("+100"), parse("100.+"))
         assertEquals(parse("-100"), parse("100.-"))
         assertEquals(parse("?100"), parse("100.?"))
-        assertEquals(parse("!!100"), parse("100.!!"))
         assertEquals(parse("!100"), parse("100.!"))
         assertEquals(parse("&100"), parse("100.&"))
         assertEquals(parse("$#100"), parse("100.$#"))

@@ -63,12 +63,12 @@ import mirrg.fluorite12.NodeStringContent
 import mirrg.fluorite12.RawStringNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
+import mirrg.fluorite12.ThrowNode
 import mirrg.fluorite12.UnaryAmpersandNode
 import mirrg.fluorite12.UnaryAtNode
 import mirrg.fluorite12.UnaryDollarAmpersandNode
 import mirrg.fluorite12.UnaryDollarAsteriskNode
 import mirrg.fluorite12.UnaryDollarSharpNode
-import mirrg.fluorite12.UnaryExclamationExclamationNode
 import mirrg.fluorite12.UnaryExclamationNode
 import mirrg.fluorite12.UnaryMinusNode
 import mirrg.fluorite12.UnaryPlusNode
@@ -221,7 +221,7 @@ fun Frame.compileToGetter(node: Node): Getter {
         is UnaryDollarAmpersandNode -> ToJsonGetter(compileToGetter(node.main))
         is UnaryDollarAsteriskNode -> FromJsonGetter(compileToGetter(node.main))
         is UnaryAtNode -> throw IllegalArgumentException("Unknown operator: ${node.operator.text}")
-        is UnaryExclamationExclamationNode -> ThrowGetter(compileToGetter(node.main))
+        is ThrowNode -> ThrowGetter(compileToGetter(node.right))
 
         is BracketsRightArrowedRoundNode -> compileFunctionalAccessToGetter(node, false, ::createArrowedArgumentGetters)
         is BracketsRightArrowedSquareNode -> compileFunctionalAccessToGetter(node, true, ::createArrowedArgumentGetters)
