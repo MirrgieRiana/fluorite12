@@ -21,6 +21,8 @@ actual fun getEnv(): Map<String, String> {
     return result
 }
 
+actual fun hasFreeze() = true
+
 fun main(args: Array<String>) {
     cliMain(args) {
         runBlocking {
