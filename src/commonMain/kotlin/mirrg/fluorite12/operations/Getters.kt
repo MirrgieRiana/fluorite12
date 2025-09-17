@@ -340,6 +340,7 @@ class Returner : Throwable() {
         }
 
         fun recycle(returner: Returner) {
+            if (hasFreeze()) return
             if (unused.size >= 100) return
             unused += returner
         }
