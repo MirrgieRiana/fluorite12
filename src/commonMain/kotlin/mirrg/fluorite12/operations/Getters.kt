@@ -1,5 +1,6 @@
 package mirrg.fluorite12.operations
 
+import hasFreeze
 import mirrg.fluorite12.Environment
 import mirrg.fluorite12.LocalVariable
 import mirrg.fluorite12.OperatorMethod
@@ -331,7 +332,7 @@ class Returner : Throwable() {
         private val unused = mutableListOf<Returner>()
 
         fun allocate(frameIndex: Int, labelIndex: Int, value: FluoriteValue): Returner {
-            val returner = unused.removeLastOrNull() ?: Returner()
+            val returner = if (hasFreeze()) Returner() else unused.removeLastOrNull() ?: Returner()
             returner.frameIndex = frameIndex
             returner.labelIndex = labelIndex
             returner.value = value
