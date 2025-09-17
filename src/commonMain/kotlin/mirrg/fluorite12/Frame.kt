@@ -14,6 +14,8 @@ class Frame(val parent: Frame? = null) {
     val variableIndexTable = mutableMapOf<String, Int>()
     var nextVariableIndex = 0
     var mountCount = 0
+    val labelIndexTable = mutableMapOf<String, Int>()
+    var nextLabelIndex = 0
 }
 
 class Environment(val parent: Environment?, variableCount: Int, mountCount: Int) {
@@ -95,6 +97,22 @@ fun Environment.getMounts(name: String, mountCounts: IntArray): Sequence<Fluorit
 
             currentFrameIndex--
         }
+    }
+}
+
+fun Frame.defineLabel(name: String): Int {
+    val labelIndex = nextLabelIndex
+    labelIndexTable[name] = labelIndex
+    nextLabelIndex++
+    return labelIndex
+}
+
+fun Frame.getLabel(name: String): Pair<Int, Int>? {
+    var currentFrame = this
+    while (true) {
+        val labelIndex = currentFrame.labelIndexTable[name]
+        if (labelIndex != null) return Pair(currentFrame.frameIndex, labelIndex)
+        currentFrame = currentFrame.parent ?: return null
     }
 }
 

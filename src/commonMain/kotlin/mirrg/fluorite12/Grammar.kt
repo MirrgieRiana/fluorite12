@@ -263,6 +263,7 @@ class Fluorite12Grammar : Grammar<Node>() {
 
     val jump: Parser<Node> by OrCombinator(
         +(exclamation * exclamation) * -b * cachedParser { commas } map { ThrowNode(it.t1, it.t2) },
+        identifier * -s * +(exclamation * exclamation) * -b * cachedParser { commas } map { ReturnNode(it.t1, it.t2, it.t3) },
     )
 
     val nonFloatFactor: Parser<Node> by jump or hexadecimal or identifier or quotedIdentifier or integer or rawString or templateString or embeddedString or brackets
@@ -364,6 +365,7 @@ class Fluorite12Grammar : Grammar<Node>() {
     val commas: Parser<Node> by commasPart map { if (it.first.size == 1) it.first.first() else CommasNode(it.first, it.second) }
 
     val labelOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by OrCombinator(
+        +(exclamation * colon) map { Pair(it, ::InfixExclamationColonNode) },
         +(exclamation * question) map { Pair(it, ::InfixExclamationQuestionNode) },
     )
     val label: Parser<Node> by leftAssociative(commas, -s * labelOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }

@@ -1489,4 +1489,67 @@ class Fluorite12Test {
         """.let { assertEquals(123, eval(it).int) }
 
     }
+
+    @Test
+    fun returnTest() = runTest {
+
+        // label !! value でreturnできる
+        """
+            (
+                label !! 123
+                456
+            ) !: label
+        """.let { assertEquals(123, eval(it).int) }
+
+        // !! の結合優先度は左から見るとリテラル系と同等
+        // なので前置単項すらそのままつけれる
+        // 右から見ると , 以下 !: 以上
+        assertEquals("1,2,3", eval("$# label !! 1, 2, 3 !: label").stream())
+
+        // 同名のラベルが複数存在した場合、最も内側のラベルを出る
+        """
+            (
+                (
+                    label !! 1
+                    2
+                ) !: label
+                3
+            ) !: label
+        """.let { assertEquals(3, eval(it).int) }
+
+        // !: はラムダ右辺よりも結合優先度が高い
+        """
+            prime_only := x -> (
+                x == 1 && fail !! "!1"
+                (x != 2 && x %% 2) && fail !! "!2n"
+                (x != 3 && x %% 3) && fail !! "!3n"
+                (x != 5 && x %% 5) && fail !! "!5n"
+                x
+            ) !: fail
+            1 .. 10 | prime_only(_)
+        """.let { assertEquals("!1,2,3,!2n,5,!2n,7,!2n,!3n,!2n", eval(it).stream()) }
+
+        // ラムダの中から外に !! 出来る
+        """
+            run := block -> block()
+            run ( =>
+                return !! 123
+                456
+            ) !: return
+        """.let { assertEquals(123, eval(it).int) }
+
+        // ラムダの中から外に !! 出来る
+        """
+            (
+                1 .. 50 | (
+                    _ % 2 != 0 && next !! NULL // 2で割り切れない！
+                    _ % 3 != 0 && next !! NULL // 3で割り切れない！
+                    _ % 5 != 0 && next !! NULL // 5で割り切れない！
+                    found !! _                 // 2でも3でも5でも割り切れる
+                ) !: next
+                NULL
+            ) !: found
+        """.let { assertEquals(30, eval(it).int) }
+
+    }
 }

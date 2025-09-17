@@ -35,6 +35,7 @@ import mirrg.fluorite12.InfixColonEqualNode
 import mirrg.fluorite12.InfixColonNode
 import mirrg.fluorite12.InfixEqualGreaterNode
 import mirrg.fluorite12.InfixEqualNode
+import mirrg.fluorite12.InfixExclamationColonNode
 import mirrg.fluorite12.InfixExclamationIdentifierNode
 import mirrg.fluorite12.InfixExclamationQuestionNode
 import mirrg.fluorite12.InfixGreaterGreaterNode
@@ -61,6 +62,7 @@ import mirrg.fluorite12.LiteralStringContent
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.NodeStringContent
 import mirrg.fluorite12.RawStringNode
+import mirrg.fluorite12.ReturnNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
 import mirrg.fluorite12.ThrowNode
@@ -75,7 +77,9 @@ import mirrg.fluorite12.UnaryPlusNode
 import mirrg.fluorite12.UnaryQuestionNode
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
+import mirrg.fluorite12.defineLabel
 import mirrg.fluorite12.defineVariable
+import mirrg.fluorite12.getLabel
 import mirrg.fluorite12.getMountCounts
 import mirrg.fluorite12.getVariable
 import mirrg.fluorite12.operations.AndGetter
@@ -105,6 +109,7 @@ import mirrg.fluorite12.operations.GreaterEqualComparator
 import mirrg.fluorite12.operations.IfGetter
 import mirrg.fluorite12.operations.InstanceOfComparator
 import mirrg.fluorite12.operations.ItemAccessGetter
+import mirrg.fluorite12.operations.LabelGetter
 import mirrg.fluorite12.operations.LessComparator
 import mirrg.fluorite12.operations.LessEqualComparator
 import mirrg.fluorite12.operations.LinesGetter
@@ -124,6 +129,7 @@ import mirrg.fluorite12.operations.PipeGetter
 import mirrg.fluorite12.operations.PlusGetter
 import mirrg.fluorite12.operations.PowerGetter
 import mirrg.fluorite12.operations.RangeGetter
+import mirrg.fluorite12.operations.ReturnGetter
 import mirrg.fluorite12.operations.SpaceshipGetter
 import mirrg.fluorite12.operations.StreamConcatenationGetter
 import mirrg.fluorite12.operations.StringConcatenationGetter
@@ -222,6 +228,12 @@ fun Frame.compileToGetter(node: Node): Getter {
         is UnaryDollarAsteriskNode -> FromJsonGetter(compileToGetter(node.main))
         is UnaryAtNode -> throw IllegalArgumentException("Unknown operator: ${node.operator.text}")
         is ThrowNode -> ThrowGetter(compileToGetter(node.right))
+
+        is ReturnNode -> {
+            require(node.left is IdentifierNode)
+            val label = getLabel(node.left.string) ?: throw IllegalArgumentException("No such label: ${node.left.string}")
+            ReturnGetter(label.first, label.second, compileToGetter(node.right))
+        }
 
         is BracketsRightArrowedRoundNode -> compileFunctionalAccessToGetter(node, false, ::createArrowedArgumentGetters)
         is BracketsRightArrowedSquareNode -> compileFunctionalAccessToGetter(node, true, ::createArrowedArgumentGetters)
@@ -403,6 +415,13 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
             } else {
                 TryCatchGetter(compileToGetter(node.left), compileToGetter(rightNode))
             }
+        }
+
+        is InfixExclamationColonNode -> {
+            require(node.right is IdentifierNode)
+            val newFrame = Frame(this)
+            val labelIndex = newFrame.defineLabel(node.right.string)
+            LabelGetter(newFrame.frameIndex, labelIndex, newFrame.compileToGetter(node.left))
         }
 
         is InfixColonNode -> {

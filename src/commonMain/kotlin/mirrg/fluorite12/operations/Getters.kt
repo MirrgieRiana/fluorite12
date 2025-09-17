@@ -326,6 +326,34 @@ class ThrowGetter(private val getter: Getter) : Getter {
     override val code get() = "ThrowGetter[${getter.code}]"
 }
 
+class Returner : Throwable() {
+    companion object {
+        private val unused = mutableListOf<Returner>()
+
+        fun allocate(frameIndex: Int, labelIndex: Int, value: FluoriteValue): Returner {
+            val returner = unused.removeLastOrNull() ?: Returner()
+            returner.frameIndex = frameIndex
+            returner.labelIndex = labelIndex
+            returner.value = value
+            return returner
+        }
+
+        fun recycle(returner: Returner) {
+            if (unused.size >= 100) return
+            unused += returner
+        }
+    }
+
+    var frameIndex: Int = 0
+    var labelIndex: Int = 0
+    var value: FluoriteValue = FluoriteNull
+}
+
+class ReturnGetter(private val frameIndex: Int, private val labelIndex: Int, private val getter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment) = throw Returner.allocate(frameIndex, labelIndex, getter.evaluate(env))
+    override val code get() = "ReturnGetter[$frameIndex;$labelIndex;${getter.code}]"
+}
+
 class ItemAccessGetter(private val receiverGetter: Getter, private val keyGetter: Getter, private val isNullSafe: Boolean) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val receiver = receiverGetter.evaluate(env)
@@ -693,6 +721,25 @@ class TryCatchGetter(private val leftGetter: Getter, private val rightGetter: Ge
     }
 
     override val code get() = "TryCatchGetter[${leftGetter.code};${rightGetter.code}]"
+}
+
+class LabelGetter(private val frameIndex: Int, private val labelIndex: Int, private val getter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        try {
+            val newEnv = Environment(env, 0, 0)
+            return getter.evaluate(newEnv)
+        } catch (returner: Returner) {
+            if (returner.frameIndex == frameIndex && returner.labelIndex == labelIndex) {
+                val value = returner.value
+                Returner.recycle(returner)
+                return value
+            } else {
+                throw returner
+            }
+        }
+    }
+
+    override val code get() = "LabelGetter[$frameIndex;$labelIndex;${getter.code}]"
 }
 
 class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {
