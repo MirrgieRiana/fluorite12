@@ -8,6 +8,7 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven("https://raw.githubusercontent.com/MirrgieRiana/mirrg.kotlin/refs/heads/maven/maven/")
 }
 
 kotlin {
@@ -51,6 +52,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
                 implementation("com.ionspin.kotlin:bignum:0.3.6")
+                implementation("mirrg.kotlin:mirrg.kotlin.helium-kotlin-1-6:4.0.1")
             }
         }
         val commonTest by getting {
