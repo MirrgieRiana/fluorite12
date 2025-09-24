@@ -11,7 +11,7 @@ tasks.register<Exec>("compileEditor") {
 
 tasks.register<Copy>("build") {
     dependsOn("compileEditor")
-    dependsOn(":jsBrowserProductionWebpack")
+    dependsOn(":jsBrowserDistribution")
     from("src") {
         filesMatching("/index.html") {
             filteringCharset = "UTF-8"

@@ -13,11 +13,9 @@ repositories {
 kotlin {
 
     jvm()
-    js {
+    js(IR) {
+        moduleName = "fluorite12"
         browser {
-            dceTask {
-                keep("fluorite12.parse", "fluorite12.evaluate", "fluorite12.log", "fluorite12.stringify")
-            }
             testTask {
                 useMocha {
                     timeout = "10s"
@@ -31,6 +29,8 @@ kotlin {
                 }
             }
         }
+        binaries.executable()
+        binaries.library()
     }
     linuxX64 {
         binaries {
