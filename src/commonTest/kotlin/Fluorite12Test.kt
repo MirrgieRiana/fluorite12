@@ -1552,4 +1552,22 @@ class Fluorite12Test {
         """.let { assertEquals(30, eval(it).int) }
 
     }
+
+    @Test
+    fun objectSetCallTest() = runTest {
+        // オブジェクトの代入呼び出しでキーが作られる
+        """
+            obj := {}
+            obj("a") = 123
+            obj.a
+        """.let { assertEquals(123, eval(it).int) }
+
+        // 既存キーを上書きできる
+        """
+            obj := {a: 789}
+            obj("a") = 456
+            obj("a") = 123
+            obj.a
+        """.let { assertEquals(123, eval(it).int) }
+    }
 }
