@@ -5,7 +5,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
-import mirrg.fluorite12.mounts.createCommonMount
+import mirrg.fluorite12.mounts.createCommonMounts
 import kotlin.js.Promise
 
 actual fun getEnv(): Map<String, String> = throw AssertionError()
@@ -17,8 +17,8 @@ actual fun hasFreeze() = false
 fun evaluate(src: String, quiet: Boolean, out: suspend (FluoriteValue) -> Unit) = GlobalScope.promise {
     val evaluator = Evaluator()
     val defaultBuiltinMounts = listOf(
-        createCommonMount(),
-        createJsMount(out),
+        createCommonMounts(),
+        createJsMounts(out),
     )
     evaluator.defineMounts(defaultBuiltinMounts)
     if (quiet) {

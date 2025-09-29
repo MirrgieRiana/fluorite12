@@ -3,7 +3,7 @@ import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.Evaluator
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteValue
-import mirrg.fluorite12.mounts.createCommonMount
+import mirrg.fluorite12.mounts.createCommonMounts
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -95,8 +95,8 @@ class JsTest {
 
 val defaultBuiltinMounts by lazy {
     listOf(
-        createCommonMount(),
-        createJsMount {},
+        createCommonMounts(),
+        createJsMounts {},
     )
 }
 

@@ -5,7 +5,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.invoke
-import mirrg.fluorite12.mounts.createCommonMount
+import mirrg.fluorite12.mounts.createCommonMounts
 import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -1345,7 +1345,7 @@ class Fluorite12Test {
     @Test
     fun fallbackMethod() = runTest {
         val evaluator = Evaluator()
-        evaluator.defineMounts(listOf(createCommonMount()))
+        evaluator.defineMounts(listOf(createCommonMounts()))
 
         // _::_ でフォールバックメソッドを定義する
         """
@@ -1401,7 +1401,7 @@ class Fluorite12Test {
     @Test
     fun arrowInvoke() = runTest {
         val evaluator = Evaluator()
-        evaluator.defineMounts(listOf(createCommonMount()))
+        evaluator.defineMounts(listOf(createCommonMounts()))
 
         // _::_ でフォールバックメソッドを定義する
         """

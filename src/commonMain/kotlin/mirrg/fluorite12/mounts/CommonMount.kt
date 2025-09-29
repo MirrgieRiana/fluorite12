@@ -32,18 +32,18 @@ import kotlin.random.Random
 
 private fun usage(vararg usages: String): Nothing = throw IllegalArgumentException(listOf("Usage:", *usages.map { "  $it" }.toTypedArray()).joinToString("\n"))
 
-fun createCommonMount(): Map<String, FluoriteValue> {
+fun createCommonMounts(): Map<String, FluoriteValue> {
     return listOf(
-        createClassMount(),
-        createLangMount(),
-        createMathMount(),
-        createConvertMount(),
-        createStreamMount(),
-        createDataConvertMount(),
+        createClassMounts(),
+        createLangMounts(),
+        createMathMounts(),
+        createConvertMounts(),
+        createStreamMounts(),
+        createDataConvertMounts(),
     ).flatMap { it.entries }.associate { it.toPair() }
 }
 
-private fun createClassMount(): Map<String, FluoriteValue> {
+private fun createClassMounts(): Map<String, FluoriteValue> {
     return mapOf(
         "VALUE" to FluoriteValue.fluoriteClass,
         "NULL_CLASS" to FluoriteNull.fluoriteClass,
@@ -58,7 +58,7 @@ private fun createClassMount(): Map<String, FluoriteValue> {
     )
 }
 
-private fun createLangMount(): Map<String, FluoriteValue> {
+private fun createLangMounts(): Map<String, FluoriteValue> {
     return mapOf(
         "NULL" to FluoriteNull,
         "N" to FluoriteNull,
@@ -109,7 +109,7 @@ private fun createLangMount(): Map<String, FluoriteValue> {
     )
 }
 
-private fun createMathMount(): Map<String, FluoriteValue> {
+private fun createMathMounts(): Map<String, FluoriteValue> {
     return mapOf(
         "MATH" to FluoriteObject(
             FluoriteObject.fluoriteClass, mutableMapOf(
@@ -183,7 +183,7 @@ private fun createMathMount(): Map<String, FluoriteValue> {
     )
 }
 
-private fun createConvertMount(): Map<String, FluoriteValue> {
+private fun createConvertMounts(): Map<String, FluoriteValue> {
     return mapOf(
         "TO_STRING" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
@@ -242,7 +242,7 @@ private fun createConvertMount(): Map<String, FluoriteValue> {
     )
 }
 
-private fun createStreamMount(): Map<String, FluoriteValue> {
+private fun createStreamMounts(): Map<String, FluoriteValue> {
     return mapOf(
         "REVERSE" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
@@ -701,7 +701,7 @@ private fun createStreamMount(): Map<String, FluoriteValue> {
     )
 }
 
-private fun createDataConvertMount(): Map<String, FluoriteValue> {
+private fun createDataConvertMounts(): Map<String, FluoriteValue> {
     return mapOf(
         "JSON" to FluoriteFunction { arguments ->
             fun usage(): Nothing = usage("""JSON(["indent": indent: STRING; ]value: VALUE | STREAM<VALUE>): STRING | STREAM<STRING>""")

@@ -4,7 +4,7 @@ import mirrg.fluorite12.Evaluator
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
-import mirrg.fluorite12.mounts.createCommonMount
+import mirrg.fluorite12.mounts.createCommonMounts
 
 fun cliMain(args: Array<String>, runBlocking: (suspend () -> Unit) -> Unit) {
     val options = try {
@@ -21,8 +21,8 @@ fun cliMain(args: Array<String>, runBlocking: (suspend () -> Unit) -> Unit) {
 private suspend fun main(options: Options) {
     val evaluator = Evaluator()
     val defaultBuiltinMounts = listOf(
-        createCommonMount(),
-        createCliMount(options.arguments),
+        createCommonMounts(),
+        createCliMounts(options.arguments),
     )
     evaluator.defineMounts(defaultBuiltinMounts)
     if (options.quiet) {

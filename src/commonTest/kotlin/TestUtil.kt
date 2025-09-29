@@ -15,7 +15,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.toFluoriteString
-import mirrg.fluorite12.mounts.createCommonMount
+import mirrg.fluorite12.mounts.createCommonMounts
 
 fun parse(src: String): String {
     val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
@@ -26,7 +26,7 @@ fun parse(src: String): String {
 
 suspend fun eval(src: String): FluoriteValue {
     val evaluator = Evaluator()
-    evaluator.defineMounts(listOf(createCommonMount()))
+    evaluator.defineMounts(listOf(createCommonMounts()))
     return evaluator.get(src)
 }
 
