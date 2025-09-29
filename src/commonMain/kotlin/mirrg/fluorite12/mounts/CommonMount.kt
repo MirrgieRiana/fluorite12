@@ -18,6 +18,7 @@ import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.compareTo
 import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.compilers.objects.toBoolean
+import mirrg.fluorite12.compilers.objects.toFluoriteBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
@@ -127,6 +128,27 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                     "RAND(): DOUBLE",
                     "RAND([from: NUMBER; ]until: NUMBER): INT",
                 )
+            }
+        },
+        "TO_STRING" to FluoriteFunction { arguments ->
+            if (arguments.size == 1) {
+                arguments[0].toFluoriteString()
+            } else {
+                usage("TO_STRING(value: VALUE): STRING")
+            }
+        },
+        "TO_NUMBER" to FluoriteFunction { arguments ->
+            if (arguments.size == 1) {
+                arguments[0].toFluoriteNumber()
+            } else {
+                usage("TO_NUMBER(value: VALUE): NUMBER")
+            }
+        },
+        "TO_BOOLEAN" to FluoriteFunction { arguments ->
+            if (arguments.size == 1) {
+                arguments[0].toFluoriteBoolean()
+            } else {
+                usage("TO_BOOLEAN(value: VALUE): BOOLEAN")
             }
         },
         "TO_ARRAY" to FluoriteFunction { arguments ->

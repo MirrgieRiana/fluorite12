@@ -524,6 +524,60 @@ $ flc ', >> REDUCE[a, b -> a + b]'
 # NULL
 ```
 
+## `TO_STRING` 文字列化
+
+`TO_STRING(value: VALUE): STRING`
+
+値を文字列に変換します。
+
+`&value` 演算子と同じ動作をします。
+
+```shell
+$ flc 'TO_STRING(123)'
+# 123
+
+$ flc '1, 2, 3 >> TO_STRING'
+# 123
+```
+
+## `TO_NUMBER` 数値化
+
+`TO_NUMBER(value: VALUE): NUMBER`
+
+値を数値に変換します。
+
+`+value` 演算子と同じ動作をします。
+
+```shell
+$ flc 'TO_NUMBER("123")'
+# 123
+
+$ flc '1, 2, 3 >> TO_NUMBER'
+# 6
+
+$ flc 'TO_NUMBER(NULL)'
+# 0
+```
+
+## `TO_BOOLEAN` 論理値化
+
+`TO_BOOLEAN(value: VALUE): BOOLEAN`
+
+値を論理値に変換します。
+
+`?value` 演算子と同じ動作をします。
+
+```shell
+$ flc 'TO_BOOLEAN("")'
+# FALSE
+
+$ flc 'TO_BOOLEAN("a")'
+# TRUE
+
+$ flc 'FALSE, TRUE, FALSE >> TO_BOOLEAN'
+# TRUE
+```
+
 ## `TO_ARRAY` ストリームを配列に変換
 
 `ARRAY(stream: STREAM<VALUE>): ARRAY<VALUE>`
