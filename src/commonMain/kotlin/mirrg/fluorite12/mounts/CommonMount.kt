@@ -26,8 +26,6 @@ import mirrg.fluorite12.compilers.objects.toMutableList
 import mirrg.fluorite12.pop
 import mirrg.fluorite12.toFluoriteValueAsJson
 import mirrg.fluorite12.toJsonFluoriteValue
-import kotlin.math.E
-import kotlin.math.PI
 import kotlin.math.floor
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -84,8 +82,8 @@ private fun createMathMount(): Map<String, FluoriteValue> {
     return mapOf(
         "MATH" to FluoriteObject(
             FluoriteObject.fluoriteClass, mutableMapOf(
-                "PI" to FluoriteDouble(PI),
-                "E" to FluoriteDouble(E),
+                "PI" to FluoriteDouble(3.141592653589793), // TODO kotlinアップデート時に定数に置換し直す
+                "E" to FluoriteDouble(2.718281828459045), // TODO kotlinアップデート時に定数に置換し直す
             )
         ),
         "FLOOR" to FluoriteFunction { arguments ->
