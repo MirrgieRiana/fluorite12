@@ -11585,6 +11585,10 @@
                   this.revertPending(view.state);
                   this.setSelection(view.state);
               }
+              // Work around missed compositionend events. See https://discuss.codemirror.net/t/a/9514
+              if (change.from < change.to && !change.insert.length && view.inputState.composing >= 0 &&
+                  !/[\\p{Alphabetic}\\p{Number}_]/.test(context.text.slice(Math.max(0, e.updateRangeStart - 1), Math.min(context.text.length, e.updateRangeStart + 1))))
+                  this.handlers.compositionend(e);
           };
           this.handlers.characterboundsupdate = e => {
               let rects = [], prev = null;
@@ -11600,10 +11604,11 @@
               let deco = [];
               for (let format of e.getTextFormats()) {
                   let lineStyle = format.underlineStyle, thickness = format.underlineThickness;
-                  if (lineStyle != "None" && thickness != "None") {
+                  if (!/none/i.test(lineStyle) && !/none/i.test(thickness)) {
                       let from = this.toEditorPos(format.rangeStart), to = this.toEditorPos(format.rangeEnd);
                       if (from < to) {
-                          let style = `text-decoration: underline ${lineStyle == "Dashed" ? "dashed " : lineStyle == "Squiggle" ? "wavy " : ""}${thickness == "Thin" ? 1 : 2}px`;
+                          // These values changed from capitalized custom strings to lower-case CSS keywords in 2025
+                          let style = `text-decoration: underline ${/^[a-z]/.test(lineStyle) ? lineStyle + " " : lineStyle == "Dashed" ? "dashed " : lineStyle == "Squiggle" ? "wavy " : ""}${/thin/i.test(thickness) ? 1 : 2}px`;
                           deco.push(Decoration.mark({ attributes: { style } }).range(from, to));
                       }
                   }
@@ -23020,7 +23025,7 @@
   }
   function sortOptions(active, state) {
       let options = [];
-      let sections = null;
+      let sections = null, dynamicSectionScore = null;
       let addOption = (option) => {
           options.push(option);
           let { section } = option.completion;
@@ -23047,13 +23052,24 @@
                   for (let option of a.result.options)
                       if (match = matcher.match(option.label)) {
                           let matched = !option.displayLabel ? match.matched : getMatch ? getMatch(option, match.matched) : [];
-                          addOption(new Option(option, a.source, matched, match.score + (option.boost || 0)));
+                          let score = match.score + (option.boost || 0);
+                          addOption(new Option(option, a.source, matched, score));
+                          if (typeof option.section == "object" && option.section.rank === "dynamic") {
+                              let { name } = option.section;
+                              if (!dynamicSectionScore)
+                                  dynamicSectionScore = Object.create(null);
+                              dynamicSectionScore[name] = Math.max(score, dynamicSectionScore[name] || -1e9);
+                          }
                       }
               }
           }
       if (sections) {
           let sectionOrder = Object.create(null), pos = 0;
-          let cmp = (a, b) => { var _a, _b; return ((_a = a.rank) !== null && _a !== void 0 ? _a : 1e9) - ((_b = b.rank) !== null && _b !== void 0 ? _b : 1e9) || (a.name < b.name ? -1 : 1); };
+          let cmp = (a, b) => {
+              return (a.rank === "dynamic" && b.rank === "dynamic" ? dynamicSectionScore[b.name] - dynamicSectionScore[a.name] : 0) ||
+                  (typeof a.rank == "number" ? a.rank : 1e9) - (typeof b.rank == "number" ? b.rank : 1e9) ||
+                  (a.name < b.name ? -1 : 1);
+          };
           for (let s of sections.sort(cmp)) {
               pos -= 1e5;
               sectionOrder[s.name] = pos;
