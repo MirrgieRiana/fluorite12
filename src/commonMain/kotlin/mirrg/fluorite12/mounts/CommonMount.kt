@@ -39,9 +39,7 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         createMathMount(),
         createConvertMount(),
         createStreamMount(),
-        createTimeMount(),
         createDataConvertMount(),
-        createOtherMount(),
     ).flatMap { it.entries }.associate { it.toPair() }
 }
 
@@ -73,6 +71,39 @@ private fun createLangMount(): Map<String, FluoriteValue> {
         "LOOP" to FluoriteStream {
             while (true) {
                 emit(FluoriteNull)
+            }
+        },
+        "SLEEP" to FluoriteFunction { arguments ->
+            if (arguments.size == 1) {
+                val time = arguments[0] as FluoriteNumber
+                delay(time.toInt().toLong())
+                FluoriteNull
+            } else {
+                usage("SLEEP(milliseconds: NUMBER): NULL")
+            }
+        },
+        "CALL" to FluoriteFunction { arguments ->
+            if (arguments.size != 2) usage("CALL(function: FUNCTION; arguments: ARRAY<VALUE>): VALUE")
+            val function = arguments[0]
+            val argumentsArray = arguments[1] as FluoriteArray
+            function.invoke(argumentsArray.values.toTypedArray())
+        },
+        "GENERATE" to FluoriteFunction { arguments ->
+            if (arguments.size != 1) usage("GENERATE(generator: (yield: (value: VALUE) -> NULL) -> NULL | STREAM): STREAM<VALUE>")
+            val generator = arguments[0]
+            FluoriteStream {
+                val yieldFunction = FluoriteFunction { arguments2 ->
+                    if (arguments2.size != 1) usage("yield(value: VALUE): NULL")
+                    val value = arguments2[0]
+                    emit(value)
+                    FluoriteNull
+                }
+                val result = generator.invoke(arrayOf(yieldFunction))
+                if (result is FluoriteStream) {
+                    result.collect {
+                        // イテレーションは行うがその結果は握りつぶす
+                    }
+                }
             }
         },
     )
@@ -632,18 +663,39 @@ private fun createStreamMount(): Map<String, FluoriteValue> {
                 usage("FILTER(predicate: VALUE -> BOOLEAN; stream: STREAM<VALUE>): STREAM<VALUE>")
             }
         },
-    )
-}
+        "GROUP" to FluoriteFunction { arguments ->
+            fun error(): Nothing = usage("<T, K> GROUP(by = key_getter: T -> K; stream: T,): [K; [T,]],")
 
-private fun createTimeMount(): Map<String, FluoriteValue> {
-    return mapOf(
-        "SLEEP" to FluoriteFunction { arguments ->
-            if (arguments.size == 1) {
-                val time = arguments[0] as FluoriteNumber
-                delay(time.toInt().toLong())
-                FluoriteNull
-            } else {
-                usage("SLEEP(milliseconds: NUMBER): NULL")
+            if (arguments.size != 2) error()
+            val entry = arguments[0]
+            if (entry !is FluoriteArray) error()
+            if (entry.values.size != 2) error()
+            val parameterName = entry.values[0]
+            if (parameterName !is FluoriteString) error()
+            if (parameterName.value != "by") error()
+            val keyGetter = entry.values[1]
+            val stream = arguments[1]
+
+            return@FluoriteFunction FluoriteStream {
+                val groups = mutableMapOf<FluoriteValue, MutableList<FluoriteValue>>()
+
+                suspend fun add(value: FluoriteValue) {
+                    val key = keyGetter.invoke(arrayOf(value))
+                    val list = groups.getOrPut(key) { mutableListOf() }
+                    list += value
+                }
+
+                if (stream is FluoriteStream) {
+                    stream.collect { item ->
+                        add(item)
+                    }
+                } else {
+                    add(stream)
+                }
+
+                groups.forEach { (key, list) ->
+                    emit(FluoriteArray(mutableListOf(key, FluoriteArray(list.toMutableList()))))
+                }
             }
         },
     )
@@ -843,71 +895,6 @@ private fun createDataConvertMount(): Map<String, FluoriteValue> {
                 }
             } else {
                 fromCsv(value)
-            }
-        },
-    )
-}
-
-private fun createOtherMount(): Map<String, FluoriteValue> {
-    return mapOf(
-
-        "CALL" to FluoriteFunction { arguments ->
-            if (arguments.size != 2) usage("CALL(function: FUNCTION; arguments: ARRAY<VALUE>): VALUE")
-            val function = arguments[0]
-            val argumentsArray = arguments[1] as FluoriteArray
-            function.invoke(argumentsArray.values.toTypedArray())
-        },
-        "GENERATE" to FluoriteFunction { arguments ->
-            if (arguments.size != 1) usage("GENERATE(generator: (yield: (value: VALUE) -> NULL) -> NULL | STREAM): STREAM<VALUE>")
-            val generator = arguments[0]
-            FluoriteStream {
-                val yieldFunction = FluoriteFunction { arguments2 ->
-                    if (arguments2.size != 1) usage("yield(value: VALUE): NULL")
-                    val value = arguments2[0]
-                    emit(value)
-                    FluoriteNull
-                }
-                val result = generator.invoke(arrayOf(yieldFunction))
-                if (result is FluoriteStream) {
-                    result.collect {
-                        // イテレーションは行うがその結果は握りつぶす
-                    }
-                }
-            }
-        },
-        "GROUP" to FluoriteFunction { arguments ->
-            fun error(): Nothing = usage("<T, K> GROUP(by = key_getter: T -> K; stream: T,): [K; [T,]],")
-
-            if (arguments.size != 2) error()
-            val entry = arguments[0]
-            if (entry !is FluoriteArray) error()
-            if (entry.values.size != 2) error()
-            val parameterName = entry.values[0]
-            if (parameterName !is FluoriteString) error()
-            if (parameterName.value != "by") error()
-            val keyGetter = entry.values[1]
-            val stream = arguments[1]
-
-            return@FluoriteFunction FluoriteStream {
-                val groups = mutableMapOf<FluoriteValue, MutableList<FluoriteValue>>()
-
-                suspend fun add(value: FluoriteValue) {
-                    val key = keyGetter.invoke(arrayOf(value))
-                    val list = groups.getOrPut(key) { mutableListOf() }
-                    list += value
-                }
-
-                if (stream is FluoriteStream) {
-                    stream.collect { item ->
-                        add(item)
-                    }
-                } else {
-                    add(stream)
-                }
-
-                groups.forEach { (key, list) ->
-                    emit(FluoriteArray(mutableListOf(key, FluoriteArray(list.toMutableList()))))
-                }
             }
         },
     )
