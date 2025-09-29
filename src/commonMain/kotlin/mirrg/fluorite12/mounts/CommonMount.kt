@@ -35,6 +35,19 @@ import kotlin.random.Random
 private fun usage(vararg usages: String): Nothing = throw IllegalArgumentException(listOf("Usage:", *usages.map { "  $it" }.toTypedArray()).joinToString("\n"))
 
 fun createCommonMount(): Map<String, FluoriteValue> {
+    return listOf(
+        createClassMount(),
+        createLangMount(),
+        createMathMount(),
+        createConvertMount(),
+        createStreamMount(),
+        createTimeMount(),
+        createDataConvertMount(),
+        createOtherMount(),
+    ).flatMap { it.entries }.associate { it.toPair() }
+}
+
+private fun createClassMount(): Map<String, FluoriteValue> {
     return mapOf(
         "VALUE" to FluoriteValue.fluoriteClass,
         "NULL_CLASS" to FluoriteNull.fluoriteClass,
@@ -46,7 +59,11 @@ fun createCommonMount(): Map<String, FluoriteValue> {
         "OBJECT" to FluoriteObject.fluoriteClass,
         "FUNCTION" to FluoriteFunction.fluoriteClass,
         "STREAM" to FluoriteStream.fluoriteClass,
+    )
+}
 
+private fun createLangMount(): Map<String, FluoriteValue> {
+    return mapOf(
         "NULL" to FluoriteNull,
         "N" to FluoriteNull,
         "TRUE" to FluoriteBoolean.TRUE,
@@ -60,7 +77,11 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 emit(FluoriteNull)
             }
         },
+    )
+}
 
+private fun createMathMount(): Map<String, FluoriteValue> {
+    return mapOf(
         "MATH" to FluoriteObject(
             FluoriteObject.fluoriteClass, mutableMapOf(
                 "PI" to FluoriteDouble(PI),
@@ -130,6 +151,11 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 )
             }
         },
+    )
+}
+
+private fun createConvertMount(): Map<String, FluoriteValue> {
+    return mapOf(
         "TO_STRING" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 arguments[0].toFluoriteString()
@@ -184,6 +210,11 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("OBJECT(stream: STREAM<ARRAY<STRING; VALUE>>): OBJECT")
             }
         },
+    )
+}
+
+private fun createStreamMount(): Map<String, FluoriteValue> {
+    return mapOf(
         "REVERSE" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 val stream = arguments[0]
@@ -603,6 +634,11 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("FILTER(predicate: VALUE -> BOOLEAN; stream: STREAM<VALUE>): STREAM<VALUE>")
             }
         },
+    )
+}
+
+private fun createTimeMount(): Map<String, FluoriteValue> {
+    return mapOf(
         "SLEEP" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
                 val time = arguments[0] as FluoriteNumber
@@ -612,6 +648,11 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 usage("SLEEP(milliseconds: NUMBER): NULL")
             }
         },
+    )
+}
+
+private fun createDataConvertMount(): Map<String, FluoriteValue> {
+    return mapOf(
         "JSON" to FluoriteFunction { arguments ->
             fun usage(): Nothing = usage("""JSON(["indent": indent: STRING; ]value: VALUE | STREAM<VALUE>): STRING | STREAM<STRING>""")
             val (indent, value) = when (arguments.size) {
@@ -806,6 +847,12 @@ fun createCommonMount(): Map<String, FluoriteValue> {
                 fromCsv(value)
             }
         },
+    )
+}
+
+private fun createOtherMount(): Map<String, FluoriteValue> {
+    return mapOf(
+
         "CALL" to FluoriteFunction { arguments ->
             if (arguments.size != 2) usage("CALL(function: FUNCTION; arguments: ARRAY<VALUE>): VALUE")
             val function = arguments[0]
