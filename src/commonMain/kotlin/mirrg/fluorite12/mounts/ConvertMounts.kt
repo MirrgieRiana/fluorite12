@@ -11,7 +11,7 @@ import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.compilers.objects.toMutableList
 
-fun createConvertMounts(): Map<String, FluoriteValue> {
+fun createConvertMounts(): List<Map<String, FluoriteValue>> {
     return mapOf(
         "TO_STRING" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
@@ -67,5 +67,5 @@ fun createConvertMounts(): Map<String, FluoriteValue> {
                 usage("OBJECT(stream: STREAM<ARRAY<STRING; VALUE>>): OBJECT")
             }
         },
-    )
+    ).let { listOf(it) }
 }

@@ -4,7 +4,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 
 fun usage(vararg usages: String): Nothing = throw IllegalArgumentException(listOf("Usage:", *usages.map { "  $it" }.toTypedArray()).joinToString("\n"))
 
-fun createCommonMounts(): Map<String, FluoriteValue> {
+fun createCommonMounts(): List<Map<String, FluoriteValue>> {
     return listOf(
         createClassMounts(),
         createLangMounts(),
@@ -13,5 +13,5 @@ fun createCommonMounts(): Map<String, FluoriteValue> {
         createStreamMounts(),
         createDataConvertMounts(),
         createStringMounts(),
-    ).flatMap { it.entries }.associate { it.toPair() }
+    ).flatten()
 }

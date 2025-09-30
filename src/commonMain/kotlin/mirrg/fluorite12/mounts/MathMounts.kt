@@ -15,7 +15,7 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 import kotlin.random.Random
 
-fun createMathMounts(): Map<String, FluoriteValue> {
+fun createMathMounts(): List<Map<String, FluoriteValue>> {
     return mapOf(
         "MATH" to FluoriteObject(
             FluoriteObject.fluoriteClass, mutableMapOf(
@@ -111,5 +111,5 @@ fun createMathMounts(): Map<String, FluoriteValue> {
                 )
             }
         },
-    )
+    ).let { listOf(it) }
 }

@@ -10,7 +10,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 
-fun createCliMounts(args: List<String>): Map<String, FluoriteValue> {
+fun createCliMounts(args: List<String>): List<Map<String, FluoriteValue>> {
     return mapOf(
         "ARGS" to FluoriteArray(args.map { it.toFluoriteString() }.toMutableList()),
         "ENV" to FluoriteObject(FluoriteObject.fluoriteClass, getEnv().mapValues { it.value.toFluoriteString() }.toMutableMap()),
@@ -32,5 +32,5 @@ fun createCliMounts(args: List<String>): Map<String, FluoriteValue> {
             }
             FluoriteNull
         },
-    )
+    ).let { listOf(it) }
 }

@@ -21,7 +21,7 @@ import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.compilers.objects.toMutableList
 
-fun createStreamMounts(): Map<String, FluoriteValue> {
+fun createStreamMounts(): List<Map<String, FluoriteValue>> {
     return mapOf(
         "REVERSE" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
@@ -477,5 +477,5 @@ fun createStreamMounts(): Map<String, FluoriteValue> {
                 }
             }
         },
-    )
+    ).let { listOf(it) }
 }

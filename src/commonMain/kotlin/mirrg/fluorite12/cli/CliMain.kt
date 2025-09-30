@@ -23,7 +23,7 @@ private suspend fun main(options: Options) {
     val defaultBuiltinMounts = listOf(
         createCommonMounts(),
         createCliMounts(options.arguments),
-    )
+    ).flatten()
     evaluator.defineMounts(defaultBuiltinMounts)
     if (options.quiet) {
         evaluator.run(options.src)

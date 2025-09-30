@@ -97,7 +97,7 @@ val defaultBuiltinMounts by lazy {
     listOf(
         createCommonMounts(),
         createJsMounts {},
-    )
+    ).flatten()
 }
 
 suspend fun evalJs(src: String): FluoriteValue {

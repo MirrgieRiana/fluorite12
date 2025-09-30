@@ -1370,7 +1370,7 @@ class Fluorite12Test {
     @Test
     fun fallbackMethod() = runTest {
         val evaluator = Evaluator()
-        evaluator.defineMounts(listOf(createCommonMounts()))
+        evaluator.defineMounts(createCommonMounts())
 
         // _::_ でフォールバックメソッドを定義する
         """
@@ -1426,7 +1426,7 @@ class Fluorite12Test {
     @Test
     fun arrowInvoke() = runTest {
         val evaluator = Evaluator()
-        evaluator.defineMounts(listOf(createCommonMounts()))
+        evaluator.defineMounts(createCommonMounts())
 
         // _::_ でフォールバックメソッドを定義する
         """

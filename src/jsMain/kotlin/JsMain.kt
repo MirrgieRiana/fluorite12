@@ -19,7 +19,7 @@ fun evaluate(src: String, quiet: Boolean, out: suspend (FluoriteValue) -> Unit) 
     val defaultBuiltinMounts = listOf(
         createCommonMounts(),
         createJsMounts(out),
-    )
+    ).flatten()
     evaluator.defineMounts(defaultBuiltinMounts)
     if (quiet) {
         evaluator.run(src)

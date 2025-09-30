@@ -11,7 +11,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.invoke
 
-fun createLangMounts(): Map<String, FluoriteValue> {
+fun createLangMounts(): List<Map<String, FluoriteValue>> {
     return mapOf(
         "NULL" to FluoriteNull,
         "N" to FluoriteNull,
@@ -59,5 +59,5 @@ fun createLangMounts(): Map<String, FluoriteValue> {
                 }
             }
         },
-    )
+    ).let { listOf(it) }
 }

@@ -11,7 +11,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 
-fun createClassMounts(): Map<String, FluoriteValue> {
+fun createClassMounts(): List<Map<String, FluoriteValue>> {
     return mapOf(
         "VALUE" to FluoriteValue.fluoriteClass,
         "NULL_CLASS" to FluoriteNull.fluoriteClass,
@@ -23,5 +23,5 @@ fun createClassMounts(): Map<String, FluoriteValue> {
         "OBJECT" to FluoriteObject.fluoriteClass,
         "FUNCTION" to FluoriteFunction.fluoriteClass,
         "STREAM" to FluoriteStream.fluoriteClass,
-    )
+    ).let { listOf(it) }
 }

@@ -8,7 +8,7 @@ import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import kotlin.js.Promise
 
-fun createJsMounts(out: suspend (FluoriteValue) -> Unit): Map<String, FluoriteValue> {
+fun createJsMounts(out: suspend (FluoriteValue) -> Unit): List<Map<String, FluoriteValue>> {
     return mapOf(
         "JS_OBJECT" to FluoriteJsObject.fluoriteClass,
         "OUT" to FluoriteFunction { arguments ->
@@ -43,5 +43,5 @@ fun createJsMounts(out: suspend (FluoriteValue) -> Unit): Map<String, FluoriteVa
             val js = arguments[0].toFluoriteString()
             convertToFluoriteValue(eval(js.value))
         },
-    )
+    ).let { listOf(it) }
 }

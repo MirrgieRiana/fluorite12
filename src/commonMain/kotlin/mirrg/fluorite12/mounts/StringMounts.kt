@@ -6,7 +6,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 
-fun createStringMounts(): Map<String, FluoriteValue> {
+fun createStringMounts(): List<Map<String, FluoriteValue>> {
     return mapOf(
         "UC" to FluoriteFunction { arguments ->
             if (arguments.size == 1) {
@@ -40,5 +40,5 @@ fun createStringMounts(): Map<String, FluoriteValue> {
                 usage("LC(string: STRING): STRING | LC(string: STREAM<STRING>): STREAM<STRING>")
             }
         },
-    )
+    ).let { listOf(it) }
 }

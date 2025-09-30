@@ -11,7 +11,7 @@ import mirrg.fluorite12.pop
 import mirrg.fluorite12.toFluoriteValueAsJson
 import mirrg.fluorite12.toJsonFluoriteValue
 
-fun createDataConvertMounts(): Map<String, FluoriteValue> {
+fun createDataConvertMounts(): List<Map<String, FluoriteValue>> {
     return mapOf(
         "JSON" to FluoriteFunction { arguments ->
             fun usage(): Nothing = usage("""JSON(["indent": indent: STRING; ]value: VALUE | STREAM<VALUE>): STRING | STREAM<STRING>""")
@@ -207,5 +207,5 @@ fun createDataConvertMounts(): Map<String, FluoriteValue> {
                 fromCsv(value)
             }
         },
-    )
+    ).let { listOf(it) }
 }
