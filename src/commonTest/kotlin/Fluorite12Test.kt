@@ -858,6 +858,11 @@ class Fluorite12Test {
 
     @Test
     fun mathTest() = runTest {
+        assertEquals(3.141592653589793, eval("MATH.PI").double, 0.001)
+        assertEquals(2.718281828459045, eval("MATH.E").double, 0.001)
+
+        assertEquals(3.141592653589793, eval("PI").double, 0.001)
+
         assertEquals(10.0, eval("SQRT(100)").double, 0.001)
     }
 
