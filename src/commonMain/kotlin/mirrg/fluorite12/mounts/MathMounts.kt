@@ -19,6 +19,7 @@ fun createMathMounts(): Map<String, FluoriteValue> {
                 "E" to FluoriteDouble(2.718281828459045), // TODO kotlinアップデート時に定数に置換し直す
             )
         ),
+        "PI" to FluoriteDouble(3.141592653589793), // TODO kotlinアップデート時に定数に置換し直す
         "FLOOR" to FluoriteFunction { arguments ->
             when (arguments.size) {
                 1 -> when (val number = arguments[0]) {
