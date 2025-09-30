@@ -12,5 +12,6 @@ fun createCommonMounts(): Map<String, FluoriteValue> {
         createConvertMounts(),
         createStreamMounts(),
         createDataConvertMounts(),
+        createStringMounts(),
     ).flatMap { it.entries }.associate { it.toPair() }
 }
