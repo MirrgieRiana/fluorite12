@@ -75,6 +75,50 @@ $ flc '"$%.3f(  SQRT(100.0)  )"'
 # 10.000
 ```
 
+## `SIN` 正弦
+
+`SIN(number: NUMBER): NUMBER`
+
+第1引数をラジアンとして解釈し、その正弦を返します。
+
+```shell
+$ flc '"$%.3f(  SIN(PI / 2)  )"'
+# 1.000
+```
+
+## `COS` 余弦
+
+`COS(number: NUMBER): NUMBER`
+
+第1引数をラジアンとして解釈し、その余弦を返します。
+
+```shell
+$ flc '"$%.3f(  COS(0)  )"'
+# 1.000
+```
+
+## `TAN` 正接
+
+`TAN(number: NUMBER): NUMBER`
+
+第1引数をラジアンとして解釈し、その正接を返します。
+
+```shell
+$ flc '"$%.3f(  TAN(PI / 4)  )"'
+# 1.000
+```
+
+## `LOG` 自然対数
+
+`LOG(number: NUMBER): NUMBER`
+
+第1引数の自然対数（底 e）を返します。
+
+```shell
+$ flc '"$%.3f(  LOG(MATH.E)  )"'
+# 1.000
+```
+
 ## `RAND` 乱数の取得
 
 `RAND(): DOUBLE`

@@ -7,8 +7,12 @@ import mirrg.fluorite12.compilers.objects.FluoriteNumber
 import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
+import kotlin.math.cos
 import kotlin.math.floor
+import kotlin.math.ln
+import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.math.tan
 import kotlin.random.Random
 
 fun createMathMounts(): Map<String, FluoriteValue> {
@@ -58,6 +62,30 @@ fun createMathMounts(): Map<String, FluoriteValue> {
             when (arguments.size) {
                 1 -> FluoriteDouble(sqrt((arguments[0] as FluoriteNumber).toDouble()))
                 else -> usage("SQRT(number: NUMBER): NUMBER")
+            }
+        },
+        "SIN" to FluoriteFunction { arguments ->
+            when (arguments.size) {
+                1 -> FluoriteDouble(sin((arguments[0] as FluoriteNumber).toDouble()))
+                else -> usage("SIN(number: NUMBER): NUMBER")
+            }
+        },
+        "COS" to FluoriteFunction { arguments ->
+            when (arguments.size) {
+                1 -> FluoriteDouble(cos((arguments[0] as FluoriteNumber).toDouble()))
+                else -> usage("COS(number: NUMBER): NUMBER")
+            }
+        },
+        "TAN" to FluoriteFunction { arguments ->
+            when (arguments.size) {
+                1 -> FluoriteDouble(tan((arguments[0] as FluoriteNumber).toDouble()))
+                else -> usage("TAN(number: NUMBER): NUMBER")
+            }
+        },
+        "LOG" to FluoriteFunction { arguments ->
+            when (arguments.size) {
+                1 -> FluoriteDouble(ln((arguments[0] as FluoriteNumber).toDouble()))
+                else -> usage("LOG(number: NUMBER): NUMBER")
             }
         },
         "RAND" to FluoriteFunction { arguments ->
