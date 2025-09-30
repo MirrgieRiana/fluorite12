@@ -62,7 +62,7 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                     OperatorMethod.BIND.methodName to FluoriteFunction { arguments ->
                         val array = arguments[0] as FluoriteArray
                         when (arguments.size) {
-                            1 -> FluoriteArray(array.values.toMutableList())
+                            1 -> array.values.toFluoriteArray()
 
                             2 -> {
                                 suspend fun get(index: FluoriteValue): FluoriteValue {
@@ -76,9 +76,9 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                                     argument.collect { index ->
                                         items += get(index)
                                     }
-                                    FluoriteArray(items)
+                                    items.asFluoriteArray()
                                 } else {
-                                    FluoriteArray(mutableListOf(get(argument)))
+                                    fluoriteArrayOf(get(argument))
                                 }
                             }
 
@@ -102,7 +102,7 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
                         val list = mutableListOf<FluoriteValue>()
                         list += left.values
                         list += right.values
-                        FluoriteArray(list)
+                        list.asFluoriteArray()
                     },
                     OperatorMethod.CONTAINS.methodName to FluoriteFunction { (it[1] in (it[0] as FluoriteArray).values).toFluoriteBoolean() }, // TODO EQUALSメソッドの使用
                     "push" to FluoriteFunction { arguments ->

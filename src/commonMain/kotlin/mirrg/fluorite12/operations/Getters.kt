@@ -16,15 +16,18 @@ import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.asFluoriteArray
 import mirrg.fluorite12.compilers.objects.bind
 import mirrg.fluorite12.compilers.objects.callMethod
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.colon
 import mirrg.fluorite12.compilers.objects.compareTo
 import mirrg.fluorite12.compilers.objects.getMethod
 import mirrg.fluorite12.compilers.objects.instanceOf
 import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.compilers.objects.plus
 import mirrg.fluorite12.compilers.objects.toBoolean
+import mirrg.fluorite12.compilers.objects.toFluoriteArray
 import mirrg.fluorite12.compilers.objects.toFluoriteBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteString
@@ -101,7 +104,7 @@ class ArrayCreationGetter(private val getters: List<Getter>) : Getter {
                 values += value
             }
         }
-        return FluoriteArray(values)
+        return values.asFluoriteArray()
     }
 
     override val code get() = "ArrayCreationGetter[${getters.code}]"
@@ -427,7 +430,7 @@ class TimesGetter(private val leftGetter: Getter, private val rightGetter: Gette
                 repeat((right as FluoriteNumber).toInt()) {
                     list += left.values
                 }
-                FluoriteArray(list)
+                list.asFluoriteArray()
             }
 
             else -> throw IllegalArgumentException("Can not convert to number: ${left::class}")
@@ -589,7 +592,7 @@ class ExclusiveRangeGetter(private val leftGetter: Getter, private val rightGett
 }
 
 class EntryGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
-    override suspend fun evaluate(env: Environment) = FluoriteArray(mutableListOf(leftGetter.evaluate(env), rightGetter.evaluate(env)))
+    override suspend fun evaluate(env: Environment) = leftGetter.evaluate(env) colon rightGetter.evaluate(env)
     override val code get() = "EntryGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
@@ -597,7 +600,7 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
     override suspend fun evaluate(env: Environment): FluoriteValue {
         return FluoriteFunction { arguments ->
             val newEnv = Environment(env, 1 + variableIndices.size, 0)
-            newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = LocalVariable(FluoriteArray(arguments.toMutableList()))
+            newEnv.variableTable[newFrameIndex][argumentsVariableIndex] = LocalVariable(arguments.toFluoriteArray())
             variableIndices.forEachIndexed { i, variableIndex ->
                 newEnv.variableTable[newFrameIndex][variableIndex] = LocalVariable(arguments.getOrNull(i) ?: FluoriteNull)
             }

@@ -5,6 +5,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteFunction
 import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.asFluoriteArray
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
@@ -42,7 +43,7 @@ fun createConvertMounts(): List<Map<String, FluoriteValue>> {
                 } else {
                     mutableListOf(stream)
                 }
-                FluoriteArray(list)
+                list.asFluoriteArray()
             } else {
                 usage("ARRAY(stream: STREAM<VALUE>): ARRAY<VALUE>")
             }

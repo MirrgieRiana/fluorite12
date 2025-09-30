@@ -25,7 +25,7 @@ class FluoriteObject(override val parent: FluoriteObject?, val map: MutableMap<S
                             1 -> {
                                 FluoriteStream {
                                     obj.map.entries.forEach {
-                                        emit(FluoriteArray(mutableListOf(it.key.toFluoriteString(), it.value)))
+                                        emit(fluoriteArrayOf(it.key.toFluoriteString(), it.value))
                                     }
                                 }
                             }

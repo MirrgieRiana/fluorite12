@@ -5,6 +5,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteFunction
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.asFluoriteArray
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.pop
@@ -194,7 +195,7 @@ fun createDataConvertMounts(): List<Map<String, FluoriteValue>> {
                 }
                 flush()
 
-                return FluoriteArray(list)
+                return list.asFluoriteArray()
             }
 
             if (value is FluoriteStream) {

@@ -16,6 +16,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.invoke
+import mirrg.fluorite12.compilers.objects.toFluoriteArray
 import mirrg.fluorite12.compilers.objects.toFluoriteBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 
@@ -144,7 +145,7 @@ fun convertToFluoriteValue(value: dynamic): FluoriteValue {
 
         is String -> FluoriteString(value as String)
         is Boolean -> (value as Boolean).toFluoriteBoolean()
-        is Array<*> -> FluoriteArray((value as Array<*>).map { convertToFluoriteValue(it) }.toMutableList())
+        is Array<*> -> (value as Array<*>).map { convertToFluoriteValue(it) }.toFluoriteArray()
         null -> FluoriteNull
         undefined -> FluoriteNull
         else -> FluoriteJsObject(value)

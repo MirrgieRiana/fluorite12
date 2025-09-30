@@ -27,6 +27,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.callMethod
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.toFluoriteArray
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 
@@ -109,7 +110,7 @@ suspend fun FluoriteValue.toFluoriteValueAsJson(): FluoriteValue {
     } else {
         fun JsonElement.toFluoriteValue(): FluoriteValue = when (this) {
             is JsonObject -> FluoriteObject(FluoriteObject.fluoriteClass, this.mapValues { it.value.toFluoriteValue() }.toMutableMap())
-            is JsonArray -> FluoriteArray(this.map { it.toFluoriteValue() }.toMutableList())
+            is JsonArray -> this.map { it.toFluoriteValue() }.toFluoriteArray()
             JsonNull -> FluoriteNull
             is JsonPrimitive -> when {
                 this.isString -> this.content.toFluoriteString()

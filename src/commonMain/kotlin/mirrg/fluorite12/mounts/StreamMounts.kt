@@ -12,10 +12,13 @@ import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.compilers.objects.asFluoriteArray
 import mirrg.fluorite12.compilers.objects.collect
+import mirrg.fluorite12.compilers.objects.colon
 import mirrg.fluorite12.compilers.objects.compareTo
 import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.compilers.objects.toBoolean
+import mirrg.fluorite12.compilers.objects.toFluoriteArray
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.compilers.objects.toFluoriteStream
 import mirrg.fluorite12.compilers.objects.toFluoriteString
@@ -290,14 +293,14 @@ fun createStreamMounts(): List<Map<String, FluoriteValue>> {
                         stream.collect { item ->
                             buffer += item
                             if (buffer.size == size) {
-                                emit(FluoriteArray(buffer))
+                                emit(buffer.asFluoriteArray())
                                 buffer = mutableListOf()
                             }
                         }
                     } else {
                         buffer += stream
                     }
-                    if (buffer.isNotEmpty()) emit(FluoriteArray(buffer))
+                    if (buffer.isNotEmpty()) emit(buffer.asFluoriteArray())
                 }
             } else {
                 usage("CHUNK(size: NUMBER; stream: STREAM<VALUE>): STREAM<ARRAY<VALUE>>")
@@ -473,7 +476,7 @@ fun createStreamMounts(): List<Map<String, FluoriteValue>> {
                 }
 
                 groups.forEach { (key, list) ->
-                    emit(FluoriteArray(mutableListOf(key, FluoriteArray(list.toMutableList()))))
+                    emit(key colon list.toFluoriteArray())
                 }
             }
         },
