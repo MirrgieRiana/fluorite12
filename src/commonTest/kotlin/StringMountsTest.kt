@@ -12,5 +12,8 @@ class StringMountsTest {
 
         assertEquals("A,B", eval("'A', 'b'>> UC").stream())
         assertEquals("a,b", eval("'A', 'b'>> LC").stream())
+
+        assertEquals("AB", eval("'Ab'::UC()").string)
+        assertEquals("ab", eval("'Ab'::LC()").string)
     }
 }

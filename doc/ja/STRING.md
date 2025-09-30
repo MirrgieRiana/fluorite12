@@ -386,6 +386,15 @@ $ flc '"Ab", "Cd" >> UC'
 # CD
 ```
 
+---
+
+`string::UC()` で呼び出すことができる拡張関数版もあります。
+
+```shell
+$ flc '"Ab"::UC()'
+# AB
+```
+
 ## `LC` 小文字に変換
 
 `LC(string: STRING): STRING`
@@ -403,4 +412,13 @@ $ flc 'LC("Ab")'
 $ flc '"Ab", "Cd" >> LC'
 # ab
 # cd
+```
+
+---
+
+`string::LC()` で呼び出すことができる拡張関数版もあります。
+
+```shell
+$ flc '"Ab"::LC()'
+# ab
 ```
