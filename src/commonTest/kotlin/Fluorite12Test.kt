@@ -215,14 +215,19 @@ class Fluorite12Test {
             assertEquals("0.5", eval(""" "$%f(0.5)" """).string) // 小数点の前は省略されない
 
             assertEquals("1.111", eval(""" "$%.3f(1.111222)" """).string) // 小数の切り詰め
-            assertEquals("1.111", eval(""" "$%.3f(1.111777)" """).string) // 四捨五入はしない
-            assertEquals("-1.111", eval(""" "$%.3f(-1.111777)" """).string) // 常に絶対値が小さい方に丸められる
+            assertEquals("1.112", eval(""" "$%.3f(1.111777)" """).string) // 四捨五入をする
+            assertEquals("1.112", eval(""" "$%.3f(1.111500)" """).string) // 真ん中は絶対値が大きい方に丸められる
+            assertEquals("-1.112", eval(""" "$%.3f(-1.111500)" """).string) // 負の場合も絶対値が増える方向に丸められる
+            assertEquals("100.000", eval(""" "$%.3f(99.999999)" """).string) // 丸めによって桁数が増える場合のテスト
+            assertEquals("-100.000", eval(""" "$%.3f(-99.999999)" """).string) // 負の場合のテスト
             assertEquals("1.500", eval(""" "$%.3f(1.5)" """).string) // 小数の埋め合わせ
             assertEquals("1.111", eval(""" "$%.3f(1.111)" """).string) // 精度が丁度
 
             // 小数点以下0桁の場合、小数点も消える
-            assertEquals("1", eval(""" "$%.0f(1.5)" """).string)
+            assertEquals("2", eval(""" "$%.0f(1.5)" """).string)
             assertEquals("1", eval(""" "$%.0f(1.0)" """).string)
+            assertEquals("-2", eval(""" "$%.0f(-1.5)" """).string)
+            assertEquals("-1", eval(""" "$%.0f(-1.0)" """).string)
 
             assertEquals("  1.5", eval(""" "$%5f(1.5)" """).string) // 空白埋め指定は全体の文字数に作用する
             assertEquals(" -1.5", eval(""" "$%5f(-1.5)" """).string) // 負の空白埋め
@@ -238,7 +243,7 @@ class Fluorite12Test {
 
             // 小数点なし左詰め0埋めは数学的に矛盾した挙動を示す
             assertEquals("10000", eval(""" "$%-05.0f(1.0)" """).string)
-            assertEquals("10000", eval(""" "$%-05.0f(1.5)" """).string)
+            assertEquals("20000", eval(""" "$%-05.0f(1.5)" """).string)
 
             assertEquals("  1.123", eval(""" "$%7.3f(1.123456)" """).string) // 空白埋めかつ精度指定
         }

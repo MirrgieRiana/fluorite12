@@ -1,5 +1,7 @@
 package mirrg.fluorite12.operations
 
+import com.ionspin.kotlin.bignum.decimal.RoundingMode
+import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import mirrg.fluorite12.Environment
 import mirrg.fluorite12.Formatter
 import mirrg.fluorite12.FormatterConversion
@@ -53,6 +55,12 @@ private suspend fun Formatter.format(value: FluoriteValue): String {
             }
         } else {
             val double = (value as FluoriteNumber).toDouble()
+
+            fun String.round(): String {
+                if (precision == null) return this // 精度の指定がなければ何もしない
+                return this.toBigDecimal().roundToDigitPositionAfterDecimalPoint(precision.toLong(), RoundingMode.ROUND_HALF_AWAY_FROM_ZERO).toStringExpanded()
+            }
+
             fun String.precision(): String {
                 if (precision == null) return this // 精度の指定がなければ何もしない
                 val index = this.indexOf('.')
@@ -76,10 +84,10 @@ private suspend fun Formatter.format(value: FluoriteValue): String {
                 }
             }
             when {
-                double < 0 -> Pair("-", (-double).toString().removeExponent().precision())
-                FormatterFlag.SIGNED in this.flags -> Pair("+", double.toString().removeExponent().precision())
-                FormatterFlag.SPACE_FOR_SIGN in this.flags -> Pair(" ", double.toString().removeExponent().precision())
-                else -> Pair("", double.toString().removeExponent().precision())
+                double < 0 -> Pair("-", (-double).toString().removeExponent().round().precision())
+                FormatterFlag.SIGNED in this.flags -> Pair("+", double.toString().removeExponent().round().precision())
+                FormatterFlag.SPACE_FOR_SIGN in this.flags -> Pair(" ", double.toString().removeExponent().round().precision())
+                else -> Pair("", double.toString().removeExponent().round().precision())
             }
         }
     }
