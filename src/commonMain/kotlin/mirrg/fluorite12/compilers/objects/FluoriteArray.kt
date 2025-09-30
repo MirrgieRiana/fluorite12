@@ -153,3 +153,13 @@ class FluoriteArray(val values: MutableList<FluoriteValue>) : FluoriteValue {
     override fun toString() = "[${values.joinToString(";") { "$it" }}]"
     override val parent get() = fluoriteClass
 }
+
+fun MutableList<FluoriteValue>.asFluoriteArray() = FluoriteArray(this)
+
+fun fluoriteArrayOf(vararg values: FluoriteValue) = FluoriteArray(values.toMutableList())
+
+fun Array<FluoriteValue>.toFluoriteArray() = FluoriteArray(this.toMutableList())
+
+fun Iterable<FluoriteValue>.toFluoriteArray() = FluoriteArray(this.toMutableList())
+
+infix fun FluoriteValue.colon(right: FluoriteValue) = fluoriteArrayOf(this, right)
