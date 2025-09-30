@@ -364,3 +364,61 @@ $ flc '"abcde"[1..3]'
 $ flc '"abcabc"::replace("ab"; "AB")'
 # ABcABc
 ```
+
+# 文字列ユーティリティ関数
+
+## `UC` 大文字に変換
+
+`UC(string: STRING): STRING`
+
+`UC(string: STREAM<STRING>): STREAM<STRING>`
+
+引数を文字列化したうえで、大文字に変換します。
+
+ストリームを渡した場合は、各要素を大文字に変換するストリームを返します。
+
+```shell
+$ flc 'UC("Ab")'
+# AB
+
+$ flc '"Ab", "Cd" >> UC'
+# AB
+# CD
+```
+
+---
+
+`string::UC()` で呼び出すことができる拡張関数版もあります。
+
+```shell
+$ flc '"Ab"::UC()'
+# AB
+```
+
+## `LC` 小文字に変換
+
+`LC(string: STRING): STRING`
+
+`LC(string: STREAM<STRING>): STREAM<STRING>`
+
+引数を文字列化したうえで、小文字に変換します。
+
+その他の仕様は `UC` と共通です。
+
+```shell
+$ flc 'LC("Ab")'
+# ab
+
+$ flc '"Ab", "Cd" >> LC'
+# ab
+# cd
+```
+
+---
+
+`string::LC()` で呼び出すことができる拡張関数版もあります。
+
+```shell
+$ flc '"Ab"::LC()'
+# ab
+```
