@@ -253,6 +253,19 @@ class Fluorite12Grammar : Grammar<Node>() {
     )
     val embeddedString by percent * greater * zeroOrMore(embeddedStringContent) * less * percent map { EmbeddedStringNode(listOf(it.t1, it.t2), it.t3, listOf(it.t4, it.t5)) } // %>string<%
 
+    val regexCharacter by OrCombinator(
+
+
+
+
+        -NotParser(slash or br or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // / と改行と \\ 以外
+        br map { Pair(listOf(it), "\n") }, // 改行
+        bSlash * -NotParser(br) * AnyParser map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた1文字
+        bSlash * br map { Pair(listOf(it.t1, it.t2), "\n") }, // エスケープされた改行
+    )
+    val regexContent by oneOrMore(regexCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) }
+    val regex by slash * regexContent * slash * optional(identifier) map { RegexNode(it.t1, it.t2, it.t3, it.t4) }
+
     val arrowRound: Parser<Node> by lRound * -b * optional(cachedParser { label } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rRound map { BracketsLiteralArrowedRoundNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
     val arrowSquare: Parser<Node> by lSquare * -b * optional(cachedParser { label } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rSquare map { BracketsLiteralArrowedSquareNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
     val arrowCurly: Parser<Node> by lCurly * -b * optional(cachedParser { label } * -b) * +(equal * greater) * -b * optional(cachedParser { expression } * -b) * rCurly map { BracketsLiteralArrowedCurlyNode(it.t1, it.t2 ?: EmptyNode, it.t3, it.t4 ?: EmptyNode, it.t5) }
@@ -266,8 +279,8 @@ class Fluorite12Grammar : Grammar<Node>() {
         identifier * -s * +(exclamation * exclamation) * -b * cachedParser { commas } map { ReturnNode(it.t1, it.t2, it.t3) },
     )
 
-    val nonFloatFactor: Parser<Node> by jump or hexadecimal or identifier or quotedIdentifier or integer or rawString or templateString or embeddedString or brackets
-    val factor: Parser<Node> by jump or hexadecimal or identifier or quotedIdentifier or float or integer or rawString or templateString or embeddedString or brackets
+    val nonFloatFactor: Parser<Node> by jump or hexadecimal or identifier or quotedIdentifier or integer or rawString or templateString or embeddedString or regex or brackets
+    val factor: Parser<Node> by jump or hexadecimal or identifier or quotedIdentifier or float or integer or rawString or templateString or embeddedString or regex or brackets
 
     val unaryOperator: Parser<(List<TokenMatch>, Node, Side) -> Node> by OrCombinator(
         +plus map { { prefix, main, side -> UnaryPlusNode(prefix + it, main, side) } },
