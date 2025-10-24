@@ -254,13 +254,9 @@ class Fluorite12Grammar : Grammar<Node>() {
     val embeddedString by percent * greater * zeroOrMore(embeddedStringContent) * less * percent map { EmbeddedStringNode(listOf(it.t1, it.t2), it.t3, listOf(it.t4, it.t5)) } // %>string<%
 
     val regexCharacter by OrCombinator(
-
-
-
-
         -NotParser(slash or br or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // / と改行と \\ 以外
         br map { Pair(listOf(it), "\n") }, // 改行
-        bSlash * -NotParser(br) * AnyParser map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた1文字
+        bSlash * -NotParser(br) * AnyParser map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた改行以外の文字
         bSlash * br map { Pair(listOf(it.t1, it.t2), "\n") }, // エスケープされた改行
     )
     val regexContent by oneOrMore(regexCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) }
