@@ -110,4 +110,3 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
 }
 
 fun String.toFluoriteRegex(flags: String? = null) = FluoriteRegex(this, flags)
-
