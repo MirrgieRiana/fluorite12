@@ -96,7 +96,14 @@ data class FluoriteString(val value: String) : FluoriteValue {
                         val right = arguments[1].toFluoriteString()
                         left.value.compareTo(right.value).toFluoriteIntAsCompared()
                     },
-                    OperatorMethod.CONTAINS.methodName to FluoriteFunction { (it[1].toFluoriteString().value in (it[0] as FluoriteString).value).toFluoriteBoolean() },
+                    OperatorMethod.CONTAINS.methodName to FluoriteFunction { arguments ->
+                        val right = arguments[0] as FluoriteString
+                        val left = arguments[1]
+                        when (left) {
+                            is FluoriteRegex -> (left.regexCache.find(right.value) != null).toFluoriteBoolean()
+                            else -> (left.toFluoriteString().value in right.value).toFluoriteBoolean()
+                        }
+                    },
                     "replace" to FluoriteFunction { arguments ->
                         if (arguments.size != 3) throw IllegalArgumentException("STRING::replace(old: STRING; new: STRING): STRING")
                         val string = arguments[0] as FluoriteString

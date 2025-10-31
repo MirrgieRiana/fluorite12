@@ -33,11 +33,6 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
                             else -> throw FluoriteException("No such property: $key".toFluoriteString())
                         }
                     },
-                    OperatorMethod.CONTAINS.methodName to FluoriteFunction { arguments ->
-                        val regex = arguments[0] as FluoriteRegex
-                        val string = arguments[1].toFluoriteString().value
-                        (regex.regexCache.find(string) != null).toFluoriteBoolean()
-                    },
                     OperatorMethod.CALL.methodName to FluoriteFunction { arguments ->
                         val regex = arguments[0] as FluoriteRegex
                         val string = arguments[1].toFluoriteString().value
@@ -79,7 +74,7 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
         FlagData(multiline, ignoreCase, global)
     }
 
-    private val regexCache = run {
+    val regexCache = run {
         val options = mutableSetOf<RegexOption>()
         if (flagData.multiline) options += RegexOption.MULTILINE
         if (flagData.ignoreCase) options += RegexOption.IGNORE_CASE

@@ -20,12 +20,12 @@ class RegexTest {
 
     @Test
     fun contains() = runTest {
-        assertEquals(true, eval(""" "ABC" @ /B/ """).boolean) // 部分一致
-        assertEquals(false, eval(""" "ABC" @ /D/ """).boolean) // 部分一致しない
-        assertEquals(false, eval(""" "ABC" @ /b/ """).boolean) // 大文字小文字を区別
-        assertEquals(true, eval(""" "ABC" @ /b/i """).boolean) // 大文字小文字を区別しない
-        assertEquals(false, eval(""" "A\nB\nC" @ /^B/ """).boolean) // 行頭一致しない
-        assertEquals(true, eval(""" "A\nB\nC" @ /^B/m """).boolean) // 行頭一致する
+        assertEquals(true, eval(""" /B/ @ "ABC" """).boolean) // 部分一致
+        assertEquals(false, eval(""" /D/ @ "ABC" """).boolean) // 部分一致しない
+        assertEquals(false, eval(""" /b/ @ "ABC" """).boolean) // 大文字小文字を区別
+        assertEquals(true, eval(""" /b/i @ "ABC" """).boolean) // 大文字小文字を区別しない
+        assertEquals(false, eval(""" /^B/ @ "A\nB\nC" """).boolean) // 行頭一致しない
+        assertEquals(true, eval(""" /^B/m @ "A\nB\nC" """).boolean) // 行頭一致する
     }
 
     @Test

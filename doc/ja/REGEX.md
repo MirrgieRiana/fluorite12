@@ -96,13 +96,13 @@ $ flc '/apple/.flags'
 
 # 部分一致判定
 
-`string @ regex` 演算子で、文字列に正規表現が部分一致するか否かを判定できます。
+`regex @ string` 演算子で、文字列に正規表現が部分一致するか否かを判定できます。
 
 ```shell
-$ flc ' "apple" @ /pp/ '
+$ flc ' /pp/ @ "apple" '
 # TRUE
 
-$ flc ' "apple" @ /xy/ '
+$ flc ' /xy/ @ "apple" '
 # FALSE
 ```
 
