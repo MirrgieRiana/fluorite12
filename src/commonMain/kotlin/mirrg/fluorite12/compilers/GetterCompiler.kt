@@ -35,6 +35,7 @@ import mirrg.fluorite12.InfixColonEqualNode
 import mirrg.fluorite12.InfixColonNode
 import mirrg.fluorite12.InfixEqualGreaterNode
 import mirrg.fluorite12.InfixEqualNode
+import mirrg.fluorite12.InfixEqualTildeNode
 import mirrg.fluorite12.InfixExclamationColonNode
 import mirrg.fluorite12.InfixExclamationIdentifierNode
 import mirrg.fluorite12.InfixExclamationQuestionNode
@@ -62,6 +63,7 @@ import mirrg.fluorite12.LiteralStringContent
 import mirrg.fluorite12.Node
 import mirrg.fluorite12.NodeStringContent
 import mirrg.fluorite12.RawStringNode
+import mirrg.fluorite12.RegexNode
 import mirrg.fluorite12.ReturnNode
 import mirrg.fluorite12.SemicolonsNode
 import mirrg.fluorite12.TemplateStringNode
@@ -75,6 +77,7 @@ import mirrg.fluorite12.UnaryExclamationNode
 import mirrg.fluorite12.UnaryMinusNode
 import mirrg.fluorite12.UnaryPlusNode
 import mirrg.fluorite12.UnaryQuestionNode
+import mirrg.fluorite12.compilers.objects.FluoriteRegex
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import mirrg.fluorite12.defineLabel
@@ -115,6 +118,7 @@ import mirrg.fluorite12.operations.LessEqualComparator
 import mirrg.fluorite12.operations.LinesGetter
 import mirrg.fluorite12.operations.LiteralGetter
 import mirrg.fluorite12.operations.LiteralStringGetter
+import mirrg.fluorite12.operations.MatchGetter
 import mirrg.fluorite12.operations.MethodAccessGetter
 import mirrg.fluorite12.operations.MinusGetter
 import mirrg.fluorite12.operations.ModGetter
@@ -202,6 +206,8 @@ fun Frame.compileToGetter(node: Node): Getter {
             }
             StringConcatenationGetter(getters)
         }
+
+        is RegexNode -> LiteralGetter(FluoriteRegex(node.node.string, node.flags?.string))
 
         is BracketsLiteralArrowedNode -> throw IllegalArgumentException("Unknown operator: ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
 
@@ -395,6 +401,7 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
         is InfixPercentNode -> ModGetter(compileToGetter(node.left), compileToGetter(node.right))
         is InfixCircumflexNode -> PowerGetter(compileToGetter(node.left), compileToGetter(node.right))
         is InfixPeriodPeriodNode -> RangeGetter(compileToGetter(node.left), compileToGetter(node.right))
+        is InfixEqualTildeNode -> MatchGetter(compileToGetter(node.left), compileToGetter(node.right))
         is InfixLessEqualGreaterNode -> SpaceshipGetter(compileToGetter(node.left), compileToGetter(node.right))
         is InfixTildeNode -> ExclusiveRangeGetter(compileToGetter(node.left), compileToGetter(node.right))
         is InfixAmpersandAmpersandNode -> AndGetter(compileToGetter(node.left), compileToGetter(node.right))

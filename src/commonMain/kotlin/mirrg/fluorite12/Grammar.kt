@@ -199,9 +199,9 @@ class Fluorite12Grammar : Grammar<Node>() {
         -NotParser(dQuote or br or dollar or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
         br map { Pair(listOf(it), "\n") }, // 改行
         bSlash * (dQuote or dollar or bSlash) map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた記号
-        bSlash * (lT) map { Pair(listOf(it.t1, it.t2), "\t") },
-        bSlash * (lR) map { Pair(listOf(it.t1, it.t2), "\r") },
-        bSlash * (lN) map { Pair(listOf(it.t1, it.t2), "\n") },
+        bSlash * lT map { Pair(listOf(it.t1, it.t2), "\t") },
+        bSlash * lR map { Pair(listOf(it.t1, it.t2), "\r") },
+        bSlash * lN map { Pair(listOf(it.t1, it.t2), "\n") },
         bSlash * lU * hexadecimalNumber * hexadecimalNumber * hexadecimalNumber * hexadecimalNumber map {
             val ch = "${it.t3.text}${it.t4.text}${it.t5.text}${it.t6.text}".toInt(16).toChar()
             Pair(listOf(it.t1, it.t2, it.t3, it.t4, it.t5, it.t6), ch.toString())
@@ -254,10 +254,10 @@ class Fluorite12Grammar : Grammar<Node>() {
     val embeddedString by percent * greater * zeroOrMore(embeddedStringContent) * less * percent map { EmbeddedStringNode(listOf(it.t1, it.t2), it.t3, listOf(it.t4, it.t5)) } // %>string<%
 
     val regexCharacter by OrCombinator(
-        -NotParser(slash or br or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // / と改行と \\ 以外
+        -NotParser(slash or br or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
         br map { Pair(listOf(it), "\n") }, // 改行
-        bSlash * -NotParser(br) * AnyParser map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた改行以外の文字
-        bSlash * br map { Pair(listOf(it.t1, it.t2), "\n") }, // エスケープされた改行
+        bSlash * slash map { Pair(listOf(it.t1, it.t2), "/") }, // エスケープされた /
+        bSlash * AnyParser map { Pair(listOf(it.t1, it.t2), "\\" + it.t2.text) }, // エスケープされた通常文字
     )
     val regexContent by oneOrMore(regexCharacter) map { LiteralStringContent(it.flatMap { t -> t.first }, it.joinToString("") { t -> t.second }) }
     val regex by slash * regexContent * slash * optional(identifier) map { RegexNode(it.t1, it.t2, it.t3, it.t4) }
@@ -338,8 +338,10 @@ class Fluorite12Grammar : Grammar<Node>() {
         +exclamation * (identifier or quotedIdentifier) map { { left, right -> InfixExclamationIdentifierNode(left, it.t1, it.t2, right) } },
     )
     val infixIdentifier: Parser<Node> by leftAssociative(range, -s * infixIdentifierOperator * -b) { left, operator, right -> operator(left, right) }
+    val matchOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by +(equal * tilde) map { Pair(it, ::InfixEqualTildeNode) }
+    val match: Parser<Node> by leftAssociative(infixIdentifier, -s * matchOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
     val spaceshipOperator: Parser<Pair<List<TokenMatch>, (Node, List<TokenMatch>, Node) -> InfixNode>> by +(less * equal * greater) map { Pair(it, ::InfixLessEqualGreaterNode) }
-    val spaceship: Parser<Node> by leftAssociative(infixIdentifier, -s * spaceshipOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
+    val spaceship: Parser<Node> by leftAssociative(match, -s * spaceshipOperator * -b) { left, operator, right -> operator.second(left, operator.first, right) }
     val comparisonOperator: Parser<Pair<List<TokenMatch>, ComparisonOperatorType>> by OrCombinator(
         +(equal * equal) map { Pair(it, ComparisonOperatorType.EQUAL) }, // ==
         +(exclamation * equal) map { Pair(it, ComparisonOperatorType.EXCLAMATION_EQUAL) }, // !=

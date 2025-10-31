@@ -58,6 +58,7 @@ class InfixPercentPercentNode(left: Node, operator: List<TokenMatch>, right: Nod
 class InfixPercentNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixCircumflexNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixPeriodPeriodNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
+class InfixEqualTildeNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixLessEqualGreaterNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixTildeNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
 class InfixAmpersandAmpersandNode(left: Node, operator: List<TokenMatch>, right: Node) : InfixNode(left, operator, right)
