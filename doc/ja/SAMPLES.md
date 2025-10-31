@@ -198,7 +198,7 @@ $ FLC_ENGINE=jvm flc -q '
     step     : this -> this.b = this::get_next()
     `&_`     : this -> this.b() | l => (l() | _ ? "[]" : "  " >> JOIN[""]) >> JOIN["\n"]
   }
-  
+
   lifeGame := LifeGame{w: +ARGS.0; h: +ARGS.1}
   lifeGame::init()
   OUT << "$lifeGame\n$("--" * +ARGS.0)"
