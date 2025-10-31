@@ -618,7 +618,7 @@ class SpaceshipGetter(private val leftGetter: Getter, private val rightGetter: G
         return left.compareTo(right)
     }
 
-    override val code get() = "SpaceshipGetter"
+    override val code get() = "SpaceshipGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 class ComparisonChainGetter(private val termGetters: List<Getter>, private val comparators: List<Comparator>) : Getter {
