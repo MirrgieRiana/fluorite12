@@ -4281,6 +4281,35 @@
     }
   }
 
+  let nav = typeof navigator != "undefined" ? navigator : { userAgent: "", vendor: "", platform: "" };
+  let doc = typeof document != "undefined" ? document : { documentElement: { style: {} } };
+  const ie_edge = /*@__PURE__*//Edge\/(\d+)/.exec(nav.userAgent);
+  const ie_upto10 = /*@__PURE__*//MSIE \d/.test(nav.userAgent);
+  const ie_11up = /*@__PURE__*//Trident\/(?:[7-9]|\d{2,})\..*rv:(\d+)/.exec(nav.userAgent);
+  const ie = !!(ie_upto10 || ie_11up || ie_edge);
+  const gecko = !ie && /*@__PURE__*//gecko\/(\d+)/i.test(nav.userAgent);
+  const chrome = !ie && /*@__PURE__*//Chrome\/(\d+)/.exec(nav.userAgent);
+  const webkit = "webkitFontSmoothing" in doc.documentElement.style;
+  const safari = !ie && /*@__PURE__*//Apple Computer/.test(nav.vendor);
+  const ios = safari && (/*@__PURE__*//Mobile\/\w+/.test(nav.userAgent) || nav.maxTouchPoints > 2);
+  var browser = {
+      mac: ios || /*@__PURE__*//Mac/.test(nav.platform),
+      windows: /*@__PURE__*//Win/.test(nav.platform),
+      linux: /*@__PURE__*//Linux|X11/.test(nav.platform),
+      ie,
+      ie_version: ie_upto10 ? doc.documentMode || 6 : ie_11up ? +ie_11up[1] : ie_edge ? +ie_edge[1] : 0,
+      gecko,
+      gecko_version: gecko ? +(/*@__PURE__*//Firefox\/(\d+)/.exec(nav.userAgent) || [0, 0])[1] : 0,
+      chrome: !!chrome,
+      chrome_version: chrome ? +chrome[1] : 0,
+      ios,
+      android: /*@__PURE__*//Android\b/.test(nav.userAgent),
+      webkit_version: webkit ? +(/*@__PURE__*//\bAppleWebKit\/(\d+)/.exec(nav.userAgent) || [0, 0])[1] : 0,
+      safari,
+      safari_version: safari ? +(/*@__PURE__*//\bVersion\/(\d+(\.\d+)?)/.exec(nav.userAgent) || [0, 0])[1] : 0,
+      tabSize: doc.documentElement.style.tabSize != null ? "tab-size" : "-moz-tab-size"
+  };
+
   function getSelection(root) {
       let target;
       // Browsers differ on whether shadow roots have a getSelection
@@ -4531,6 +4560,9 @@
       }
   }
   let preventScrollSupported = null;
+  // Safari 26 breaks preventScroll support
+  if (browser.safari && browser.safari_version >= 26)
+      preventScrollSupported = false;
   // Feature-detects support for .focus({preventScroll: true}), and uses
   // a fallback kludge when not supported.
   function focusPreventScroll(dom) {
@@ -4999,34 +5031,6 @@
       parent.length += dLen;
       replaceRange(parent, fromI, fromOff, toI, toOff, insert, 0, openStart, openEnd);
   }
-
-  let nav = typeof navigator != "undefined" ? navigator : { userAgent: "", vendor: "", platform: "" };
-  let doc = typeof document != "undefined" ? document : { documentElement: { style: {} } };
-  const ie_edge = /*@__PURE__*//Edge\/(\d+)/.exec(nav.userAgent);
-  const ie_upto10 = /*@__PURE__*//MSIE \d/.test(nav.userAgent);
-  const ie_11up = /*@__PURE__*//Trident\/(?:[7-9]|\d{2,})\..*rv:(\d+)/.exec(nav.userAgent);
-  const ie = !!(ie_upto10 || ie_11up || ie_edge);
-  const gecko = !ie && /*@__PURE__*//gecko\/(\d+)/i.test(nav.userAgent);
-  const chrome = !ie && /*@__PURE__*//Chrome\/(\d+)/.exec(nav.userAgent);
-  const webkit = "webkitFontSmoothing" in doc.documentElement.style;
-  const safari = !ie && /*@__PURE__*//Apple Computer/.test(nav.vendor);
-  const ios = safari && (/*@__PURE__*//Mobile\/\w+/.test(nav.userAgent) || nav.maxTouchPoints > 2);
-  var browser = {
-      mac: ios || /*@__PURE__*//Mac/.test(nav.platform),
-      windows: /*@__PURE__*//Win/.test(nav.platform),
-      linux: /*@__PURE__*//Linux|X11/.test(nav.platform),
-      ie,
-      ie_version: ie_upto10 ? doc.documentMode || 6 : ie_11up ? +ie_11up[1] : ie_edge ? +ie_edge[1] : 0,
-      gecko,
-      gecko_version: gecko ? +(/*@__PURE__*//Firefox\/(\d+)/.exec(nav.userAgent) || [0, 0])[1] : 0,
-      chrome: !!chrome,
-      chrome_version: chrome ? +chrome[1] : 0,
-      ios,
-      android: /*@__PURE__*//Android\b/.test(nav.userAgent),
-      safari,
-      webkit_version: webkit ? +(/*@__PURE__*//\bAppleWebKit\/(\d+)/.exec(nav.userAgent) || [0, 0])[1] : 0,
-      tabSize: doc.documentElement.style.tabSize != null ? "tab-size" : "-moz-tab-size"
-  };
 
   const MaxJoinLen = 256;
   class TextView extends ContentView {
@@ -8131,9 +8135,10 @@
               if (next == end)
                   break;
               let view = ContentView.get(cur), nextView = ContentView.get(next);
-              if (view && nextView ? view.breakAfter :
+              if ((view && nextView ? view.breakAfter :
                   (view ? view.breakAfter : isBlockElement(cur)) ||
-                      (isBlockElement(next) && (cur.nodeName != "BR" || cur.cmIgnore) && this.text.length > oldLen))
+                      (isBlockElement(next) && (cur.nodeName != "BR" || cur.cmIgnore) && this.text.length > oldLen)) &&
+                  !isEmptyToEnd(next, end))
                   this.lineBreak();
               cur = next;
           }
@@ -8211,6 +8216,25 @@
           offset = domIndex(node) + 1;
           node = node.parentNode;
       }
+  }
+  function isEmptyToEnd(node, end) {
+      let widgets;
+      for (;; node = node.nextSibling) {
+          if (node == end || !node)
+              break;
+          let view = ContentView.get(node);
+          if (!((view === null || view === void 0 ? void 0 : view.isWidget) || node.cmIgnore))
+              return false;
+          if (view)
+              (widgets || (widgets = [])).push(view);
+      }
+      if (widgets)
+          for (let w of widgets) {
+              let override = w.overrideDOMText;
+              if (override === null || override === void 0 ? void 0 : override.length)
+                  return false;
+          }
+      return true;
   }
   class DOMPoint {
       constructor(node, offset) {
@@ -8653,7 +8677,7 @@
           return dispatchKey(this.view.contentDOM, key.key, key.keyCode, key instanceof KeyboardEvent ? key : undefined);
       }
       ignoreDuringComposition(event) {
-          if (!/^key/.test(event.type))
+          if (!/^key/.test(event.type) || event.synthetic)
               return false;
           if (this.composing > 0)
               return true;
@@ -11557,20 +11581,23 @@
               let from = this.toEditorPos(e.updateRangeStart), to = this.toEditorPos(e.updateRangeEnd);
               if (view.inputState.composing >= 0 && !this.composing)
                   this.composing = { contextBase: e.updateRangeStart, editorBase: from, drifted: false };
-              let change = { from, to, insert: Text.of(e.text.split("\n")) };
+              let deletes = to - from > e.text.length;
               // If the window doesn't include the anchor, assume changes
               // adjacent to a side go up to the anchor.
-              if (change.from == this.from && anchor < this.from)
-                  change.from = anchor;
-              else if (change.to == this.to && anchor > this.to)
-                  change.to = anchor;
+              if (from == this.from && anchor < this.from)
+                  from = anchor;
+              else if (to == this.to && anchor > this.to)
+                  to = anchor;
+              let diff = findDiff(view.state.sliceDoc(from, to), e.text, (deletes ? main.from : main.to) - from, deletes ? "end" : null);
               // Edit contexts sometimes fire empty changes
-              if (change.from == change.to && !change.insert.length) {
+              if (!diff) {
                   let newSel = EditorSelection.single(this.toEditorPos(e.selectionStart), this.toEditorPos(e.selectionEnd));
                   if (!newSel.main.eq(main))
                       view.dispatch({ selection: newSel, userEvent: "select" });
                   return;
               }
+              let change = { from: diff.from + from, to: diff.toA + from,
+                  insert: Text.of(e.text.slice(diff.from, diff.toB).split("\n")) };
               if ((browser.mac || browser.android) && change.from == head - 1 &&
                   /^\. ?$/.test(e.text) && view.contentDOM.getAttribute("autocorrect") == "off")
                   change = { from, to, insert: Text.of([e.text.replace(".", " ")]) };
@@ -13375,7 +13402,7 @@
                   old = next;
               }
               this.drawn = markers;
-              if (browser.ios) // Issue #1600
+              if (browser.safari && browser.safari_version >= 26) // Issue #1600, 1627
                   this.dom.style.display = this.dom.firstChild ? "" : "none";
           }
       }
@@ -15429,6 +15456,7 @@
           this.deserialize = config.deserialize || (() => {
               throw new Error("This node type doesn't define a deserialize function");
           });
+          this.combine = config.combine || null;
       }
       /**
       This is meant to be used with
@@ -16630,7 +16658,7 @@
       function takeNode(parentStart, minPos, children, positions, inRepeat, depth) {
           let { id, start, end, size } = cursor;
           let lookAheadAtStart = lookAhead, contextAtStart = contextHash;
-          while (size < 0) {
+          if (size < 0) {
               cursor.next();
               if (size == -1 /* SpecialRecord.Reuse */) {
                   let node = reused[id];
@@ -17221,7 +17249,7 @@
   For example:
 
   ```javascript
-  parser.withProps(
+  parser.configure({props: [
     styleTags({
       // Style Number and BigNumber nodes
       "Number BigNumber": tags.number,
@@ -17236,7 +17264,7 @@
       // Style the node named "/" as punctuation
       '"/"': tags.punctuation
     })
-  )
+  ]})
   ```
   */
   function styleTags(spec) {
@@ -17278,7 +17306,30 @@
       }
       return ruleNodeProp.add(byName);
   }
-  const ruleNodeProp = new NodeProp();
+  const ruleNodeProp = new NodeProp({
+      combine(a, b) {
+          let cur, root, take;
+          while (a || b) {
+              if (!a || b && a.depth >= b.depth) {
+                  take = b;
+                  b = b.next;
+              }
+              else {
+                  take = a;
+                  a = a.next;
+              }
+              if (cur && cur.mode == take.mode && !take.context && !cur.context)
+                  continue;
+              let copy = new Rule(take.tags, take.mode, take.context);
+              if (cur)
+                  cur.next = copy;
+              else
+                  root = copy;
+              cur = copy;
+          }
+          return root;
+      }
+  });
   class Rule {
       constructor(tags, mode, context, next) {
           this.tags = tags;
@@ -20515,6 +20566,41 @@
       dispatch(setSel(state, selection));
       return true;
   };
+  function addCursorVertically(view, forward) {
+      let { state } = view, sel = state.selection, ranges = state.selection.ranges.slice();
+      for (let range of state.selection.ranges) {
+          let line = state.doc.lineAt(range.head);
+          if (forward ? line.to < view.state.doc.length : line.from > 0)
+              for (let cur = range;;) {
+                  let next = view.moveVertically(cur, forward);
+                  if (next.head < line.from || next.head > line.to) {
+                      if (!ranges.some(r => r.head == next.head))
+                          ranges.push(next);
+                      break;
+                  }
+                  else if (next.head == cur.head) {
+                      break;
+                  }
+                  else {
+                      cur = next;
+                  }
+              }
+      }
+      if (ranges.length == sel.ranges.length)
+          return false;
+      view.dispatch(setSel(state, EditorSelection.create(ranges, ranges.length - 1)));
+      return true;
+  }
+  /**
+  Expand the selection by adding a cursor above the heads of
+  currently selected ranges.
+  */
+  const addCursorAbove = view => addCursorVertically(view, false);
+  /**
+  Expand the selection by adding a cursor below the heads of
+  currently selected ranges.
+  */
+  const addCursorBelow = view => addCursorVertically(view, true);
   /**
   Simplify the current selection. When multiple ranges are selected,
   reduce it to its main range. Otherwise, if the selection is
@@ -21024,12 +21110,12 @@
       { key: "Mod-End", run: cursorDocEnd, shift: selectDocEnd },
       { key: "Enter", run: insertNewlineAndIndent, shift: insertNewlineAndIndent },
       { key: "Mod-a", run: selectAll },
-      { key: "Backspace", run: deleteCharBackward, shift: deleteCharBackward },
-      { key: "Delete", run: deleteCharForward },
-      { key: "Mod-Backspace", mac: "Alt-Backspace", run: deleteGroupBackward },
-      { key: "Mod-Delete", mac: "Alt-Delete", run: deleteGroupForward },
-      { mac: "Mod-Backspace", run: deleteLineBoundaryBackward },
-      { mac: "Mod-Delete", run: deleteLineBoundaryForward }
+      { key: "Backspace", run: deleteCharBackward, shift: deleteCharBackward, preventDefault: true },
+      { key: "Delete", run: deleteCharForward, preventDefault: true },
+      { key: "Mod-Backspace", mac: "Alt-Backspace", run: deleteGroupBackward, preventDefault: true },
+      { key: "Mod-Delete", mac: "Alt-Delete", run: deleteGroupForward, preventDefault: true },
+      { mac: "Mod-Backspace", run: deleteLineBoundaryBackward, preventDefault: true },
+      { mac: "Mod-Delete", run: deleteLineBoundaryForward, preventDefault: true }
   ].concat(/*@__PURE__*/emacsStyleKeymap.map(b => ({ mac: b.key, run: b.run, shift: b.shift })));
   /**
   The default keymap. Includes all bindings from
@@ -21041,6 +21127,8 @@
   - Alt-ArrowDown: [`moveLineDown`](https://codemirror.net/6/docs/ref/#commands.moveLineDown)
   - Shift-Alt-ArrowUp: [`copyLineUp`](https://codemirror.net/6/docs/ref/#commands.copyLineUp)
   - Shift-Alt-ArrowDown: [`copyLineDown`](https://codemirror.net/6/docs/ref/#commands.copyLineDown)
+  - Ctrl-Alt-ArrowUp (Cmd-Alt-ArrowUp on macOS): [`addCursorAbove`](https://codemirror.net/6/docs/ref/#commands.addCursorAbove).
+  - Ctrl-Alt-ArrowDown (Cmd-Alt-ArrowDown on macOS): [`addCursorBelow`](https://codemirror.net/6/docs/ref/#commands.addCursorBelow).
   - Escape: [`simplifySelection`](https://codemirror.net/6/docs/ref/#commands.simplifySelection)
   - Ctrl-Enter (Cmd-Enter on macOS): [`insertBlankLine`](https://codemirror.net/6/docs/ref/#commands.insertBlankLine)
   - Alt-l (Ctrl-l on macOS): [`selectLine`](https://codemirror.net/6/docs/ref/#commands.selectLine)
@@ -21061,6 +21149,8 @@
       { key: "Shift-Alt-ArrowUp", run: copyLineUp },
       { key: "Alt-ArrowDown", run: moveLineDown },
       { key: "Shift-Alt-ArrowDown", run: copyLineDown },
+      { key: "Mod-Alt-ArrowUp", run: addCursorAbove },
+      { key: "Mod-Alt-ArrowDown", run: addCursorBelow },
       { key: "Escape", run: simplifySelection },
       { key: "Mod-Enter", run: insertBlankLine },
       { key: "Alt-l", mac: "Ctrl-l", run: selectLine },
@@ -22861,7 +22951,8 @@
               this.range = rangeAroundSelected(open.options.length, open.selected, this.view.state.facet(completionConfig).maxRenderedOptions);
               this.showOptions(open.options, cState.id);
           }
-          if (this.updateSelectedOption(open.selected)) {
+          let newSel = this.updateSelectedOption(open.selected);
+          if (newSel) {
               this.destroyInfo();
               let { completion } = open.options[open.selected];
               let { info } = completion;
@@ -22878,6 +22969,7 @@
               }
               else {
                   this.addInfoPane(infoResult, completion);
+                  newSel.setAttribute("aria-describedby", this.info.id);
               }
           }
       }
@@ -22885,6 +22977,7 @@
           this.destroyInfo();
           let wrap = this.info = document.createElement("div");
           wrap.className = "cm-tooltip cm-completionInfo";
+          wrap.id = "cm-completionInfo-" + Math.floor(Math.random() * 0xffff).toString(16);
           if (content.nodeType != null) {
               wrap.appendChild(content);
               this.infoDestroy = null;
@@ -22910,8 +23003,10 @@
                   }
               }
               else {
-                  if (opt.hasAttribute("aria-selected"))
+                  if (opt.hasAttribute("aria-selected")) {
                       opt.removeAttribute("aria-selected");
+                      opt.removeAttribute("aria-describedby");
+                  }
               }
           }
           if (set)
@@ -23990,6 +24085,7 @@
               diagnostics = diagnosticFilter(diagnostics, state);
           let sorted = diagnostics.slice().sort((a, b) => a.from - b.from || a.to - b.to);
           let deco = new RangeSetBuilder(), active = [], pos = 0;
+          let scan = state.doc.iter(), scanPos = 0;
           for (let i = 0;;) {
               let next = i == sorted.length ? null : sorted[i];
               if (!next && !active.length)
@@ -24017,8 +24113,30 @@
                       break;
                   }
               }
+              let widget = false;
+              if (active.some(d => d.from == from && d.to == to)) {
+                  widget = from == to;
+                  if (!widget && to - from < 10) {
+                      let behind = from - (scanPos + scan.value.length);
+                      if (behind > 0) {
+                          scan.next(behind);
+                          scanPos = from;
+                      }
+                      for (let check = from;;) {
+                          if (check >= to) {
+                              widget = true;
+                              break;
+                          }
+                          if (!scan.lineBreak && scanPos + scan.value.length > check)
+                              break;
+                          check = scanPos + scan.value.length;
+                          scanPos += scan.value.length;
+                          scan.next();
+                      }
+                  }
+              }
               let sev = maxSeverity(active);
-              if (active.some(d => d.from == d.to || (d.from == d.to - 1 && state.doc.lineAt(d.from).to == d.from))) {
+              if (widget) {
                   deco.add(from, from, Decoration.widget({
                       widget: new DiagnosticWidget(sev),
                       diagnostics: active.slice()
@@ -24185,17 +24303,28 @@
   ];
   const lintConfig = /*@__PURE__*/Facet.define({
       combine(input) {
-          return Object.assign({ sources: input.map(i => i.source).filter(x => x != null) }, combineConfig(input.map(i => i.config), {
-              delay: 750,
-              markerFilter: null,
-              tooltipFilter: null,
-              needsRefresh: null,
-              hideOn: () => null,
-          }, {
-              needsRefresh: (a, b) => !a ? b : !b ? a : u => a(u) || b(u)
-          }));
+          return {
+              sources: input.map(i => i.source).filter(x => x != null),
+              ...combineConfig(input.map(i => i.config), {
+                  delay: 750,
+                  markerFilter: null,
+                  tooltipFilter: null,
+                  needsRefresh: null,
+                  hideOn: () => null,
+              }, {
+                  delay: Math.max,
+                  markerFilter: combineFilter,
+                  tooltipFilter: combineFilter,
+                  needsRefresh: (a, b) => !a ? b : !b ? a : u => a(u) || b(u),
+                  hideOn: (a, b) => !a ? b : !b ? a : (t, x, y) => a(t, x, y) || b(t, x, y),
+                  autoPanel: (a, b) => a || b
+              })
+          };
       }
   });
+  function combineFilter(a, b) {
+      return !a ? b : !b ? a : (d, s) => b(a(d, s), s);
+  }
   function assignKeys(actions) {
       let assigned = [];
       if (actions)
@@ -24228,9 +24357,10 @@
           let nameElt = keyIndex < 0 ? name : [name.slice(0, keyIndex),
               crelt("u", name.slice(keyIndex, keyIndex + 1)),
               name.slice(keyIndex + 1)];
+          let markClass = action.markClass ? " " + action.markClass : "";
           return crelt("button", {
               type: "button",
-              class: "cm-diagnosticAction",
+              class: "cm-diagnosticAction" + markClass,
               onclick: click,
               onmousedown: click,
               "aria-label": ` Action: ${name}${keyIndex < 0 ? "" : ` (access key "${keys[i]})"`}.`
