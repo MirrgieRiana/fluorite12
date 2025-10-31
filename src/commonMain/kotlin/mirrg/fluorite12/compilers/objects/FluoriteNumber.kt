@@ -12,7 +12,7 @@ interface FluoriteNumber : FluoriteValue {
     fun roundToInt(): Int
 }
 
-class FluoriteInt(val value: Int) : FluoriteNumber {
+data class FluoriteInt(val value: Int) : FluoriteNumber {
     companion object {
         val fluoriteClass by lazy {
             FluoriteObject(
@@ -44,8 +44,6 @@ class FluoriteInt(val value: Int) : FluoriteNumber {
     }
 
     override fun toString() = value.toString()
-    override fun equals(other: Any?) = other is FluoriteInt && value == other.value
-    override fun hashCode() = value
     override val parent get() = fluoriteClass
     override fun toInt() = value
     override fun toDouble() = value.toDouble()
@@ -53,7 +51,7 @@ class FluoriteInt(val value: Int) : FluoriteNumber {
     override fun roundToInt() = value
 }
 
-class FluoriteDouble(val value: Double) : FluoriteNumber {
+data class FluoriteDouble(val value: Double) : FluoriteNumber {
     companion object {
         val fluoriteClass by lazy {
             FluoriteObject(
@@ -83,8 +81,6 @@ class FluoriteDouble(val value: Double) : FluoriteNumber {
     }
 
     override fun toString() = value.toString()
-    override fun equals(other: Any?) = other is FluoriteDouble && value == other.value
-    override fun hashCode() = value.hashCode()
     override val parent get() = fluoriteClass
     override fun toInt() = value.toBigDecimal().intValue(true)
     override fun toDouble() = value

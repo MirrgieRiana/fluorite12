@@ -3,7 +3,7 @@ package mirrg.fluorite12.compilers.objects
 import mirrg.fluorite12.OperatorMethod
 import mirrg.fluorite12.toFluoriteIntAsCompared
 
-class FluoriteString(val value: String) : FluoriteValue {
+data class FluoriteString(val value: String) : FluoriteValue {
     companion object {
         val fluoriteClass by lazy {
             FluoriteObject(
@@ -110,8 +110,6 @@ class FluoriteString(val value: String) : FluoriteValue {
     }
 
     override fun toString() = value
-    override fun equals(other: Any?) = other is FluoriteString && value == other.value
-    override fun hashCode() = value.hashCode()
     override val parent get() = fluoriteClass
 }
 

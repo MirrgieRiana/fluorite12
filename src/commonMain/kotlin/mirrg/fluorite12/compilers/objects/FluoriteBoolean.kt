@@ -16,8 +16,6 @@ enum class FluoriteBoolean(val value: Boolean) : FluoriteValue {
                 )
             )
         }
-
-        fun of(value: Boolean) = if (value) TRUE else FALSE
     }
 
     override fun toString() = if (value) "TRUE" else "FALSE"

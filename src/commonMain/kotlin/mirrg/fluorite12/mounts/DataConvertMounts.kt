@@ -63,9 +63,9 @@ fun createDataConvertMounts(): List<Map<String, FluoriteValue>> {
 
             suspend fun toCsv(value: FluoriteValue): FluoriteString {
                 val sb = StringBuilder()
-                (value as FluoriteArray).values.forEachIndexed { index, value ->
+                (value as FluoriteArray).values.forEachIndexed { index, value2 ->
                     if (index > 0) sb.append(separator)
-                    val string = value.toFluoriteString().value
+                    val string = value2.toFluoriteString().value
                     if (string.isEmpty()) return@forEachIndexed
                     val needQuote = run {
                         val first = string.first()

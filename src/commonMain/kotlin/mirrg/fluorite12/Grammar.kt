@@ -199,9 +199,9 @@ class Fluorite12Grammar : Grammar<Node>() {
         -NotParser(dQuote or br or dollar or bSlash) * AnyParser map { Pair(listOf(it), it.text) }, // 通常文字
         br map { Pair(listOf(it), "\n") }, // 改行
         bSlash * (dQuote or dollar or bSlash) map { Pair(listOf(it.t1, it.t2), it.t2.text) }, // エスケープされた記号
-        bSlash * (lT) map { Pair(listOf(it.t1, it.t2), "\t") },
-        bSlash * (lR) map { Pair(listOf(it.t1, it.t2), "\r") },
-        bSlash * (lN) map { Pair(listOf(it.t1, it.t2), "\n") },
+        bSlash * lT map { Pair(listOf(it.t1, it.t2), "\t") },
+        bSlash * lR map { Pair(listOf(it.t1, it.t2), "\r") },
+        bSlash * lN map { Pair(listOf(it.t1, it.t2), "\n") },
         bSlash * lU * hexadecimalNumber * hexadecimalNumber * hexadecimalNumber * hexadecimalNumber map {
             val ch = "${it.t3.text}${it.t4.text}${it.t5.text}${it.t6.text}".toInt(16).toChar()
             Pair(listOf(it.t1, it.t2, it.t3, it.t4, it.t5, it.t6), ch.toString())

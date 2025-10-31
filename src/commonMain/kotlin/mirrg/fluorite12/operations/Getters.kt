@@ -140,7 +140,7 @@ class MethodAccessGetter(
         val receiver = receiverGetter.evaluate(env)
         if (isNullSafe && receiver == FluoriteNull) {
             return if (isBinding) {
-                FluoriteFunction { arguments2 ->
+                FluoriteFunction {
                     FluoriteNull
                 }
             } else {
@@ -234,7 +234,7 @@ class FunctionalMethodAccessGetter(
         val receiver = receiverGetter.evaluate(env)
         if (isNullSafe && receiver == FluoriteNull) {
             return if (isBinding) {
-                FluoriteFunction { arguments2 ->
+                FluoriteFunction {
                     FluoriteNull
                 }
             } else {
