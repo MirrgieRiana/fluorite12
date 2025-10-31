@@ -14,6 +14,7 @@
 - `DOUBLE`
 - `BOOLEAN`
 - `STRING`
+- `REGEX`
 - `ARRAY`
 - `OBJECT`
 - `FUNCTION`

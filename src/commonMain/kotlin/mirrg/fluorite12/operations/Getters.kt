@@ -25,6 +25,7 @@ import mirrg.fluorite12.compilers.objects.compareTo
 import mirrg.fluorite12.compilers.objects.getMethod
 import mirrg.fluorite12.compilers.objects.instanceOf
 import mirrg.fluorite12.compilers.objects.invoke
+import mirrg.fluorite12.compilers.objects.match
 import mirrg.fluorite12.compilers.objects.plus
 import mirrg.fluorite12.compilers.objects.toBoolean
 import mirrg.fluorite12.compilers.objects.toFluoriteArray
@@ -609,6 +610,16 @@ class FunctionGetter(private val newFrameIndex: Int, private val argumentsVariab
     }
 
     override val code get() = "FunctionGetter[$newFrameIndex;$argumentsVariableIndex;${variableIndices.joinToString(",") { "$it" }};${getter.code}]"
+}
+
+class MatchGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {
+    override suspend fun evaluate(env: Environment): FluoriteValue {
+        val left = leftGetter.evaluate(env)
+        val right = rightGetter.evaluate(env)
+        return right.match(left)
+    }
+
+    override val code get() = "MatchGetter[${leftGetter.code};${rightGetter.code}]"
 }
 
 class SpaceshipGetter(private val leftGetter: Getter, private val rightGetter: Getter) : Getter {

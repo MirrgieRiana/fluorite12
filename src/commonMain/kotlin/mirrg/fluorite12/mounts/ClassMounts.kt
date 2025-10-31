@@ -7,6 +7,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteFunction
 import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteObject
+import mirrg.fluorite12.compilers.objects.FluoriteRegex
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
@@ -19,6 +20,7 @@ fun createClassMounts(): List<Map<String, FluoriteValue>> {
         "DOUBLE" to FluoriteDouble.fluoriteClass,
         "BOOLEAN" to FluoriteBoolean.fluoriteClass,
         "STRING" to FluoriteString.fluoriteClass,
+        "REGEX" to FluoriteRegex.fluoriteClass,
         "ARRAY" to FluoriteArray.fluoriteClass,
         "OBJECT" to FluoriteObject.fluoriteClass,
         "FUNCTION" to FluoriteFunction.fluoriteClass,
