@@ -11,6 +11,12 @@ interface FluoriteValue {
         val fluoriteClass by lazy {
             FluoriteObject(
                 null, mutableMapOf(
+                    OperatorMethod.PROPERTY.methodName to FluoriteFunction { arguments ->
+                        val obj = arguments[0]
+                        if (obj !is FluoriteObject) throw FluoriteException("Cannot get property: $obj".toFluoriteString())
+                        val key = arguments[1].toFluoriteString().value
+                        obj.map[key] ?: FluoriteNull
+                    },
                     OperatorMethod.TO_STRING.methodName to FluoriteFunction { "${it[0]}".toFluoriteString() },
                 )
             )
