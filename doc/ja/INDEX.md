@@ -6,6 +6,7 @@
 - [変数](VARIABLE.md)
 - [数値](NUMBER.md)
 - [文字列](STRING.md)
+- [正規表現](REGEX.md)
 - [比較](COMPARISON.md)
 - [論理値・条件分岐](BOOLEAN.md)
 - [プロパティアクセス](PROPERTY.md)

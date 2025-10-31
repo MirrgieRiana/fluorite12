@@ -21,7 +21,7 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
                                 FluoriteRegex(pattern, flags)
                             }
 
-                            else -> throw FluoriteException("Usage: REGEX.new(pattern: STRING[, flags: STRING])".toFluoriteString())
+                            else -> throw FluoriteException("Usage: REGEX.new(pattern: STRING[; flags: STRING]): REGEX".toFluoriteString())
                         }
                     },
                     OperatorMethod.PROPERTY.methodName to FluoriteFunction { arguments ->
