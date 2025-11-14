@@ -24085,7 +24085,7 @@
               diagnostics = diagnosticFilter(diagnostics, state);
           let sorted = diagnostics.slice().sort((a, b) => a.from - b.from || a.to - b.to);
           let deco = new RangeSetBuilder(), active = [], pos = 0;
-          let scan = state.doc.iter(), scanPos = 0;
+          let scan = state.doc.iter(), scanPos = 0, docLen = state.doc.length;
           for (let i = 0;;) {
               let next = i == sorted.length ? null : sorted[i];
               if (!next && !active.length)
@@ -24097,6 +24097,8 @@
               }
               else {
                   from = next.from;
+                  if (from > docLen)
+                      break;
                   to = next.to;
                   active.push(next);
                   i++;
@@ -24113,8 +24115,9 @@
                       break;
                   }
               }
+              to = Math.min(to, docLen);
               let widget = false;
-              if (active.some(d => d.from == from && d.to == to)) {
+              if (active.some(d => d.from == from && (d.to == to || to == docLen))) {
                   widget = from == to;
                   if (!widget && to - from < 10) {
                       let behind = from - (scanPos + scan.value.length);
@@ -24151,6 +24154,8 @@
                   }));
               }
               pos = to;
+              if (pos == docLen)
+                  break;
               for (let i = 0; i < active.length; i++)
                   if (active[i].to <= pos)
                       active.splice(i--, 1);
