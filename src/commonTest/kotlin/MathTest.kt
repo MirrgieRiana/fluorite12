@@ -27,6 +27,13 @@ class MathTest {
         // TAN
         assertEquals(1.0, eval("TAN(PI / 4)").double, 0.001)
 
+        // POW
+        assertEquals(8.0, eval("POW(2; 3)").double, 0.001)
+
+        // EXP
+        assertEquals(2.718281828459045, eval("EXP(1)").double, 0.001)
+        assertEquals(7.389056098930649, eval("EXP(2)").double, 0.001)
+
         // LOG (自然対数)
         assertEquals(1.0, eval("LOG(MATH.E)").double, 0.001)
     }

@@ -109,6 +109,31 @@ $ flc '"$%.3f(  TAN(PI / 4)  )"'
 # 1.000
 ```
 
+## `POW` べき乗
+
+`POW(base: NUMBER; exponent: NUMBER): NUMBER`
+
+第1引数を第2引数でべき乗した結果を返します。
+
+```shell
+$ flc 'POW(2; 3)'
+# 8.0
+```
+
+## `EXP` 指数関数
+
+`EXP(number: NUMBER): NUMBER`
+
+第1引数の指数関数（底 e）を返します。
+
+```shell
+$ flc '"$%.3f(  EXP(1)  )"'
+# 2.718
+
+$ flc '"$%.3f(  EXP(2)  )"'
+# 7.389
+```
+
 ## `LOG` 自然対数
 
 `LOG(number: NUMBER): NUMBER`

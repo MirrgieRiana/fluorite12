@@ -8,8 +8,10 @@ import mirrg.fluorite12.compilers.objects.FluoriteObject
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.toFluoriteNumber
 import kotlin.math.cos
+import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.ln
+import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tan
@@ -80,6 +82,23 @@ fun createMathMounts(): List<Map<String, FluoriteValue>> {
             when (arguments.size) {
                 1 -> FluoriteDouble(tan((arguments[0] as FluoriteNumber).toDouble()))
                 else -> usage("TAN(number: NUMBER): NUMBER")
+            }
+        },
+        "POW" to FluoriteFunction { arguments ->
+            when (arguments.size) {
+                2 -> {
+                    val base = arguments[0] as FluoriteNumber
+                    val exponent = arguments[1] as FluoriteNumber
+                    FluoriteDouble(base.toDouble().pow(exponent.toDouble()))
+                }
+
+                else -> usage("POW(base: NUMBER; exponent: NUMBER): NUMBER")
+            }
+        },
+        "EXP" to FluoriteFunction { arguments ->
+            when (arguments.size) {
+                1 -> FluoriteDouble(exp((arguments[0] as FluoriteNumber).toDouble()))
+                else -> usage("EXP(number: NUMBER): NUMBER")
             }
         },
         "LOG" to FluoriteFunction { arguments ->
