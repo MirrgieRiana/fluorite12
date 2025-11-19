@@ -121,4 +121,4 @@ data class FluoriteString(val value: String) : FluoriteValue {
     override val parent get() = fluoriteClass
 }
 
-fun String.toFluoriteString() = FluoriteString(this)
+fun String.toFluoriteString() = if (this.isEmpty()) FluoriteString.EMPTY else FluoriteString(this)
