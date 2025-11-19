@@ -114,6 +114,7 @@ data class FluoriteString(val value: String) : FluoriteValue {
                 )
             )
         }
+        val EMPTY = FluoriteString("")
     }
 
     override fun toString() = value
