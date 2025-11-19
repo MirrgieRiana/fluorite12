@@ -105,95 +105,67 @@ data class FluoriteString(val value: String) : FluoriteValue {
                         }
                     },
                     "replace" to FluoriteFunction { arguments ->
-                        if (arguments.size != 3) throw IllegalArgumentException("STRING::replace(old: STRING; new: STRING): STRING")
+                        if (arguments.size != 3) throw IllegalArgumentException("STRING::replace(old: STRING | REGEX; new: STRING | (old: STRING) -> STRING): STRING")
                         val string = arguments[0] as FluoriteString
                         val old = arguments[1]
                         val new = arguments[2]
 
-                        val source = string.value
+                        val sb = StringBuilder()
+                        var index = 0
 
-                        // 置換後文字列を得る関数（将来: 関数置換に対応させやすい形）
-                        suspend fun replacementText(matchedText: String): String {
-                            // new が関数なら呼び出して文字列化、そうでなければ単純に文字列化
-                            return if (new is FluoriteFunction) {
-                                val result = new.invoke(arrayOf(matchedText.toFluoriteString()))
-                                result.toFluoriteString().value
+                        suspend fun yield(oldString: String, fromIndex: Int, toIndex: Int) {
+                            sb.append(string.value, index, fromIndex)
+                            val newValue = if (new is FluoriteFunction) {
+                                new.invoke(arrayOf(oldString.toFluoriteString()))
                             } else {
-                                new.toFluoriteString().value
+                                new
                             }
+                            sb.append(newValue.toFluoriteString().value)
+                            index = toIndex
                         }
 
-                        val result: String = when (old) {
+                        when (old) {
                             is FluoriteRegex -> {
-                                // 正規表現置換: g フラグなら全置換、なければ最初のみ
-                                val regex = old.regexCache
                                 if (old.flagData.global) {
-                                    // 全置換。関数置換対応
-                                    val sb = StringBuilder()
-                                    var lastIndex = 0
-                                    regex.findAll(source).forEach { mr ->
-                                        sb.append(source, lastIndex, mr.range.first)
-                                        sb.append(replacementText(mr.value))
-                                        lastIndex = mr.range.last + 1
+                                    old.regexCache.findAll(string.value).forEach { result ->
+                                        yield(result.value, result.range.first, result.range.last + 1)
                                     }
-                                    if (lastIndex < source.length) sb.append(source.substring(lastIndex))
-                                    sb.toString()
                                 } else {
-                                    val mr = regex.find(source)
-                                    if (mr == null) source else buildString {
-                                        append(source.substring(0, mr.range.first))
-                                        append(replacementText(mr.value))
-                                        append(source.substring(mr.range.last + 1))
+                                    old.regexCache.find(string.value)?.let { result ->
+                                        yield(result.value, result.range.first, result.range.last + 1)
                                     }
                                 }
                             }
                             else -> {
-                                val oldText = old.toFluoriteString().value
-                                if (oldText.isEmpty()) {
-                                    // 空文字列: 文字間（両端含む）に new を挿入
-                                    val rep = replacementText("")
-                                    if (source.isEmpty()) {
-                                        rep // 両端のみ -> rep
-                                    } else {
-                                        buildString {
-                                            append(rep)
-                                            source.forEach { ch ->
-                                                append(ch)
-                                                append(rep)
-                                            }
-                                        }
+                                val oldString = old.toFluoriteString().value
+                                if (oldString.isNotEmpty()) {
+                                    while (true) {
+                                        val foundIndex = string.value.indexOf(oldString, index)
+                                        if (foundIndex == -1) break
+                                        yield(oldString, foundIndex, foundIndex + oldString.length)
                                     }
                                 } else {
-                                    // 非空文字列: 非重複で全出現を左から順に置換
-                                    val rep = replacementText(oldText)
-                                    var idx = 0
-                                    val sb = StringBuilder()
-                                    while (true) {
-                                        val next = source.indexOf(oldText, idx)
-                                        if (next < 0) {
-                                            sb.append(source.substring(idx))
-                                            break
-                                        }
-                                        sb.append(source, idx, next)
-                                        sb.append(rep)
-                                        idx = next + oldText.length
+                                    yield("", 0, 0)
+                                    while (index < string.value.length) {
+                                        val nextIndex = index + 1
+                                        yield("", nextIndex, nextIndex)
                                     }
-                                    sb.toString()
                                 }
                             }
                         }
+                        sb.append(string.value, index, string.value.length)
 
-                        result.toFluoriteString()
+                        sb.toString().toFluoriteString()
                     },
                 )
             )
 
         }
-        val EMPTY = "".toFluoriteString()
+        val EMPTY = FluoriteString("")
     }
 
     override fun toString() = value
     override val parent get() = fluoriteClass
 }
 
-fun String.toFluoriteString() = FluoriteString(this)
+fun String.toFluoriteString() = if (this.isEmpty()) FluoriteString.EMPTY else FluoriteString(this)
