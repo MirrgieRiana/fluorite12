@@ -59,9 +59,9 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
     }
     private val fluoriteStringCache by lazy { stringCache.toFluoriteString() }
 
-    private class FlagData(val multiline: Boolean, val ignoreCase: Boolean, val global: Boolean)
+    class FlagData(val multiline: Boolean, val ignoreCase: Boolean, val global: Boolean)
 
-    private val flagData = run {
+    val flagData = run {
         if (flags == null) return@run FlagData(multiline = false, ignoreCase = false, global = false)
         val charsTable = flags.groupBy { it }.toMutableMap()
         charsTable.forEach {
