@@ -20,7 +20,17 @@ class StringTest {
         assertEquals("", eval("'aaa'::replace('a'; '')").string) // 文字列全体が消える置換
         assertEquals("abc", eval("'abc'::replace('d'; 'D')").string) // １回もマッチしない置換
         assertEquals("", eval("''::replace('a'; 'A')").string) // 空文字列に対する置換
+        assertEquals("AaAbAcA", eval("'abc'::replace(''; 'A')").string) // 空文字列からの置換
+        assertEquals("A", eval("''::replace(''; 'A')").string) // 空文字列に対する空文字列からの置換
+        assertEquals("abc", eval("'abc'::replace(''; '')").string) // 空文字列から空文字列への置換
         assertEquals("あイう", eval("'あいう'::replace('い'; 'イ')").string) // マルチバイト文字の置換
+        assertEquals("aAcde", eval("'abcde'::replace(/[b-d]/; 'A')").string) // 正規表現からの置換
+        assertEquals("aAAAe", eval("'abcde'::replace(/[b-d]/g; 'A')").string) // グローバル正規表現からの置換
+        assertEquals("abbc", eval("'abc'::replace('b'; m -> m.0 * 2)").string) // 関数への置換
+        assertEquals("abbccdde", eval("'abcde'::replace(/[b-d]/g; m -> m.0 * 2)").string) // グローバル正規表現から関数への置換
+        assertEquals("AaAbAcA", eval("'abc'::replace(/(?:)/g; 'A')").string) // 空のグローバル正規表現からの置換
+        assertEquals("AabcA", eval("'abc'::replace(/^|$/g; 'A')").string) // 場所にマッチする空のグローバル正規表現からの置換
+        assertEquals("ace", eval("'abcde'::replace(/b(.)d/g; m -> m.1)").string) // グローバル正規表現からグループへの置換
     }
 
 }
