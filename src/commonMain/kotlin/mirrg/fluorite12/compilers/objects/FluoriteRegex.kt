@@ -86,10 +86,7 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
             FluoriteStream {
                 val matchResults = regexCache.findAll(string)
                 matchResults.forEach { matchResult ->
-                    val groups = matchResult.groups.map { group ->
-                        group?.value?.toFluoriteString() ?: FluoriteNull
-                    }
-                    emit(groups.toFluoriteArray())
+                    emit(matchResult.toFluoriteValue())
                 }
             }
         } else {
@@ -97,10 +94,7 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
             if (matchResult == null) {
                 FluoriteNull
             } else {
-                val groups = matchResult.groups.map { group ->
-                    group?.value?.toFluoriteString() ?: FluoriteNull
-                }
-                groups.toFluoriteArray()
+                matchResult.toFluoriteValue()
             }
         }
     }
@@ -110,3 +104,10 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
 }
 
 fun String.toFluoriteRegex(flags: String? = null) = FluoriteRegex(this, flags)
+
+fun MatchResult.toFluoriteValue(): FluoriteValue {
+    val groups = this.groups.map { group ->
+        group?.value?.toFluoriteString() ?: FluoriteNull
+    }
+    return groups.toFluoriteArray()
+}
