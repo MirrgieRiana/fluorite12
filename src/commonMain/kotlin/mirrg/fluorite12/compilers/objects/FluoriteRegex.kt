@@ -84,18 +84,12 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
     private fun matchImpl(string: String): FluoriteValue {
         return if (flagData.global) {
             FluoriteStream {
-                val matchResults = regexCache.findAll(string)
-                matchResults.forEach { matchResult ->
+                regexCache.findAll(string).forEach { matchResult ->
                     emit(matchResult.toFluoriteValue())
                 }
             }
         } else {
-            val matchResult = regexCache.find(string)
-            if (matchResult == null) {
-                FluoriteNull
-            } else {
-                matchResult.toFluoriteValue()
-            }
+            regexCache.find(string)?.toFluoriteValue() ?: FluoriteNull
         }
     }
 
