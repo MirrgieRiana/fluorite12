@@ -7597,6 +7597,13 @@
           let { offsetWidth, offsetHeight } = this.view.scrollDOM;
           scrollRectIntoView(this.view.scrollDOM, targetRect, range.head < range.anchor ? -1 : 1, target.x, target.y, Math.max(Math.min(target.xMargin, offsetWidth), -offsetWidth), Math.max(Math.min(target.yMargin, offsetHeight), -offsetHeight), this.view.textDirection == Direction.LTR);
       }
+      lineHasWidget(pos) {
+          let { i } = this.childCursor().findPos(pos);
+          if (i == this.children.length)
+              return false;
+          let scan = (child) => child instanceof WidgetView || child.children.some(scan);
+          return scan(this.children[i]);
+      }
   }
   function betweenUneditable(pos) {
       return pos.node.nodeType == 1 && pos.node.firstChild &&
@@ -7814,7 +7821,7 @@
                       // Check for RTL on browsers that support getting client
                       // rects for empty ranges.
                       let rectBefore = textRange(node, i).getBoundingClientRect();
-                      if (rectBefore.left == rect.right)
+                      if (Math.abs(rectBefore.left - rect.right) < 0.1)
                           after = !right;
                   }
                   if (dy <= 0)
@@ -8286,7 +8293,10 @@
                       anchor = view.state.doc.length;
                   }
               }
-              this.newSel = EditorSelection.single(anchor, head);
+              if (view.inputState.composing > -1 && view.state.selection.ranges.length > 1)
+                  this.newSel = view.state.selection.replaceRange(EditorSelection.range(anchor, head));
+              else
+                  this.newSel = EditorSelection.single(anchor, head);
           }
       }
   }
@@ -8340,6 +8350,18 @@
           change = {
               from: sel.from, to: sel.to,
               insert: view.state.doc.slice(sel.from, change.from).append(change.insert).append(view.state.doc.slice(change.to, sel.to))
+          };
+      }
+      else if (view.state.doc.lineAt(sel.from).to < sel.to && view.docView.lineHasWidget(sel.to) &&
+          view.inputState.insertingTextAt > Date.now() - 50) {
+          // For a cross-line insertion, Chrome and Safari will crudely take
+          // the text of the line after the selection, flattening any
+          // widgets, and move it into the joined line. This tries to detect
+          // such a situation, and replaces the change with a selection
+          // replace of the text provided by the beforeinput event.
+          change = {
+              from: sel.from, to: sel.to,
+              insert: view.state.toText(view.inputState.insertingText)
           };
       }
       else if (browser.chrome && change && change.from == change.to && change.from == sel.head &&
@@ -8427,8 +8449,8 @@
           let changes = startState.changes(change);
           let mainSel = newSel && newSel.main.to <= changes.newLength ? newSel.main : undefined;
           // Try to apply a composition change to all cursors
-          if (startState.selection.ranges.length > 1 && view.inputState.composing >= 0 &&
-              change.to <= sel.to && change.to >= sel.to - 10) {
+          if (startState.selection.ranges.length > 1 && (view.inputState.composing >= 0 || view.inputState.compositionPendingChange) &&
+              change.to <= sel.to + 10 && change.to >= sel.to - 10) {
               let replaced = view.state.sliceDoc(change.from, change.to);
               let compositionRange, composition = newSel && findCompositionNode(view, newSel.main.head);
               if (composition) {
@@ -8438,17 +8460,17 @@
               else {
                   compositionRange = view.state.doc.lineAt(sel.head);
               }
-              let offset = sel.to - change.to, size = sel.to - sel.from;
+              let offset = sel.to - change.to;
               tr = startState.changeByRange(range => {
                   if (range.from == sel.from && range.to == sel.to)
                       return { changes, range: mainSel || range.map(changes) };
                   let to = range.to - offset, from = to - replaced.length;
-                  if (range.to - range.from != size || view.state.sliceDoc(from, to) != replaced ||
+                  if (view.state.sliceDoc(from, to) != replaced ||
                       // Unfortunately, there's no way to make multiple
                       // changes in the same node work without aborting
                       // composition, so cursors in the composition range are
                       // ignored.
-                      range.to >= compositionRange.from && range.from <= compositionRange.to)
+                      to >= compositionRange.from && from <= compositionRange.to)
                       return { range };
                   let rangeChanges = startState.changes({ from, to, insert: change.insert }), selOff = range.to - sel.to;
                   return {
@@ -8575,6 +8597,9 @@
           // Used to categorize changes as part of a composition, even when
           // the mutation events fire shortly after the compositionend event
           this.compositionPendingChange = false;
+          // Set by beforeinput, used in DOM change reader
+          this.insertingText = "";
+          this.insertingTextAt = 0;
           this.mouseSelection = null;
           // When a drag from the editor is active, this points at the range
           // being dragged.
@@ -9329,6 +9354,10 @@
   };
   handlers.beforeinput = (view, event) => {
       var _a, _b;
+      if (event.inputType == "insertText" || event.inputType == "insertCompositionText") {
+          view.inputState.insertingText = event.data;
+          view.inputState.insertingTextAt = Date.now();
+      }
       // In EditContext mode, we must handle insertReplacementText events
       // directly, to make spell checking corrections work
       if (event.inputType == "insertReplacementText" && view.observer.editContext) {
@@ -12834,7 +12863,7 @@
   [`decorations`](https://codemirror.net/6/docs/ref/#view.EditorView^decorations), but puts its
   inputs at the very bottom of the precedence stack, meaning mark
   decorations provided here will only be split by other, partially
-  overlapping \`outerDecorations\` ranges, and wrap around all
+  overlapping `outerDecorations` ranges, and wrap around all
   regular decorations. Use this for mark elements that should, as
   much as possible, remain in one piece.
   */
@@ -14243,17 +14272,17 @@
           let scaleX = 1, scaleY = 1, makeAbsolute = false;
           if (this.position == "fixed" && this.manager.tooltipViews.length) {
               let { dom } = this.manager.tooltipViews[0];
-              if (browser.gecko) {
-                  // Firefox sets the element's `offsetParent` to the
-                  // transformed element when a transform interferes with fixed
-                  // positioning.
-                  makeAbsolute = dom.offsetParent != this.container.ownerDocument.body;
-              }
-              else if (dom.style.top == Outside && dom.style.left == "0px") {
-                  // On other browsers, we have to awkwardly try and use other
-                  // information to detect a transform.
+              if (browser.safari) {
+                  // Safari always sets offsetParent to null, even if a fixed
+                  // element is positioned relative to a transformed parent. So
+                  // we use this kludge to try and detect this.
                   let rect = dom.getBoundingClientRect();
                   makeAbsolute = Math.abs(rect.top + 10000) > 1 || Math.abs(rect.left) > 1;
+              }
+              else {
+                  // More conforming browsers will set offsetParent to the
+                  // transformed element.
+                  makeAbsolute = !!dom.offsetParent && dom.offsetParent != this.container.ownerDocument.body;
               }
           }
           if (makeAbsolute || this.position == "absolute") {

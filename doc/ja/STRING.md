@@ -356,13 +356,43 @@ $ flc '"abcde"[1..3]'
 
 # 文字列の置換
 
-`STRING::replace(old: STRING; new: STRING): STRING`
+`STRING::replace(old: STRING | REGEX; new: STRING | (match: VALUE) -> STRING): STRING`
 
-`replace` メソッドで文字列内の指定した文字列のすべての出現個所を別の文字列に置換できます。
+`replace` メソッドで文字列内の置換を行うことができます。
+
+## 文字列による置換
+
+`old` に文字列が渡された場合、その文字列のすべての出現個所を置換します。
 
 ```shell
-$ flc '"abcabc"::replace("ab"; "AB")'
-# ABcABc
+$ flc '"-ab--ab-"::replace("ab"; "AB")'
+# -AB--AB-
+```
+
+## 正規表現による置換
+
+`old` に正規表現が渡された場合、その正規表現にマッチしたすべての部分を置換します。
+
+正規表現オブジェクトがグローバルでない場合、最初にマッチした部分のみが置換対象となります。
+
+```shell
+$ flc '"-ab--ab-"::replace(/[a-z]{2}/; "xx")'
+# -xx--ab-
+
+$ flc '"-ab--ab-"::replace(/[a-z]{2}/g; "xx")'
+# -xx--xx-
+```
+
+## 関数への置換
+
+`new` に関数が渡された場合、マッチした各部分に対してその関数が呼び出され、その戻り値で置換されます。
+
+```shell
+$ flc '"-ab--ab-"::replace("ab"; m -> m.0 * 2)'
+# -abab--abab-
+
+$ flc '"-ab--ab-"::replace(/[a-z]{2}/g; m -> m.0 * 2)'
+# -abab--abab-
 ```
 
 # 文字列ユーティリティ関数
