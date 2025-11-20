@@ -99,9 +99,6 @@ data class FluoriteRegex(val pattern: String, val flags: String?) : FluoriteValu
 
 fun String.toFluoriteRegex(flags: String? = null) = FluoriteRegex(this, flags)
 
-fun MatchResult.toFluoriteValue(): FluoriteValue {
-    val groups = this.groups.map { group ->
-        group?.value?.toFluoriteString() ?: FluoriteNull
-    }
-    return groups.toFluoriteArray()
-}
+fun MatchResult.toFluoriteValue() = createFluoriteMatchResult(this.groups.map { it?.value })
+
+fun createFluoriteMatchResult(array: List<String?>) = array.map { it?.toFluoriteString() ?: FluoriteNull }.toFluoriteArray()
