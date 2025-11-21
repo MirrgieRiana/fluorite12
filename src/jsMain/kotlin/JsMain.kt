@@ -8,9 +8,6 @@ import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.mounts.createCommonMounts
 import kotlin.js.Promise
 
-actual fun getEnv(): Map<String, String> = throw AssertionError()
-actual fun hasFreeze() = false
-
 @Suppress("unused")
 @JsName("evaluate")
 @JsExport
