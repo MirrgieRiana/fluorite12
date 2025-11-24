@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 
 plugins {
     kotlin("multiplatform") version "1.6.21"
@@ -135,7 +136,7 @@ tasks.register<Sync>("bundleRelease") {
 
 // Doc Shell Tests
 
-tasks.register("generateDocShellTests") {
+val generateDocShellTests = tasks.register("generateDocShellTests") {
     val docsDir = file("doc/ja")
     val outFile = project.layout.buildDirectory.file("docShellTests/ja.sh")
 
@@ -158,8 +159,10 @@ tasks.register("generateDocShellTests") {
 }
 
 tasks.register<Exec>("runDocShellTests") {
-    dependsOn("generateDocShellTests", "linkFlcReleaseExecutableLinuxX64")
-    commandLine("bash", "build/docShellTests/ja.sh", "build/bin/linuxX64/flcReleaseExecutable/flc.kexe")
+    val linkTask = tasks.named<KotlinNativeLink>("linkFlcReleaseExecutableLinuxX64")
+    dependsOn(generateDocShellTests, linkTask)
+    workingDir = project.layout.buildDirectory.file("docShellTests").get().asFile
+    commandLine("bash", "ja.sh", linkTask.get().outputFile.get().relativeTo(workingDir).invariantSeparatorsPath)
 }
 tasks.named("check").get().dependsOn(tasks.named("runDocShellTests"))
 
