@@ -22781,7 +22781,7 @@
               addToOptions: [],
               positionInfo: defaultPositionInfo,
               filterStrict: false,
-              compareCompletions: (a, b) => a.label.localeCompare(b.label),
+              compareCompletions: (a, b) => (a.sortText || a.label).localeCompare(b.sortText || b.label),
               interactionDelay: 75,
               updateSyncTime: 100
           }, {
