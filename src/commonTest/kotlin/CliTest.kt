@@ -1,0 +1,33 @@
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import mirrg.fluorite12.Evaluator
+import mirrg.fluorite12.cli.createCliMounts
+import mirrg.fluorite12.compilers.objects.FluoriteValue
+import mirrg.fluorite12.mounts.createCommonMounts
+import okio.Path.Companion.toPath
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+val baseDir = "build/test".toPath()
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class CliTest {
+    @Test
+    fun read() = runTest {
+        if (getFileSystem().isFailure) return@runTest
+        val file = baseDir.resolve("read.test_file.tmp.txt")
+        getFileSystem().getOrThrow().createDirectory(file.parent!!)
+        getFileSystem().getOrThrow().write(file, true) {
+            writeUtf8("123" + "\n")
+            writeUtf8("456" + "\n")
+        }
+        assertEquals("123,456", cliEval("READ(ARGS.0)", file.toString()).stream())
+    }
+}
+
+private suspend fun cliEval(src: String, vararg args: String): FluoriteValue {
+    val evaluator = Evaluator()
+    evaluator.defineMounts(createCommonMounts())
+    evaluator.defineMounts(createCliMounts(args.toList()))
+    return evaluator.get(src)
+}

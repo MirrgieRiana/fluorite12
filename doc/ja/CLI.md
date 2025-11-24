@@ -145,3 +145,21 @@ $ flc -q '
 '
 # Hello, world!
 ```
+
+## `READ' ファイルから読み込み
+
+`READ(file: STRING): STREAM<STRING>`
+
+`file` で指定されたテキストファイルの内容を文字列として1行ずつ読み込みます。
+
+改行コードは除去されます。
+
+```shell
+$ {
+  echo "apple" > tmp.txt
+  echo "banana" >> tmp.txt
+  flc 'READ("tmp.txt")'
+}
+# apple
+# banana
+```
