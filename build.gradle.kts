@@ -137,13 +137,13 @@ tasks.register<Sync>("bundleRelease") {
 
 tasks.register("generateDocShellTests") {
     val docsDir = file("doc/ja")
-    val outFile = file("build/docShellTests/ja.sh")
+    val outFile = project.layout.buildDirectory.file("docShellTests/ja.sh")
 
     inputs.dir(docsDir)
     outputs.file(outFile)
 
     doLast {
-        outFile.parentFile.mkdirs()
+        outFile.get().asFile.parentFile.mkdirs()
         val lines = mutableListOf<String>()
         val docFiles = docsDir.walkTopDown().filter { it.extension == "md" }.toList()
         docFiles.forEachIndexed { index, file ->
@@ -152,8 +152,8 @@ tasks.register("generateDocShellTests") {
             docShellParser.writeTestScript()
             if (index == docFiles.size - 1) docShellParser.writeTestScriptFooter()
         }
-        outFile.writeText(lines.joinToString("") { "$it\n" })
-        outFile.setExecutable(true)
+        outFile.get().asFile.writeText(lines.joinToString("") { "$it\n" })
+        outFile.get().asFile.setExecutable(true)
     }
 }
 
