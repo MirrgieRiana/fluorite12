@@ -17,7 +17,7 @@ class CliTest {
         if (getFileSystem().isFailure) return@runTest
         val file = baseDir.resolve("read.test_file.tmp.txt")
         getFileSystem().getOrThrow().createDirectory(file.parent!!)
-        getFileSystem().getOrThrow().write(file, true) {
+        getFileSystem().getOrThrow().write(file) {
             writeUtf8("123" + "\n")
             writeUtf8("456" + "\n")
         }
