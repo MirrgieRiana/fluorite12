@@ -731,6 +731,23 @@ $ flc ' "{\"a\": 1}", "{\"b\": 2}" >> JSOND '
 # {b:2}
 ```
 
+---
+
+Jsonは改行が可能な場所で複数のストリーム要素に分割されていてもかまいません。
+
+```shell
+$ flc '
+  "{",
+  "  \"a\": 1",
+  "}",
+  "{",
+  "  \"b\": 2",
+  "}" >> JSOND
+'
+# {a:1}
+# {b:2}
+```
+
 ## `CSV` 配列をCSV文字列に変換
 
 `CSV(["separator": separator: STRING; ]["quote": quote: STRING; ]value: ARRAY<STRING> | STREAM<ARRAY<STRING>>): STRING | STREAM<STRING>`
