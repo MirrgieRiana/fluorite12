@@ -928,6 +928,10 @@ class Fluorite12Test {
         assertEquals("""{a:[1;2.5;3;TRUE;FALSE;NULL]}""", eval(""" '{"a":[1,2.5,"3",true,false,null]}' >> JSOND """).obj) // JSOND でJson文字列を値に変換する
         assertEquals(1, eval(""" "1" >> JSOND """).int) // プリミティブを直接指定できる
         assertEquals("[1],[2],[3]", eval(""" "[1]", "[2]", "[3]" >> JSOND """).stream()) // Jsonのストリームを指定するとストリームになる
+        assertEquals("[1],[2]", eval(""" "[", "1", "]", "[", "2", "]" >> JSOND """).stream()) // Jsonは改行可能箇所でストリーム要素が切れていてもよい
+        assertEquals("[1],[2]", eval(""" " ", "[", " ", "1", " ", "]", " ", "[", "2", "]", " " >> JSOND """).stream()) // 余分な空白文字列があってもよい
+        assertTrue(eval(""" " " >> JSOND """).empty()) // ブランク文字列しかない場合、空ストリームになる
+        assertTrue(eval(""" , >> JSOND """).empty()) // 空ストリームの場合、空ストリームになる
     }
 
     @Test

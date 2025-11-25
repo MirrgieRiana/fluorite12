@@ -100,28 +100,90 @@ suspend fun FluoriteValue.toJsonFluoriteValue(indent: String? = null): FluoriteV
     }
 }
 
+class JsonSplitter(private val listener: suspend (String) -> Unit) {
+    private val lines = mutableListOf<String>()
+    private var blockLevel = 0
+
+    suspend fun add(line: String) {
+        if (line.isBlank()) return
+        lines.add(line)
+        var isInString = false
+        var isAfterEscape = false
+        line.forEach { ch ->
+            if (isInString) {
+                if (isAfterEscape) {
+                    isAfterEscape = false
+                } else {
+                    when (ch) {
+                        '\\' -> isAfterEscape = true
+                        '"' -> isInString = false
+                    }
+                }
+            } else {
+                when (ch) {
+                    '"' -> isInString = true
+                    '{', '[' -> blockLevel++
+                    '}', ']' -> {
+                        if (blockLevel > 0) {
+                            blockLevel--
+                        } else {
+                            throw IllegalStateException("Unmatched closing bracket")
+                        }
+                    }
+                }
+            }
+        }
+        if (isInString) throw IllegalStateException("Unclosed string literal")
+        if (isAfterEscape) throw IllegalStateException("Dangling escape character")
+        if (blockLevel == 0 && lines.isNotEmpty()) {
+            listener(lines.joinToString("\n"))
+            lines.clear()
+        }
+    }
+
+    suspend fun end() {
+        if (lines.isNotEmpty()) {
+            listener(lines.joinToString("\n"))
+            lines.clear()
+        }
+    }
+}
+
 suspend fun FluoriteValue.toFluoriteValueAsJson(): FluoriteValue {
     return if (this is FluoriteStream) {
         FluoriteStream {
-            this@toFluoriteValueAsJson.collect {
-                emit(it.toFluoriteValueAsJson())
+            val jsonSplitter = JsonSplitter { json ->
+                emit(json.toFluoriteValueAsJson())
             }
+            this@toFluoriteValueAsJson.collect {
+                val line = it.toFluoriteString().value
+                jsonSplitter.add(line)
+            }
+            jsonSplitter.end()
         }
     } else {
-        fun JsonElement.toFluoriteValue(): FluoriteValue = when (this) {
-            is JsonObject -> FluoriteObject(FluoriteObject.fluoriteClass, this.mapValues { it.value.toFluoriteValue() }.toMutableMap())
-            is JsonArray -> this.map { it.toFluoriteValue() }.toFluoriteArray()
-            JsonNull -> FluoriteNull
-            is JsonPrimitive -> when {
-                this.isString -> this.content.toFluoriteString()
-                this.content == "true" -> FluoriteBoolean.TRUE
-                this.content == "false" -> FluoriteBoolean.FALSE
-                else -> this.content.toFluoriteNumber()
-            }
+        val json = this.toFluoriteString().value
+        if (json.isBlank()) {
+            FluoriteStream.EMPTY
+        } else {
+            json.toFluoriteValueAsJson()
         }
-
-        Json.decodeFromString<JsonElement>(this.toFluoriteString().value).toFluoriteValue()
     }
+}
+
+fun String.toFluoriteValueAsJson(): FluoriteValue {
+    fun JsonElement.toFluoriteValue(): FluoriteValue = when (this) {
+        is JsonObject -> FluoriteObject(FluoriteObject.fluoriteClass, this.mapValues { it.value.toFluoriteValue() }.toMutableMap())
+        is JsonArray -> this.map { it.toFluoriteValue() }.toFluoriteArray()
+        JsonNull -> FluoriteNull
+        is JsonPrimitive -> when {
+            this.isString -> this.content.toFluoriteString()
+            this.content == "true" -> FluoriteBoolean.TRUE
+            this.content == "false" -> FluoriteBoolean.FALSE
+            else -> this.content.toFluoriteNumber()
+        }
+    }
+    return Json.decodeFromString<JsonElement>(this).toFluoriteValue()
 }
 
 class CachedParser<T>(private val parser: Parser<T>) : Parser<T> {
