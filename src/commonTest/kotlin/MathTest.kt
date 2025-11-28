@@ -1,13 +1,44 @@
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import mirrg.fluorite12.compilers.objects.FluoriteInt
+import mirrg.fluorite12.compilers.objects.invoke
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MathTest {
 
     @Test
-    fun mathTest() = runTest {
+    fun floor() = runTest {
+        assertEquals(10, eval("FLOOR(10.1)").int) // FLOOR関数は小数点以下を切り捨てて内部的な型をINTEGERにする
+        assertEquals(10, eval("FLOOR(10)").int) // 整数はそのまま
+        assertEquals(-11, eval("FLOOR(-10.1)").int) // 負の数も値が小さくなるように切り捨てる
+    }
+
+    @Test
+    fun div() = runTest {
+        assertEquals(3, eval("DIV(10; 3)").int) // DIV関数は小数点以下を絶対値の小さい方に切り捨てる
+
+        // 負の場合は符号だけが変わる
+        assertEquals(3, eval("DIV(10; 3)").int)
+        assertEquals(-3, eval("DIV(10; -3)").int)
+        assertEquals(-3, eval("DIV(-10; 3)").int)
+        assertEquals(3, eval("DIV(-10; -3)").int)
+
+        // 浮動小数点の場合も整数化する
+        assertEquals(3, eval("DIV(10; 3)").int)
+        assertEquals(3.0, eval("DIV(10; 3.0)").double)
+        assertEquals(3.0, eval("DIV(10.0; 3)").double)
+        assertEquals(3.0, eval("DIV(10.0; 3.0)").double)
+        assertEquals(-3, eval("DIV(-10; 3)").int)
+        assertEquals(-3.0, eval("DIV(-10; 3.0)").double)
+        assertEquals(-3.0, eval("DIV(-10.0; 3)").double)
+        assertEquals(-3.0, eval("DIV(-10.0; 3.0)").double)
+    }
+
+    @Test
+    fun math() = runTest {
         assertEquals(3.141592653589793, eval("MATH.PI").double, 0.001)
         assertEquals(2.718281828459045, eval("MATH.E").double, 0.001)
 
@@ -36,6 +67,24 @@ class MathTest {
 
         // LOG (自然対数)
         assertEquals(1.0, eval("LOG(MATH.E)").double, 0.001)
+    }
+
+    @Test
+    fun rand() = runTest {
+        val random = eval("RAND")
+
+        repeat(100) {
+            val d = random.invoke(arrayOf()).double
+            assertTrue(d >= 0.0 && d < 1.0)
+        }
+        repeat(100) {
+            val i = random.invoke(arrayOf(FluoriteInt(4))).int
+            assertTrue(i >= 0 && i < 4)
+        }
+        repeat(100) {
+            val i = random.invoke(arrayOf(FluoriteInt(4), FluoriteInt(10))).int
+            assertTrue(i >= 4 && i < 10)
+        }
     }
 
 }

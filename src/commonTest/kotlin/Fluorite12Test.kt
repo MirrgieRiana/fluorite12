@@ -1,10 +1,8 @@
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.Evaluator
-import mirrg.fluorite12.compilers.objects.FluoriteInt
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteStream
-import mirrg.fluorite12.compilers.objects.invoke
 import mirrg.fluorite12.mounts.createCommonMounts
 import mirrg.fluorite12.operations.FluoriteException
 import kotlin.test.Test
@@ -551,12 +549,6 @@ class Fluorite12Test {
     }
 
     @Test
-    fun stringConcatenateTest() = runTest {
-        assertEquals("ab", eval(" 'a' & 'b' ").string) // & で文字列の連結ができる
-        assertEquals("12", eval(" 1 & 2 ").string) // 文字列に変換する
-    }
-
-    @Test
     fun rangeTest() = runTest {
         assertEquals("1,2,3,4", eval("1 .. 4").stream()) // .. でその範囲をイテレートするストリームを得る
         assertEquals("0,1,2,3", eval("0 .. 4 - 1").stream()) // 項は0や四則演算等でもよい
@@ -725,15 +717,6 @@ class Fluorite12Test {
     }
 
     @Test
-    fun streamTest() = runTest {
-        assertEquals("1,2,3", eval("1, 2, 3").stream()) // , でストリームが作れる
-        assertEquals("1,2,3", eval(", , 1, 2, , , 3, , ").stream()) // , は無駄に大量にあってもよい
-        assertEquals("1,2,3,4,5,6,7,8,9", eval("(1, 2), 3, ((4 .. 6), 7, (8, 9))").stream()) // ストリームを結合すると自動的に平坦になる
-        assertEquals("", eval(",").stream()) // 単体の , で空ストリームになる
-        assertEquals("1", eval("1,").stream()) // 値に , を付けると単独でストリームになる
-    }
-
-    @Test
     fun builtInClassTest() = runTest {
         // 各クラスのtrue判定
         assertEquals(true, eval("1 ?= VALUE").boolean)
@@ -857,63 +840,10 @@ class Fluorite12Test {
     }
 
     @Test
-    fun arrayFunctionTest() = runTest {
-        assertEquals("[1;2;3]", eval("TO_ARRAY(1, 2, 3)").array()) // ARRAY関数はストリームを配列にする
-        assertEquals("[100]", eval("TO_ARRAY(100)").array()) // ストリームでなくてもよい
-        assertEquals("[10;20;30]", eval("1 .. 3 | _ * 10 >> TO_ARRAY").array()) // ARRAY関数はパイプ演算子と組み合わせて使うと便利
-    }
-
-    @Test
     fun objectFunctionTest() = runTest {
         assertEquals("{a:1;b:2;c:3}", eval("TO_OBJECT((a: 1), (b: 2), (c: 3))").obj) // OBJECT関数はストリームをオブジェクトにする
         assertEquals("{a:100}", eval("TO_OBJECT(a: 100)").obj) // ストリームでなくてもよい
         assertEquals("{1:10;2:20;3:30}", eval("1 .. 3 | ((_): _ * 10) >> TO_OBJECT").obj) // OBJECT関数はパイプ演算子と組み合わせて使うと便利
-    }
-
-    @Test
-    fun floorFunctionTest() = runTest {
-        assertEquals(10, eval("FLOOR(10.1)").int) // FLOOR関数は小数点以下を切り捨てて内部的な型をINTEGERにする
-        assertEquals(10, eval("FLOOR(10)").int) // 整数はそのまま
-        assertEquals(-11, eval("FLOOR(-10.1)").int) // 負の数も値が小さくなるように切り捨てる
-    }
-
-    @Test
-    fun divFunctionTest() = runTest {
-        assertEquals(3, eval("DIV(10; 3)").int) // DIV関数は小数点以下を絶対値の小さい方に切り捨てる
-
-        // 負の場合は符号だけが変わる
-        assertEquals(3, eval("DIV(10; 3)").int)
-        assertEquals(-3, eval("DIV(10; -3)").int)
-        assertEquals(-3, eval("DIV(-10; 3)").int)
-        assertEquals(3, eval("DIV(-10; -3)").int)
-
-        // 浮動小数点の場合も整数化する
-        assertEquals(3, eval("DIV(10; 3)").int)
-        assertEquals(3.0, eval("DIV(10; 3.0)").double)
-        assertEquals(3.0, eval("DIV(10.0; 3)").double)
-        assertEquals(3.0, eval("DIV(10.0; 3.0)").double)
-        assertEquals(-3, eval("DIV(-10; 3)").int)
-        assertEquals(-3.0, eval("DIV(-10; 3.0)").double)
-        assertEquals(-3.0, eval("DIV(-10.0; 3)").double)
-        assertEquals(-3.0, eval("DIV(-10.0; 3.0)").double)
-    }
-
-    @Test
-    fun randomFunctionTest() = runTest {
-        val random = eval("RAND")
-
-        repeat(100) {
-            val d = random.invoke(arrayOf()).double
-            assertTrue(d >= 0.0 && d < 1.0)
-        }
-        repeat(100) {
-            val i = random.invoke(arrayOf(FluoriteInt(4))).int
-            assertTrue(i >= 0 && i < 4)
-        }
-        repeat(100) {
-            val i = random.invoke(arrayOf(FluoriteInt(4), FluoriteInt(10))).int
-            assertTrue(i >= 4 && i < 10)
-        }
     }
 
     @Test
@@ -1103,18 +1033,6 @@ class Fluorite12Test {
     }
 
     @Test
-    fun subString() = runTest {
-        assertEquals("abc", eval("'abc'[]").string) // 文字列そのものを返す
-        assertEquals("b", eval("'abc'[1]").string) // 単一インデックスによる部分文字列の取得
-        assertEquals("b", eval("'abc'['0.95']").string) // インデックスは数値化し、四捨五入される
-        assertEquals("NULL", eval("'abc'[3]").string) // 範囲外のインデックスは NULL が返る
-        assertEquals("c", eval("'abc'[-1]").string) // 負のインデックスは後ろから数える
-        assertEquals("ccab", eval("'abc'[2, 2, 0, 1]").string) // インデックスのストリームは要素のストリームを返す
-
-        assertEquals("bcd", eval("'abcde'[1 .. 3]").string) // 範囲指定による部分配列の取得
-    }
-
-    @Test
     fun identifier() = runTest {
         assertEquals(123, eval("abc := 123; abc").int) // 英数字
 
@@ -1163,16 +1081,6 @@ class Fluorite12Test {
         assertEquals(123, eval("123 >> REDUCE[a, b -> a + b]").int) // ストリームでない場合、その値がそのまま帰ってくる
         assertEquals(123, eval("123, >> REDUCE[a, b -> a + b]").int) // 長さが1のストリームでもその値がそのまま帰ってくる
         assertEquals(FluoriteNull, eval(", >> REDUCE[a, b -> a + b]")) // 長さが0のストリームはNULLになる
-    }
-
-    @Test
-    fun pushPopUnshiftShift() = runTest {
-        assertEquals("[1;2;3]", eval("a := [1, 2]; a::push(3); a").array())
-        assertEquals("[1;2;3;4]", eval("a := [1, 2]; a::push(3, 4); a").array())
-        assertEquals("[1]", eval("a := [1, 2]; a::pop(); a").array())
-        assertEquals("[3;1;2]", eval("a := [1, 2]; a::unshift(3); a").array())
-        assertEquals("[3;4;1;2]", eval("a := [1, 2]; a::unshift(3, 4); a").array())
-        assertEquals("[2]", eval("a := [1, 2]; a::shift(); a").array())
     }
 
     @Test

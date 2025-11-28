@@ -20,6 +20,13 @@ class ArrayTest {
     }
 
     @Test
+    fun toArray() = runTest {
+        assertEquals("[1;2;3]", eval("TO_ARRAY(1, 2, 3)").array()) // ARRAY関数はストリームを配列にする
+        assertEquals("[100]", eval("TO_ARRAY(100)").array()) // ストリームでなくてもよい
+        assertEquals("[10;20;30]", eval("1 .. 3 | _ * 10 >> TO_ARRAY").array()) // ARRAY関数はパイプ演算子と組み合わせて使うと便利
+    }
+
+    @Test
     fun assign() = runTest {
 
         // 配列呼び出しによる代入
@@ -91,6 +98,16 @@ class ArrayTest {
     @Test
     fun times() = runTest {
         assertEquals("[1;2;1;2;1;2]", eval("[1; 2] * 3").array()) // 配列を繰り返した配列の取得
+    }
+
+    @Test
+    fun pushPopUnshiftShift() = runTest {
+        assertEquals("[1;2;3]", eval("a := [1, 2]; a::push(3); a").array())
+        assertEquals("[1;2;3;4]", eval("a := [1, 2]; a::push(3, 4); a").array())
+        assertEquals("[1]", eval("a := [1, 2]; a::pop(); a").array())
+        assertEquals("[3;1;2]", eval("a := [1, 2]; a::unshift(3); a").array())
+        assertEquals("[3;4;1;2]", eval("a := [1, 2]; a::unshift(3, 4); a").array())
+        assertEquals("[2]", eval("a := [1, 2]; a::shift(); a").array())
     }
 
 }

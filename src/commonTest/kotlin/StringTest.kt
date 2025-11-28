@@ -7,6 +7,24 @@ import kotlin.test.assertEquals
 class StringTest {
 
     @Test
+    fun subString() = runTest {
+        assertEquals("abc", eval("'abc'[]").string) // 文字列そのものを返す
+        assertEquals("b", eval("'abc'[1]").string) // 単一インデックスによる部分文字列の取得
+        assertEquals("b", eval("'abc'['0.95']").string) // インデックスは数値化し、四捨五入される
+        assertEquals("NULL", eval("'abc'[3]").string) // 範囲外のインデックスは NULL が返る
+        assertEquals("c", eval("'abc'[-1]").string) // 負のインデックスは後ろから数える
+        assertEquals("ccab", eval("'abc'[2, 2, 0, 1]").string) // インデックスのストリームは要素のストリームを返す
+
+        assertEquals("bcd", eval("'abcde'[1 .. 3]").string) // 範囲指定による部分配列の取得
+    }
+
+    @Test
+    fun concatenate() = runTest {
+        assertEquals("ab", eval(" 'a' & 'b' ").string) // & で文字列の連結ができる
+        assertEquals("12", eval(" 1 & 2 ").string) // 文字列に変換する
+    }
+
+    @Test
     fun replace() = runTest {
         assertEquals("aBc", eval("'abc'::replace('b'; 'B')").string) // 文字列の置換ができる
         assertEquals("aBCd", eval("'abcd'::replace('bc'; 'BC')").string) // 複数文字の文字列による置換

@@ -8,6 +8,15 @@ import kotlin.test.assertTrue
 class StreamTest {
 
     @Test
+    fun stream() = runTest {
+        assertEquals("1,2,3", eval("1, 2, 3").stream()) // , でストリームが作れる
+        assertEquals("1,2,3", eval(", , 1, 2, , , 3, , ").stream()) // , は無駄に大量にあってもよい
+        assertEquals("1,2,3,4,5,6,7,8,9", eval("(1, 2), 3, ((4 .. 6), 7, (8, 9))").stream()) // ストリームを結合すると自動的に平坦になる
+        assertEquals("", eval(",").stream()) // 単体の , で空ストリームになる
+        assertEquals("1", eval("1,").stream()) // 値に , を付けると単独でストリームになる
+    }
+
+    @Test
     fun property() = runTest {
         assertEquals("1,2", eval("({a: 1}, {a: 2}).a").stream()) // ストリームのプロパティーは要素のプロパティーの連結
         assertEquals("1,NULL", eval("({a: 1}, {b: 2}).a").stream()) // プロパティをサポートするかは要素ごとに変わる
