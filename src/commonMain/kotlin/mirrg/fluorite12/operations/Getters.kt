@@ -758,28 +758,36 @@ class LabelGetter(private val frameIndex: Int, private val labelIndex: Int, priv
     override val code get() = "LabelGetter[$frameIndex;$labelIndex;${getter.code}]"
 }
 
-class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val argumentVariableIndex: Int, private val contentGetter: Getter) : Getter {
+class PipeGetter(private val streamGetter: Getter, private val newFrameIndex: Int, private val indexVariableIndex: Int?, private val valueVariableIndex: Int, private val contentGetter: Getter) : Getter {
     override suspend fun evaluate(env: Environment): FluoriteValue {
         val stream = streamGetter.evaluate(env)
         return if (stream is FluoriteStream) {
             FluoriteStream {
-                val newEnv = Environment(env, 1, 0)
+                val newEnv = Environment(env, (indexVariableIndex?.let { 1 } ?: 0) + 1, 0)
+                var index = 0
                 stream.collect { value ->
-                    newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable(value)
+                    if (indexVariableIndex != null) {
+                        newEnv.variableTable[newFrameIndex][indexVariableIndex] = LocalVariable(FluoriteInt(index))
+                    }
+                    newEnv.variableTable[newFrameIndex][valueVariableIndex] = LocalVariable(value)
                     val result = contentGetter.evaluate(newEnv)
                     if (result is FluoriteStream) {
                         result.flowProvider(this)
                     } else {
                         emit(result)
                     }
+                    index++
                 }
             }
         } else {
-            val newEnv = Environment(env, 1, 0)
-            newEnv.variableTable[newFrameIndex][argumentVariableIndex] = LocalVariable(stream)
+            val newEnv = Environment(env, (indexVariableIndex?.let { 1 } ?: 0) + 1, 0)
+            if (indexVariableIndex != null) {
+                newEnv.variableTable[newFrameIndex][indexVariableIndex] = LocalVariable(FluoriteInt(0))
+            }
+            newEnv.variableTable[newFrameIndex][valueVariableIndex] = LocalVariable(stream)
             contentGetter.evaluate(newEnv)
         }
     }
 
-    override val code get() = "PipeGetter[${streamGetter.code};$newFrameIndex;$argumentVariableIndex;${contentGetter.code}]"
+    override val code get() = "PipeGetter[${streamGetter.code};$newFrameIndex;$indexVariableIndex;$valueVariableIndex;${contentGetter.code}]"
 }

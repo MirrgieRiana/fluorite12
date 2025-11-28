@@ -461,16 +461,34 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
 
         is InfixPipeNode -> {
             val streamGetter = compileToGetter(node.left)
-            val (variable, contentNode) = if (node.right is InfixEqualGreaterNode) {
-                require(node.right.left is IdentifierNode)
-                Pair(node.right.left.string, node.right.right)
-            } else {
-                Pair("_", node.right)
+            val (indexVariable, valueVariable, contentNode) = run {
+                val bodyNode = node.right
+                if (bodyNode !is InfixEqualGreaterNode) {
+                    Triple(null, "_", bodyNode)
+                } else {
+                    val argumentsNode = bodyNode.left
+                    when (argumentsNode) {
+                        is IdentifierNode -> Triple(null, argumentsNode.string, bodyNode.right)
+
+                        is CommasNode -> when (argumentsNode.nodes.size) {
+                            2 -> run fail@{
+                                val indexVariableNode = argumentsNode.nodes[0] as? IdentifierNode ?: return@fail null
+                                val valueVariableNode = argumentsNode.nodes[1] as? IdentifierNode ?: return@fail null
+                                Triple(indexVariableNode.string, valueVariableNode.string, bodyNode.right)
+                            }
+
+                            else -> null
+                        }
+
+                        else -> null
+                    } ?: throw IllegalArgumentException("Invalid pipe arguments: $argumentsNode")
+                }
             }
             val newFrame = Frame(this)
-            val argumentVariableIndex = newFrame.defineVariable(variable)
+            val indexVariableIndex = indexVariable?.let { newFrame.defineVariable(it) }
+            val valueVariableIndex = newFrame.defineVariable(valueVariable)
             val contentGetter = newFrame.compileToGetter(contentNode)
-            PipeGetter(streamGetter, newFrame.frameIndex, argumentVariableIndex, contentGetter)
+            PipeGetter(streamGetter, newFrame.frameIndex, indexVariableIndex, valueVariableIndex, contentGetter)
         }
 
         is InfixGreaterGreaterNode -> {

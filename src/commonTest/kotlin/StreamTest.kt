@@ -25,4 +25,10 @@ class StreamTest {
         assertTrue(eval("(,).a").empty()) // 空ストリームのプロパティーは空ストリーム
     }
 
+    @Test
+    fun indexedPipe() = runTest {
+        assertEquals("[0;1],[1;2],[2;3]", eval("1 .. 3 | i, v => [i, v]").stream()) // 右辺の引数が2項目だとindexを渡す
+        assertTrue(eval(", | i, v => [i, v]").empty()) // 空ストリームでも動作する
+    }
+
 }
