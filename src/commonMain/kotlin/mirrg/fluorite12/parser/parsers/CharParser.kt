@@ -10,8 +10,12 @@ class CharParser(val char: Char) : Parser<Char> {
         if (context.src[start] != char) return null
         return ParseResult(char, start, start + 1)
     }
+
+    companion object {
+        val cache = mutableMapOf<Char, CharParser>()
+    }
 }
 
-fun Char.toParser() = CharParser(this)
+fun Char.toParser() = CharParser.cache.getOrPut(this) { CharParser(this) }
 operator fun Char.unaryPlus() = this.toParser()
 operator fun Char.unaryMinus() = -+this

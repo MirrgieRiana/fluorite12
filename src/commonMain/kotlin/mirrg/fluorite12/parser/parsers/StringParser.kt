@@ -15,8 +15,12 @@ class StringParser(val string: String) : Parser<String> {
         }
         return ParseResult(string, start, nextIndex)
     }
+
+    companion object {
+        val cache = mutableMapOf<String, StringParser>()
+    }
 }
 
-fun String.toParser() = StringParser(this)
+fun String.toParser() = StringParser.cache.getOrPut(this) { StringParser(this) }
 operator fun String.unaryPlus() = this.toParser()
 operator fun String.unaryMinus() = -+this
