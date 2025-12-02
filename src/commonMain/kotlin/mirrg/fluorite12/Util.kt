@@ -57,6 +57,7 @@ class NotParser<T>(private val parser: Parser<T>) : Parser<Unit> {
 
 fun String.escapeJsonString() = this
     .replace("\\", "\\\\")
+    .replace("\r", "\\r")
     .replace("\n", "\\n")
     .replace("\"", "\\\"")
 
