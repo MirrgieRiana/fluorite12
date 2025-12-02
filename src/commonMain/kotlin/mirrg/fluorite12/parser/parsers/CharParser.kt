@@ -1,0 +1,17 @@
+package mirrg.fluorite12.parser.parsers
+
+import mirrg.fluorite12.parser.ParseContext
+import mirrg.fluorite12.parser.ParseResult
+import mirrg.fluorite12.parser.Parser
+
+class CharParser(val char: Char) : Parser<Char> {
+    override fun parseOrNull(context: ParseContext, start: Int): ParseResult<Char>? {
+        if (start >= context.src.length) return null
+        if (context.src[start] != char) return null
+        return ParseResult(char, start, start + 1)
+    }
+}
+
+fun Char.toParser() = CharParser(this)
+operator fun Char.unaryPlus() = this.toParser()
+operator fun Char.unaryMinus() = -+this
