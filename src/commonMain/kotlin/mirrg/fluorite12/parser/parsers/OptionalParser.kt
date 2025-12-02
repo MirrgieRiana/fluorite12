@@ -16,4 +16,4 @@ class OptionalParser<out T : Any>(val parser: Parser<T>) : Parser<Tuple1<T?>> {
     }
 }
 
-fun <T : Any> Parser<T>.optional() = OptionalParser(this)
+val <T : Any> Parser<T>.optional get() = OptionalParser(this)

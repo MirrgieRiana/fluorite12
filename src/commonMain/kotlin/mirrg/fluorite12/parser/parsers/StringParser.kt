@@ -25,3 +25,4 @@ class StringParser(val string: String) : Parser<String> {
 fun String.toParser() = if (hasFreeze()) StringParser(this) else StringParser.cache.getOrPut(this) { StringParser(this) }
 operator fun String.unaryPlus() = this.toParser()
 operator fun String.unaryMinus() = -+this
+operator fun String.not() = !+this

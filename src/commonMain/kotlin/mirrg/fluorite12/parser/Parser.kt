@@ -1,6 +1,7 @@
 package mirrg.fluorite12.parser
 
 import mirrg.fluorite12.escapeJsonString
+import mirrg.fluorite12.parser.parsers.normalize
 
 fun interface Parser<out T : Any> {
     fun parseOrNull(context: ParseContext, start: Int): ParseResult<T>?
@@ -25,6 +26,8 @@ class ParseContext(val src: String, val useCache: Boolean) {
 }
 
 data class ParseResult<out T : Any>(val value: T, val start: Int, val end: Int)
+
+fun ParseResult<*>.text(context: ParseContext) = context.src.substring(this.start, this.end).normalize()
 
 open class ParseException(message: String, val position: Int) : Exception(message)
 

@@ -3,6 +3,8 @@ package mirrg.fluorite12.parser.parsers
 import mirrg.fluorite12.parser.ParseResult
 import mirrg.fluorite12.parser.Parser
 
+fun String.normalize() = this.replace("\r\n", "\n").replace("\r", "\n")
+
 fun <T : Any, O : Any> leftAssociative(term: Parser<T>, operator: Parser<O>, combinator: (T, O, T) -> T) = Parser { context, start ->
     var result = context.parseOrNull(term, start) ?: return@Parser null
     while (true) {

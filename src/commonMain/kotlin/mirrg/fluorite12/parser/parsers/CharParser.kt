@@ -20,3 +20,4 @@ class CharParser(val char: Char) : Parser<Char> {
 fun Char.toParser() = if (hasFreeze()) CharParser(this) else CharParser.cache.getOrPut(this) { CharParser(this) }
 operator fun Char.unaryPlus() = this.toParser()
 operator fun Char.unaryMinus() = -+this
+operator fun Char.not() = !+this

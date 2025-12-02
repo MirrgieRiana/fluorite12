@@ -15,3 +15,4 @@ class RegexParser(val regex: Regex) : Parser<MatchResult> {
 fun Regex.toParser() = RegexParser(this)
 operator fun Regex.unaryPlus() = this.toParser()
 operator fun Regex.unaryMinus() = -+this
+operator fun Regex.not() = !+this

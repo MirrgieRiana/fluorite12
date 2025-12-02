@@ -112,7 +112,7 @@ class ParserTest {
 
         // zeroOrMore
         run {
-            val parser = (+'a').zeroOrMore()
+            val parser = (+'a').zeroOrMore
             assertEquals(listOf(), parser.parseAllOrThrow("")) // 0回で成功
             assertEquals(listOf('a'), parser.parseAllOrThrow("a")) // 1回で成功
             assertEquals(listOf('a', 'a', 'a'), parser.parseAllOrThrow("aaa")) // 複数回で成功
@@ -121,7 +121,7 @@ class ParserTest {
 
         // oneOrMore
         run {
-            val parser = (+'a').oneOrMore()
+            val parser = (+'a').oneOrMore
             assertUnmatchedInput { parser.parseAllOrThrow("") } // 0回で失敗
             assertEquals(listOf('a'), parser.parseAllOrThrow("a"))
             assertEquals(listOf('a', 'a', 'a'), parser.parseAllOrThrow("aaa"))
@@ -150,7 +150,7 @@ class ParserTest {
 
         // 単体
         run {
-            val parser = (+'a').optional()
+            val parser = (+'a').optional
             assertEquals(Tuple1('a'), parser.parseAllOrThrow("a")) // マッチする場合に成功
             assertEquals(Tuple1(null), parser.parseAllOrThrow("")) // 省略された場合に成功
             assertExtraCharacters { parser.parseAllOrThrow("b") } // マッチしない文字で失敗
@@ -158,7 +158,7 @@ class ParserTest {
 
         // マッチしない場合は解析位置も変更しない
         run {
-            val parser = (+'a').optional() * +'b'
+            val parser = (+'a').optional * +'b'
             assertEquals(Tuple2(Tuple1('a'), 'b'), parser.parseAllOrThrow("ab")) // マッチする場合に成功
             assertEquals(Tuple2(Tuple1(null), 'b'), parser.parseAllOrThrow("b")) // 省略された場合に成功
         }

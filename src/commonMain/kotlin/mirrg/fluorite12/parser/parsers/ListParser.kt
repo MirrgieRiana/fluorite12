@@ -20,5 +20,5 @@ class ListParser<out T : Any>(val parser: Parser<T>, val min: Int, val max: Int)
 }
 
 fun <T : Any> Parser<T>.list(min: Int = 0, max: Int = Int.MAX_VALUE) = ListParser(this, min, max)
-fun <T : Any> Parser<T>.zeroOrMore() = this.list()
-fun <T : Any> Parser<T>.oneOrMore() = this.list(min = 1)
+val <T : Any> Parser<T>.zeroOrMore get() = this.list()
+val <T : Any> Parser<T>.oneOrMore get() = this.list(min = 1)
