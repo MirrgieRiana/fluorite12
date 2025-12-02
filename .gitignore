@@ -1,10 +1,7 @@
-/.gradle
-/build
-/.idea
-/kotlin-js-store
+.gradle/
+build/
+/.idea/
+/kotlin-js-store/
 *.hprof
 /openjdk17/
-
-/buildSrc/.gradle
-/buildSrc/build
 /ai/
