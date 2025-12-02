@@ -5,6 +5,7 @@ plugins {
     kotlin("multiplatform") version "1.6.21"
     kotlin("plugin.serialization") version "1.6.21"
     id("com.dorongold.task-tree") version "2.1.1"
+    id("build-logic")
 }
 
 repositories {
