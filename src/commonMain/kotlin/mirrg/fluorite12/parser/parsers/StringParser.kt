@@ -1,5 +1,6 @@
 package mirrg.fluorite12.parser.parsers
 
+import hasFreeze
 import mirrg.fluorite12.parser.ParseContext
 import mirrg.fluorite12.parser.ParseResult
 import mirrg.fluorite12.parser.Parser
@@ -21,6 +22,6 @@ class StringParser(val string: String) : Parser<String> {
     }
 }
 
-fun String.toParser() = StringParser.cache.getOrPut(this) { StringParser(this) }
+fun String.toParser() = if (hasFreeze()) StringParser(this) else StringParser.cache.getOrPut(this) { StringParser(this) }
 operator fun String.unaryPlus() = this.toParser()
 operator fun String.unaryMinus() = -+this

@@ -1,5 +1,6 @@
 package mirrg.fluorite12.parser.parsers
 
+import hasFreeze
 import mirrg.fluorite12.parser.ParseContext
 import mirrg.fluorite12.parser.ParseResult
 import mirrg.fluorite12.parser.Parser
@@ -16,6 +17,6 @@ class CharParser(val char: Char) : Parser<Char> {
     }
 }
 
-fun Char.toParser() = CharParser.cache.getOrPut(this) { CharParser(this) }
+fun Char.toParser() = if (hasFreeze()) CharParser(this) else CharParser.cache.getOrPut(this) { CharParser(this) }
 operator fun Char.unaryPlus() = this.toParser()
 operator fun Char.unaryMinus() = -+this
