@@ -16177,6 +16177,7 @@
       get lastChild() { return this.nextChild(this._tree.children.length - 1, -1, 0, 4 /* Side.DontCare */); }
       childAfter(pos) { return this.nextChild(0, 1, pos, 2 /* Side.After */); }
       childBefore(pos) { return this.nextChild(this._tree.children.length - 1, -1, pos, -2 /* Side.Before */); }
+      prop(prop) { return this._tree.prop(prop); }
       enter(pos, side, mode = 0) {
           let mounted;
           if (!(mode & IterMode.IgnoreOverlays) && (mounted = MountedTree.get(this._tree)) && mounted.overlay) {
@@ -16270,6 +16271,7 @@
       get lastChild() { return this.child(-1, 0, 4 /* Side.DontCare */); }
       childAfter(pos) { return this.child(1, pos, 2 /* Side.After */); }
       childBefore(pos) { return this.child(-1, pos, -2 /* Side.Before */); }
+      prop(prop) { return this.type.prop(prop); }
       enter(pos, side, mode = 0) {
           if (mode & IterMode.ExcludeBuffers)
               return null;
@@ -16851,7 +16853,7 @@
               fork.next();
               while (fork.pos > startPos) {
                   if (fork.size < 0) {
-                      if (fork.size == -3 /* SpecialRecord.ContextChange */)
+                      if (fork.size == -3 /* SpecialRecord.ContextChange */ || fork.size == -4 /* SpecialRecord.LookAhead */)
                           localSkipped += 4;
                       else
                           break scan;
