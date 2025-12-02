@@ -130,7 +130,6 @@ tasks.register<Sync>("bundleRelease") {
     from("build/libs") { into("libs") }
     from("doc") { into("doc") }
     from("playground/build/out") { into("playground") }
-    println(this.excludes)
 }
 
 
