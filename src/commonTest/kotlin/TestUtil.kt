@@ -1,5 +1,3 @@
-import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
-import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import mirrg.fluorite12.Evaluator
@@ -16,11 +14,12 @@ import mirrg.fluorite12.compilers.objects.FluoriteString
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.mounts.createCommonMounts
+import mirrg.fluorite12.parser.parseAllOrThrow
 
 fun parse(src: String): String {
-    val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
+    val parseResult = Fluorite12Grammar.rootParser.parseAllOrThrow(src)
     val frame = Frame()
-    val getter = frame.compileToGetter(parseResult.value)
+    val getter = frame.compileToGetter(parseResult)
     return getter.code
 }
 

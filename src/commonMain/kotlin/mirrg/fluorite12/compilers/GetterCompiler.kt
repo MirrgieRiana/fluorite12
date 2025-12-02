@@ -149,7 +149,6 @@ import mirrg.fluorite12.operations.TryCatchGetter
 import mirrg.fluorite12.operations.TryCatchWithVariableGetter
 import mirrg.fluorite12.operations.VariableDefinitionObjectInitializer
 import mirrg.fluorite12.operations.VariableGetter
-import mirrg.fluorite12.text
 
 fun Frame.compileToGetter(node: Node): Getter {
     return when (node) {
@@ -209,7 +208,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is RegexNode -> LiteralGetter(FluoriteRegex(node.node.string, node.flags?.string))
 
-        is BracketsLiteralArrowedNode -> throw IllegalArgumentException("Unknown operator: ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
+        is BracketsLiteralArrowedNode -> throw IllegalArgumentException("Unknown operator: $node ${node.arguments} ${node.body}")
 
         is BracketsLiteralSimpleRoundNode -> {
             val frame = Frame(this)
@@ -232,7 +231,7 @@ fun Frame.compileToGetter(node: Node): Getter {
         is UnaryDollarSharpNode -> GetLengthGetter(compileToGetter(node.main))
         is UnaryDollarAmpersandNode -> ToJsonGetter(compileToGetter(node.main))
         is UnaryDollarAsteriskNode -> FromJsonGetter(compileToGetter(node.main))
-        is UnaryAtNode -> throw IllegalArgumentException("Unknown operator: ${node.operator.text}")
+        is UnaryAtNode -> throw IllegalArgumentException("Unknown operator: $node")
         is ThrowNode -> ThrowGetter(compileToGetter(node.right))
 
         is ReturnNode -> {
@@ -243,7 +242,7 @@ fun Frame.compileToGetter(node: Node): Getter {
 
         is BracketsRightArrowedRoundNode -> compileFunctionalAccessToGetter(node, false, ::createArrowedArgumentGetters)
         is BracketsRightArrowedSquareNode -> compileFunctionalAccessToGetter(node, true, ::createArrowedArgumentGetters)
-        is BracketsRightArrowedCurlyNode -> throw IllegalArgumentException("Unknown operator: ${node.receiver} ${node.left.text} ${node.arguments} ${node.arrow.text} ${node.body} ${node.right.text}")
+        is BracketsRightArrowedCurlyNode -> throw IllegalArgumentException("Unknown operator: $node ${node.receiver} ${node.arguments} ${node.body}")
         is BracketsRightSimpleRoundNode -> compileFunctionalAccessToGetter(node, false, ::createSimpleArgumentGetters)
         is BracketsRightSimpleSquareNode -> compileFunctionalAccessToGetter(node, true, ::createSimpleArgumentGetters)
         is BracketsRightSimpleCurlyNode -> compileObjectCreationToGetter(node.receiver, node.body)
@@ -256,7 +255,7 @@ fun Frame.compileToGetter(node: Node): Getter {
         is ComparisonsNode -> {
             val termGetters = node.nodes.map { compileToGetter(it) }
             val operators: List<Comparator> = node.operators.map {
-                when (it.second) {
+                when (it) {
                     ComparisonOperatorType.EQUAL -> EqualComparator
                     ComparisonOperatorType.EXCLAMATION_EQUAL -> NotEqualComparator
                     ComparisonOperatorType.GREATER -> GreaterComparator
@@ -503,7 +502,7 @@ private fun Frame.compileInfixOperatorToGetter(node: InfixNode): Getter {
             FunctionInvocationGetter(functionGetter, listOf(valueGetter))
         }
 
-        else -> throw IllegalArgumentException("Unknown operator: A ${node.operator.text} B")
+        else -> throw IllegalArgumentException("Unknown operator: A $node B")
     }
 }
 

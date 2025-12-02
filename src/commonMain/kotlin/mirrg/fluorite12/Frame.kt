@@ -1,12 +1,11 @@
 package mirrg.fluorite12
 
-import com.github.h0tk3y.betterParse.grammar.tryParseToEnd
-import com.github.h0tk3y.betterParse.parser.toParsedOrThrow
 import mirrg.fluorite12.compilers.compileToGetter
 import mirrg.fluorite12.compilers.compileToRunner
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.operations.BuiltinMountRunner
 import mirrg.fluorite12.operations.Runner
+import mirrg.fluorite12.parser.parseAllOrThrow
 
 
 class Frame(val parent: Frame? = null) {
@@ -136,20 +135,20 @@ class Evaluator {
     }
 
     suspend fun get(src: String): FluoriteValue {
-        val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
+        val parseResult = Fluorite12Grammar.rootParser.parseAllOrThrow(src)
         val frame = Frame(currentFrame)
         currentFrame = frame
-        val getter = frame.compileToGetter(parseResult.value)
+        val getter = frame.compileToGetter(parseResult)
         val env = Environment(currentEnv, frame.nextVariableIndex, frame.mountCount)
         currentEnv = env
         return getter.evaluate(env)
     }
 
     suspend fun run(src: String) {
-        val parseResult = Fluorite12Grammar().tryParseToEnd(src).toParsedOrThrow()
+        val parseResult = Fluorite12Grammar.rootParser.parseAllOrThrow(src)
         val frame = Frame(currentFrame)
         currentFrame = frame
-        val runners = frame.compileToRunner(parseResult.value)
+        val runners = frame.compileToRunner(parseResult)
         val env = Environment(currentEnv, frame.nextVariableIndex, frame.mountCount)
         currentEnv = env
         runners.forEach {
