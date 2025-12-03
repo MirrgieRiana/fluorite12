@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 
 plugins {
-    kotlin("multiplatform") version "2.0.21"
-    kotlin("plugin.serialization") version "2.0.21"
+    kotlin("multiplatform") version "2.1.21"
+    kotlin("plugin.serialization") version "2.1.21"
     id("com.dorongold.task-tree") version "4.0.1"
     id("build-logic")
 }
@@ -52,18 +52,18 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-                implementation("com.squareup.okio:okio:3.9.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+                implementation("com.squareup.okio:okio:3.10.2")
                 implementation("com.ionspin.kotlin:bignum:0.3.10")
-                implementation("mirrg.kotlin:mirrg.kotlin.helium-kotlin-2-0:4.0.1")
+                implementation("mirrg.kotlin:mirrg.kotlin.helium-kotlin-2-1:4.0.1")
                 compileOnly(kotlin("test")) // ここにも書かないとなぜかIDEAが認識しない
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
             }
         }
         val nativeMain by creating {
