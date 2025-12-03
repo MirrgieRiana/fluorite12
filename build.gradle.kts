@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 
 plugins {
     kotlin("multiplatform") version "2.2.21"
@@ -8,17 +7,12 @@ plugins {
     id("build-logic")
 }
 
-repositories {
-    mavenCentral()
-    maven("https://raw.githubusercontent.com/MirrgieRiana/mirrg.kotlin/refs/heads/maven/maven/")
-}
-
 kotlin {
 
     jvmToolchain(21)
 
     jvm()
-    js(IR) {
+    js {
         outputModuleName = "fluorite12"
         browser {
             testTask {
@@ -50,29 +44,26 @@ kotlin {
     //}
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
                 implementation("com.squareup.okio:okio:3.10.2")
                 implementation("com.ionspin.kotlin:bignum:0.3.10")
                 implementation("mirrg.kotlin:mirrg.kotlin.helium-kotlin-2-2:4.0.1")
-                compileOnly(kotlin("test")) // ここにも書かないとなぜかIDEAが認識しない
             }
         }
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
             }
         }
         val nativeMain by creating {
-            dependsOn(commonMain)
+            dependsOn(commonMain.get())
         }
-        kotlin.targets.withType<KotlinNativeTarget>().all {
-            compilations.getByName("main") {
-                defaultSourceSet.dependsOn(nativeMain)
-            }
+        val linuxX64Main by getting {
+            dependsOn(nativeMain)
         }
     }
 
@@ -81,6 +72,12 @@ kotlin {
 tasks.named("jsBrowserProductionWebpack") { dependsOn("jsProductionLibraryCompileSync") }
 tasks.named("jsBrowserProductionLibraryDistribution") { dependsOn("jsProductionExecutableCompileSync") }
 tasks.named("jsNodeProductionLibraryDistribution") { dependsOn("jsProductionExecutableCompileSync") }
+
+val releaseExecutable = kotlin.targets
+    .withType<KotlinNativeTarget>()
+    .getByName("linuxX64")
+    .binaries
+    .getExecutable("flc", "RELEASE")
 
 
 // Executable Jar
@@ -136,10 +133,10 @@ tasks.register<Sync>("bundleRelease") {
     }
     from("build/generateInstallNative")
     from("build/generateInstallJvm")
-    from("build/bin") { into("bin") }
-    from("build/libs") { into("libs") }
+    from(releaseExecutable.outputFile) { into("bin") }
+    from(tasks.named<Jar>("jvmJar")) { into("libs") }
     from("doc") { into("doc") }
-    from("playground/build/out") { into("playground") }
+    from(project(":playground").layout.buildDirectory.dir("out")) { into("playground") }
 }
 
 
@@ -168,12 +165,11 @@ val generateDocShellTests = tasks.register("generateDocShellTests") {
 }
 
 tasks.register<Exec>("runDocShellTests") {
-    val linkTask = tasks.named<KotlinNativeLink>("linkFlcReleaseExecutableLinuxX64")
-    dependsOn(generateDocShellTests, linkTask)
+    dependsOn(generateDocShellTests, releaseExecutable.linkTaskProvider)
     workingDir = project.layout.buildDirectory.file("docShellTests").get().asFile
-    commandLine("bash", "ja.sh", linkTask.get().outputFile.get().relativeTo(workingDir).invariantSeparatorsPath)
+    commandLine("bash", "ja.sh", releaseExecutable.outputFile.relativeTo(workingDir).invariantSeparatorsPath)
 }
-tasks.named("check").get().dependsOn(tasks.named("runDocShellTests"))
+tasks.named("check").configure { dependsOn(tasks.named("runDocShellTests")) }
 
 
 // Utilities

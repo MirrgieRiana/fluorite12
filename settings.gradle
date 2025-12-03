@@ -2,6 +2,13 @@ pluginManagement {
     includeBuild("build-logic")
 }
 
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        maven { url = "https://raw.githubusercontent.com/MirrgieRiana/mirrg.kotlin/refs/heads/maven/maven/" }
+    }
+}
+
 include(":playground")
 
 rootProject.name = "fluorite12"
