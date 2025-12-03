@@ -106,7 +106,9 @@ tasks.register<Copy>("generateInstallNative") {
             .replace("@ENGINE@", "native")
             .replace("@SCRIPT_NAME@", "install-native.sh")
     }
-    fileMode = 0b111101101
+    filePermissions {
+        unix("rwxr-xr-x")
+    }
     rename("install.sh", "install-native.sh")
     into("build/generateInstallNative")
 }
@@ -118,7 +120,9 @@ tasks.register<Copy>("generateInstallJvm") {
             .replace("@ENGINE@", "jvm")
             .replace("@SCRIPT_NAME@", "install-jvm.sh")
     }
-    fileMode = 0b111101101
+    filePermissions {
+        unix("rwxr-xr-x")
+    }
     rename("install.sh", "install-jvm.sh")
     into("build/generateInstallJvm")
 }
