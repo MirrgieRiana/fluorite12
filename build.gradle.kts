@@ -127,7 +127,10 @@ tasks.register<Sync>("bundleRelease") {
     }
     from("build/generateInstallNative")
     from("build/generateInstallJvm")
-    from(releaseExecutable.outputFile) { into("bin") }
+    from(releaseExecutable.outputFile) {
+        into("bin")
+        rename("flc.kexe", "flc")
+    }
     from(tasks.named<Jar>("jvmJar")) { into("libs") }
     from("doc") { into("doc") }
     from(project(":playground").layout.buildDirectory.dir("out")) { into("playground") }

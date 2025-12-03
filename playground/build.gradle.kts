@@ -11,7 +11,6 @@ tasks.register<Exec>("compileEditor") {
 
 tasks.register<Copy>("build") {
     dependsOn("compileEditor")
-    dependsOn(":jsBrowserDistribution")
     from("src") {
         filesMatching("/index.html") {
             filteringCharset = "UTF-8"
@@ -20,7 +19,7 @@ tasks.register<Copy>("build") {
             }
         }
     }
-    from("build/editor")
-    from(rootProject.layout.buildDirectory.dir("distributions"))
-    into("build/out")
+    from(project.layout.buildDirectory.dir("editor"))
+    from(rootProject.tasks.named("jsBrowserDistribution"))
+    into(project.layout.buildDirectory.dir("out"))
 }
