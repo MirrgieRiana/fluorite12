@@ -77,14 +77,15 @@ class FluoriteJsObject(val value: dynamic) : FluoriteValue {
 }
 
 fun FluoriteFunction.toJsFunction(): dynamic {
-    val js = """
-        (function(f) {
-            return function() {
-                return f(arguments);
-            };
-        })
-    """
-    val functionCreator = js(js)
+    val functionCreator = js(
+        """
+            (function(f) {
+                return function() {
+                    return f(arguments);
+                };
+            })
+        """
+    )
     return functionCreator { arguments: Array<dynamic> ->
         var finished = false
         var result: dynamic = undefined
@@ -103,14 +104,15 @@ fun FluoriteFunction.toJsFunction(): dynamic {
 
 @OptIn(DelicateCoroutinesApi::class)
 fun FluoriteFunction.toJsAsyncFunction(): dynamic {
-    val js = """
-        (function(f) {
-            return eval("(async function() {" +
-                "return await f(arguments);" + // こうしないと下のjsマクロでawaitがシンタックスエラーになる
-            "})");
-        })
-    """
-    val functionCreator = js(js)
+    val functionCreator = js(
+        """
+            (function(f) {
+                return eval("(async function() {" +
+                    "return await f(arguments);" + // こうしないと下のjsマクロでawaitがシンタックスエラーになる
+                "})");
+            })
+        """
+    )
     return functionCreator { arguments: Array<dynamic> ->
         GlobalScope.promise {
             this@toJsAsyncFunction.invoke(arguments.map { convertToFluoriteValue(it) }.toTypedArray()).toJsObject()

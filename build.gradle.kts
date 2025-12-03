@@ -78,6 +78,10 @@ kotlin {
 
 }
 
+tasks.named("jsBrowserProductionWebpack") { dependsOn("jsProductionLibraryCompileSync") }
+tasks.named("jsBrowserProductionLibraryDistribution") { dependsOn("jsProductionExecutableCompileSync") }
+tasks.named("jsNodeProductionLibraryDistribution") { dependsOn("jsProductionExecutableCompileSync") }
+
 
 // Executable Jar
 
