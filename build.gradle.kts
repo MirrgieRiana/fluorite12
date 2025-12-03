@@ -59,12 +59,6 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
             }
         }
-        val nativeMain by creating {
-            dependsOn(commonMain.get())
-        }
-        val linuxX64Main by getting {
-            dependsOn(nativeMain)
-        }
     }
 
 }
