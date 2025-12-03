@@ -9,7 +9,7 @@ fi
 ENGINE="${ENGINE:-native}"
 if [ "$ENGINE" = "native" ]
 then
-  exec "$SCRIPT_DIR/bin/linuxX64/flcReleaseExecutable/flc.kexe" "$@"
+  exec "$SCRIPT_DIR/bin/flc" "$@"
 elif [ "$ENGINE" = "jvm" ]
 then
   # JAVA_HOME is set by the system or user environment
