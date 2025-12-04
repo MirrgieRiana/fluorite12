@@ -1,4 +1,5 @@
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.await
 import kotlinx.coroutines.promise
 import mirrg.fluorite12.Evaluator
 import mirrg.fluorite12.compilers.objects.FluoriteStream
@@ -8,14 +9,15 @@ import mirrg.fluorite12.compilers.objects.toFluoriteString
 import mirrg.fluorite12.mounts.createCommonMounts
 import kotlin.js.Promise
 
-@Suppress("unused")
-@JsName("evaluate")
+private val scope = MainScope()
+
+@OptIn(ExperimentalJsExport::class)
 @JsExport
-fun evaluate(src: String, quiet: Boolean, out: suspend (FluoriteValue) -> Unit) = GlobalScope.promise {
+fun evaluate(src: String, quiet: Boolean, out: (dynamic) -> Promise<Unit>): Promise<dynamic> = scope.promise {
     val evaluator = Evaluator()
     val defaultBuiltinMounts = listOf(
         createCommonMounts(),
-        createJsMounts(out),
+        createJsMounts { out(it).await() },
     ).flatten()
     evaluator.defineMounts(defaultBuiltinMounts)
     if (quiet) {
@@ -26,10 +28,10 @@ fun evaluate(src: String, quiet: Boolean, out: suspend (FluoriteValue) -> Unit) 
     }
 }
 
-@Suppress("unused")
-@JsName("log")
+@OptIn(ExperimentalJsExport::class)
 @JsExport
-fun log(value: FluoriteValue) = GlobalScope.promise {
+fun log(value: dynamic): Promise<Unit> = scope.promise {
+    val value = value.unsafeCast<FluoriteValue>()
     if (value is FluoriteStream) {
         value.collect {
             console.log(it)
@@ -39,10 +41,10 @@ fun log(value: FluoriteValue) = GlobalScope.promise {
     }
 }
 
-@Suppress("unused")
-@JsName("stringify")
+@OptIn(ExperimentalJsExport::class)
 @JsExport
-fun stringify(value: FluoriteValue): Promise<String> = GlobalScope.promise {
+fun stringify(value: dynamic): Promise<String> = scope.promise {
+    val value = value.unsafeCast<FluoriteValue>()
     suspend fun f(value: FluoriteValue): String {
         return if (value is FluoriteStream) {
             val sb = StringBuilder()

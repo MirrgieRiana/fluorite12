@@ -20,6 +20,6 @@ tasks.register<Sync>("build") {
         }
     }
     from(project.layout.buildDirectory.dir("editor"))
-    from(rootProject.tasks.named("jsBrowserDistribution"))
+    from(rootProject.tasks.named("jsBrowserProductionLibraryDistribution"))
     into(project.layout.buildDirectory.dir("out"))
 }

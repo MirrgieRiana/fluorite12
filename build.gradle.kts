@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
+import org.jetbrains.kotlin.gradle.dsl.JsSourceMapEmbedMode
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
@@ -30,6 +32,10 @@ kotlin {
         binaries.executable()
         binaries.library()
         outputModuleName = "fluorite12"
+        compilerOptions {
+            moduleKind = JsModuleKind.MODULE_ES
+            sourceMapEmbedSources = JsSourceMapEmbedMode.SOURCE_MAP_SOURCE_CONTENT_ALWAYS
+        }
     }
     linuxX64 {
         binaries {

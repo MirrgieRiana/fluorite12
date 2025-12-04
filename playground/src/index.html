@@ -58,7 +58,6 @@
             resize: none;
         }
     </style>
-    <script src="fluorite12.js"></script>
 </head>
 <body>
 <div id="container">
@@ -84,6 +83,10 @@
         <textarea id="output"></textarea>
     </div>
 </div>
+<script type="module">
+    import * as fluorite12 from "./fluorite12.mjs";
+    window.fluorite12 = fluorite12;
+</script>
 <script>
     async function run() {
 
