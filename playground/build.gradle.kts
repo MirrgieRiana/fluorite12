@@ -22,5 +22,7 @@ tasks.register<Sync>("build") {
     from(project.layout.buildDirectory.dir("editor"))
     from(rootProject.tasks.named("jsBrowserProductionLibraryDistribution"))
     into(project.layout.buildDirectory.dir("out"))
+
+    // browserとnodejsで異なるタスクが同じディレクトリに出力するKotlin Multiplatformの構造的問題のための苦肉の対策のために書かされている
     mustRunAfter(rootProject.tasks.named("jsNodeProductionLibraryDistribution"))
 }

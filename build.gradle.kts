@@ -69,6 +69,7 @@ kotlin {
 
 }
 
+// browserとnodejsで異なるタスクが同じディレクトリに出力するKotlin Multiplatformの構造的問題のための苦肉の対策のために書かされている
 tasks.named("jsBrowserProductionWebpack") { dependsOn("jsProductionLibraryCompileSync") }
 tasks.named("jsBrowserProductionLibraryDistribution") { dependsOn("jsProductionExecutableCompileSync") }
 tasks.named("jsNodeProductionLibraryDistribution") { dependsOn("jsProductionExecutableCompileSync") }
