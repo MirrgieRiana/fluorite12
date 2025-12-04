@@ -13,7 +13,6 @@ kotlin {
 
     jvm()
     js {
-        outputModuleName = "fluorite12"
         browser {
             testTask {
                 useMocha {
@@ -30,6 +29,7 @@ kotlin {
         }
         binaries.executable()
         binaries.library()
+        outputModuleName = "fluorite12"
     }
     linuxX64 {
         binaries {
