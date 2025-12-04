@@ -89,7 +89,7 @@ tasks.named<Jar>("jvmJar") {
 
 // Release
 
-tasks.register<Copy>("generateInstallNative") {
+tasks.register<Sync>("generateInstallNative") {
     from(file("release-template/install.sh"))
     filteringCharset = "UTF-8"
     filter {
@@ -103,7 +103,7 @@ tasks.register<Copy>("generateInstallNative") {
     rename("install.sh", "install-native.sh")
     into("build/generateInstallNative")
 }
-tasks.register<Copy>("generateInstallJvm") {
+tasks.register<Sync>("generateInstallJvm") {
     from(file("release-template/install.sh"))
     filteringCharset = "UTF-8"
     filter {

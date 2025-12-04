@@ -9,7 +9,7 @@ tasks.register<Exec>("compileEditor") {
     errorOutput = System.err
 }
 
-tasks.register<Copy>("build") {
+tasks.register<Sync>("build") {
     dependsOn("compileEditor")
     from("src") {
         filesMatching("/index.html") {
