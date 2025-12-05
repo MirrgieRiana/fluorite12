@@ -23,7 +23,7 @@ jobs:
           distribution: adopt
 
       - name: ビルド
-        run: bash gradlew build --stacktrace
+        run: bash gradlew clean build --stacktrace
 
       - name: レポートをアップロード
         if: failure()
