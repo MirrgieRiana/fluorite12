@@ -70,6 +70,18 @@ jobs:
           git commit --allow-empty -m "v${{ env.VERSION }} - ${{ env.HASH }}"
           git push --force origin release
 
+      - name: リリース用Zipの作成
+        run: |
+          cd build-dir/build/bundleRelease
+          zip -r ../../../release.zip .
+
+      - name: GitHub Releaseにリリース
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: release.zip
+
       - name: レポートをアップロード
         if: failure()
         uses: actions/upload-artifact@v4
