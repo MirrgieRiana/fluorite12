@@ -73,14 +73,14 @@ jobs:
       - name: リリース用Zipの作成
         run: |
           cd build-dir/build/bundleRelease
-          zip -r ../../../release.zip .
+          zip -r ../../../release-${{ env.VERSION }}.zip .
 
       - name: GitHub Releaseにリリース
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: release.zip
+          files: release-${{ env.VERSION }}.zip
 
       - name: レポートをアップロード
         if: failure()
