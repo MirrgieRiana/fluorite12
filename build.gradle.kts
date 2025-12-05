@@ -75,8 +75,7 @@ tasks.named("jsBrowserProductionLibraryDistribution") { dependsOn("jsProductionE
 tasks.named("jsNodeProductionLibraryDistribution") { dependsOn("jsProductionExecutableCompileSync") }
 
 val releaseExecutable = kotlin.targets
-    .withType<KotlinNativeTarget>()
-    .getByName("linuxX64")
+    .getByName<KotlinNativeTarget>("linuxX64")
     .binaries
     .getExecutable("flc", "RELEASE")
 
@@ -96,7 +95,7 @@ tasks.named<Jar>("jvmJar") {
 
 // Release
 
-tasks.register<Sync>("generateInstallNative") {
+val generateInstallNative = tasks.register<Sync>("generateInstallNative") {
     from(file("release-template/install.sh"))
     filteringCharset = "UTF-8"
     filter {
@@ -108,9 +107,9 @@ tasks.register<Sync>("generateInstallNative") {
         unix("rwxr-xr-x")
     }
     rename("install.sh", "install-native.sh")
-    into("build/generateInstallNative")
+    into(project.layout.buildDirectory.dir("generateInstallNative"))
 }
-tasks.register<Sync>("generateInstallJvm") {
+val generateInstallJvm = tasks.register<Sync>("generateInstallJvm") {
     from(file("release-template/install.sh"))
     filteringCharset = "UTF-8"
     filter {
@@ -122,26 +121,26 @@ tasks.register<Sync>("generateInstallJvm") {
         unix("rwxr-xr-x")
     }
     rename("install.sh", "install-jvm.sh")
-    into("build/generateInstallJvm")
+    into(project.layout.buildDirectory.dir("generateInstallJvm"))
 }
 
 
-tasks.register<Sync>("bundleRelease") {
-    dependsOn("build", ":playground:build", "generateInstallNative", "generateInstallJvm")
+val bundleRelease = tasks.register<Sync>("bundleRelease") {
     into(layout.buildDirectory.dir("bundleRelease"))
     from("release") {
         rename("gitignore", ".gitignore")
     }
-    from("build/generateInstallNative")
-    from("build/generateInstallJvm")
-    from(releaseExecutable.outputFile) {
+    from(generateInstallNative)
+    from(generateInstallJvm)
+    from(releaseExecutable.linkTaskProvider) {
         into("bin")
         rename("flc.kexe", "flc")
     }
-    from(tasks.named<Jar>("jvmJar")) { into("libs") }
+    from(tasks.named("jvmJar")) { into("libs") }
     from("doc") { into("doc") }
-    from(project(":playground").layout.buildDirectory.dir("out")) { into("playground") }
+    from(project(":playground").tasks.named("bundleRelease")) { into("playground") }
 }
+tasks.named("build").configure { dependsOn(bundleRelease) }
 
 
 // Doc Shell Tests

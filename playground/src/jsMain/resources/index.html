@@ -83,6 +83,7 @@
         <textarea id="output"></textarea>
     </div>
 </div>
+<script src="playground.js"></script>
 <script type="module">
     import * as fluorite12 from "./fluorite12.mjs";
     window.fluorite12 = fluorite12;
@@ -237,6 +238,67 @@
         window.addEventListener("load", () => setTimeout(async () => run(), 0));
     }
 </script>
-<script src="editor.bundle.js"></script>
+<script>
+    const { basicSetup } = playground.Utilities["codemirror"]();
+    const { EditorState } = playground.Utilities["@codemirror/state"]();
+    const { EditorView, keymap } = playground.Utilities["@codemirror/view"]();
+    const { indentWithTab } = playground.Utilities["@codemirror/commands"]();
+    playground.Utilities["@codemirror/lang-javascript"]();
+    const { inflate, deflate } = playground.Utilities["pako"]();
+
+    const customKeymap = keymap.of([
+        {
+            key: "F9",
+            run: view => {
+                window.run()
+                return true;
+            }
+        },
+        {
+            key: "Ctrl-Enter",
+            run: view => {
+                window.run()
+                return true;
+            }
+        },
+        indentWithTab
+    ]);
+
+    let src;
+    const base64DeflateUtf8Src = new URLSearchParams(window.location.search).get("s");
+    if (base64DeflateUtf8Src === null) {
+        src = `
+a := 1 .. 2 | "l"
+b := "He$a"
+c := [
+  b
+  ", W"
+  "rld!"
+]
+
+c() >> JOIN["o"]
+`;
+    } else {
+        const deflateUtf8Src = new Uint8Array([...atob(base64DeflateUtf8Src)].map(c => c.charCodeAt(0)));
+        const utf8Src = inflate(deflateUtf8Src);
+        src = new TextDecoder().decode(utf8Src);
+    }
+    window.input = new EditorView({
+        state: EditorState.create({
+            doc: src,
+            extensions: [customKeymap, basicSetup]
+        }),
+        parent: document.getElementById("input_container")
+    });
+
+    window.inflate = function(data) {
+        return inflate(data);
+    };
+
+    window.deflate = function(data) {
+        return deflate(data);
+    };
+
+</script>
 </body>
 </html>
