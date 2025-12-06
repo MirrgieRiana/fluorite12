@@ -89,16 +89,19 @@ data class FluoriteDouble(val value: Double) : FluoriteNumber {
 }
 
 fun String.toFluoriteNumber(): FluoriteNumber {
+    fun toFluoriteDouble() = when (val double = this.toDoubleOrNull()) {
+        null -> throw IllegalArgumentException("Cannot convert to number: ${if (this.length > 20) "${this.take(20)}..." else this}")
+        0.0 -> FluoriteDouble.ZERO
+        else -> FluoriteDouble(double)
+    }
     return when {
-        "." !in this -> when (val int = this.toInt()) {
+        "." !in this -> when (val int = this.toIntOrNull()) {
             0 -> FluoriteInt.ZERO
             1 -> FluoriteInt.ONE
+            null -> toFluoriteDouble()
             else -> FluoriteInt(int)
         }
 
-        else -> when (val double = this.toDouble()) {
-            0.0 -> FluoriteDouble.ZERO
-            else -> FluoriteDouble(double)
-        }
+        else -> toFluoriteDouble()
     }
 }
