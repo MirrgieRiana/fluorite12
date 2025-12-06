@@ -126,7 +126,8 @@ val generateInstallJvm = tasks.register<Sync>("generateInstallJvm") {
 
 
 val bundleRelease = tasks.register<Sync>("bundleRelease") {
-    into(layout.buildDirectory.dir("bundleRelease"))
+    val outputDirectory = layout.buildDirectory.dir("bundleRelease")
+    into(outputDirectory)
     from("release") {
         rename("gitignore", ".gitignore")
     }
@@ -139,6 +140,10 @@ val bundleRelease = tasks.register<Sync>("bundleRelease") {
     from(tasks.named("jvmJar")) { into("libs") }
     from("doc") { into("doc") }
     from(project(":playground").tasks.named("bundleRelease")) { into("playground") }
+
+    doLast {
+        outputDirectory.get().asFile.resolve("flc").setExecutable(true)
+    }
 }
 tasks.named("build").configure { dependsOn(bundleRelease) }
 
