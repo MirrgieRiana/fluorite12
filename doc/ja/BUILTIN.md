@@ -19,6 +19,7 @@
 - `OBJECT`
 - `FUNCTION`
 - `STREAM`
+- `PROMISE`
 
 # 定数
 
@@ -670,29 +671,6 @@ $ flc 'TO_OBJECT(("a": 1), ("b": 2), ("c": 3))'
 # {a:1;b:2;c:3}
 ```
 
-## `GENERATE` 関数からストリームを生成
-
-`GENERATE(generator: (yield: (value: VALUE) -> NULL) -> NULL | STREAM): STREAM<VALUE>`
-
-第1引数のジェネレータ関数を実行し、その関数内で `yield` 関数に渡された値をストリームとして返します。
-
-`yield` 関数がストリームを返した場合、そのストリームは1回だけイテレートされます。
-
-`yield` 関数は呼び出されるとサスペンドします。
-
-```shell
-$ flc '
-  GENERATE(yield -> (
-    yield << 1
-    yield << 2
-    yield << 3
-  ))
-'
-# 1
-# 2
-# 3
-```
-
 # 変換系関数
 
 ## `JSON` 値をJSON文字列に変換
@@ -842,21 +820,3 @@ $ flc ' ",1,,3," >> CSVD >> JSON '
 $ flc ' " , 1 , , 3 , " >> CSVD >> JSON '
 # ["","1","","3",""]
 ```
-
-# `SLEEP` 指定時間の間処理を停止
-
-`SLEEP(milliseconds: NUMBER): NULL`
-
-指定のミリ秒数だけ処理を停止します。
-
-以下のサンプルコードでは、実行後1秒おいてから `Hello, world!` が出力されます。
-
-```shell
-$ flc '
-  SLEEP(1000)
-  "Hello, world!"
-'
-# Hello, world!
-```
-
-この関数はスレッドをブロッキングせず、関数をサスペンドします。

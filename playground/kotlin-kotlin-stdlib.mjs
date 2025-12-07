@@ -53,6 +53,12 @@ if (typeof Math.clz32 === 'undefined') {
     };
   }(Math.log, Math.LN2);
 }
+if (typeof String.prototype.startsWith === 'undefined') {
+  Object.defineProperty(String.prototype, 'startsWith', {value: function (searchString, position) {
+    position = position || 0;
+    return this.lastIndexOf(searchString, position) === position;
+  }});
+}
 if (typeof String.prototype.endsWith === 'undefined') {
   Object.defineProperty(String.prototype, 'endsWith', {value: function (searchString, position) {
     var subjectString = this.toString();
@@ -62,12 +68,6 @@ if (typeof String.prototype.endsWith === 'undefined') {
     position -= searchString.length;
     var lastIndex = subjectString.indexOf(searchString, position);
     return lastIndex !== -1 && lastIndex === position;
-  }});
-}
-if (typeof String.prototype.startsWith === 'undefined') {
-  Object.defineProperty(String.prototype, 'startsWith', {value: function (searchString, position) {
-    position = position || 0;
-    return this.lastIndexOf(searchString, position) === position;
   }});
 }
 //endregion
@@ -6333,6 +6333,19 @@ function toInt_0(_this__u8e3s4) {
   }
   return tmp;
 }
+function toDoubleOrNull(_this__u8e3s4) {
+  // Inline function 'kotlin.js.asDynamic' call
+  // Inline function 'kotlin.js.unsafeCast' call
+  // Inline function 'kotlin.takeIf' call
+  var this_0 = +_this__u8e3s4;
+  var tmp;
+  if (!(isNaN_0(this_0) && !isNaN_2(_this__u8e3s4) || (this_0 === 0.0 && isBlank(_this__u8e3s4)))) {
+    tmp = this_0;
+  } else {
+    tmp = null;
+  }
+  return tmp;
+}
 function toString_3(_this__u8e3s4, radix) {
   // Inline function 'kotlin.js.asDynamic' call
   return _this__u8e3s4.toString(checkRadix(radix));
@@ -6361,19 +6374,6 @@ function toLong_0(_this__u8e3s4) {
     numberFormatError(_this__u8e3s4);
   } else {
     tmp = tmp0_elvis_lhs;
-  }
-  return tmp;
-}
-function toDoubleOrNull(_this__u8e3s4) {
-  // Inline function 'kotlin.js.asDynamic' call
-  // Inline function 'kotlin.js.unsafeCast' call
-  // Inline function 'kotlin.takeIf' call
-  var this_0 = +_this__u8e3s4;
-  var tmp;
-  if (!(isNaN_0(this_0) && !isNaN_2(_this__u8e3s4) || (this_0 === 0.0 && isBlank(_this__u8e3s4)))) {
-    tmp = this_0;
-  } else {
-    tmp = null;
   }
   return tmp;
 }
