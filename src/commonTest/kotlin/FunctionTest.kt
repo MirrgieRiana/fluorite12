@@ -51,7 +51,7 @@ class FunctionTest {
     @Test
     fun arrowCall() = runTest {
         val evaluator = Evaluator()
-        evaluator.defineMounts(createCommonMounts())
+        evaluator.defineMounts(createCommonMounts {})
 
         // _::_ でフォールバックメソッドを定義する
         """

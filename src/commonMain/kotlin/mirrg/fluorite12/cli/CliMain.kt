@@ -21,7 +21,7 @@ fun cliMain(args: Array<String>, runBlocking: (suspend () -> Unit) -> Unit) {
 private suspend fun main(options: Options) {
     val evaluator = Evaluator()
     val defaultBuiltinMounts = listOf(
-        createCommonMounts(),
+        createCommonMounts { println(it.toFluoriteString().value) },
         createCliMounts(options.arguments),
     ).flatten()
     evaluator.defineMounts(defaultBuiltinMounts)

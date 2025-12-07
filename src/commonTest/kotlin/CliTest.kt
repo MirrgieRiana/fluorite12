@@ -27,7 +27,7 @@ class CliTest {
 
 private suspend fun cliEval(src: String, vararg args: String): FluoriteValue {
     val evaluator = Evaluator()
-    evaluator.defineMounts(createCommonMounts())
+    evaluator.defineMounts(createCommonMounts {})
     evaluator.defineMounts(createCliMounts(args.toList()))
     return evaluator.get(src)
 }

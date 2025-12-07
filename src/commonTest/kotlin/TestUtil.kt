@@ -25,7 +25,7 @@ fun parse(src: String): String {
 
 suspend fun eval(src: String): FluoriteValue {
     val evaluator = Evaluator()
-    evaluator.defineMounts(createCommonMounts())
+    evaluator.defineMounts(createCommonMounts {})
     return evaluator.get(src)
 }
 

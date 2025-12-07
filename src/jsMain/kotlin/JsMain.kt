@@ -16,8 +16,8 @@ private val scope = MainScope()
 fun evaluate(src: String, quiet: Boolean, out: (dynamic) -> Promise<Unit>): Promise<dynamic> = scope.promise {
     val evaluator = Evaluator()
     val defaultBuiltinMounts = listOf(
-        createCommonMounts(),
-        createJsMounts { out(it).await() },
+        createCommonMounts { out(it).await() },
+        createJsMounts(),
     ).flatten()
     evaluator.defineMounts(defaultBuiltinMounts)
     if (quiet) {

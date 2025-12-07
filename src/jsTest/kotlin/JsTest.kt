@@ -95,8 +95,8 @@ class JsTest {
 
 val defaultBuiltinMounts by lazy {
     listOf(
-        createCommonMounts(),
-        createJsMounts {},
+        createCommonMounts {},
+        createJsMounts(),
     ).flatten()
 }
 
