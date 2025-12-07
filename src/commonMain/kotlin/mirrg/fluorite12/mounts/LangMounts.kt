@@ -8,6 +8,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteFunction
 import mirrg.fluorite12.compilers.objects.FluoriteNull
 import mirrg.fluorite12.compilers.objects.FluoriteNumber
+import mirrg.fluorite12.compilers.objects.FluoritePromise
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
@@ -42,6 +43,19 @@ fun createLangMounts(coroutineScope: CoroutineScope, out: suspend (FluoriteValue
             val function = arguments[0]
             val argumentsArray = arguments[1] as FluoriteArray
             function.invoke(argumentsArray.values.toTypedArray())
+        },
+        "LAUNCH" to FluoriteFunction { arguments ->
+            if (arguments.size != 1) usage("<T> LAUNCH(function: () -> T): PROMISE<T>")
+            val function = arguments[0]
+            val promise = FluoritePromise()
+            coroutineScope.launch {
+                try {
+                    promise.deferred.complete(function.invoke(emptyArray()))
+                } catch (e: Throwable) {
+                    promise.deferred.completeExceptionally(e)
+                }
+            }
+            promise
         },
         "GENERATE" to FluoriteFunction { arguments ->
             if (arguments.size != 1) usage("GENERATE(generator: (yield: (value: VALUE) -> NULL) -> NULL | STREAM): STREAM<VALUE>")

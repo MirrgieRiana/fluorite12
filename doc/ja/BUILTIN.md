@@ -19,6 +19,7 @@
 - `OBJECT`
 - `FUNCTION`
 - `STREAM`
+- `PROMISE`
 
 # 定数
 
