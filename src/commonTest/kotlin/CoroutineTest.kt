@@ -101,4 +101,23 @@ class CoroutineTest {
         assertEquals(FluoriteNull, eval("SLEEP(1000)")) // SLEEP で一定時間待つ
     }
 
+    @Test
+    fun generate() = runTest {
+        // GENERATE で関数からストリームを生成する
+        """
+            [GENERATE(yield -> (
+                yield << 1
+                yield << 2
+                yield << 3
+            ))]
+        """.let { assertEquals("[1;2;3]", eval(it).array()) }
+
+        // yield関数がストリームを返した場合、その副作用は1度だけ実行される
+        """
+            [GENERATE(yield -> (
+                1 .. 3 | yield << _
+            ))]
+        """.let { assertEquals("[1;2;3]", eval(it).array()) }
+    }
+
 }
