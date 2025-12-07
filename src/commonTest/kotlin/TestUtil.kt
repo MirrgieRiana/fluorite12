@@ -1,3 +1,4 @@
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import mirrg.fluorite12.Evaluator
@@ -23,9 +24,9 @@ fun parse(src: String): String {
     return getter.code
 }
 
-suspend fun eval(src: String): FluoriteValue {
+suspend fun CoroutineScope.eval(src: String): FluoriteValue {
     val evaluator = Evaluator()
-    evaluator.defineMounts(createCommonMounts {})
+    evaluator.defineMounts(createCommonMounts(this) {})
     return evaluator.get(src)
 }
 

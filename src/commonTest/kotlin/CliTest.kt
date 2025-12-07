@@ -1,3 +1,4 @@
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.Evaluator
@@ -25,9 +26,9 @@ class CliTest {
     }
 }
 
-private suspend fun cliEval(src: String, vararg args: String): FluoriteValue {
+private suspend fun CoroutineScope.cliEval(src: String, vararg args: String): FluoriteValue {
     val evaluator = Evaluator()
-    evaluator.defineMounts(createCommonMounts {})
+    evaluator.defineMounts(createCommonMounts(this) {})
     evaluator.defineMounts(createCliMounts(args.toList()))
     return evaluator.get(src)
 }

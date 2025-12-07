@@ -1,5 +1,7 @@
 package mirrg.fluorite12.cli
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import mirrg.fluorite12.Evaluator
 import mirrg.fluorite12.compilers.objects.FluoriteStream
 import mirrg.fluorite12.compilers.objects.collect
@@ -14,14 +16,16 @@ fun cliMain(args: Array<String>, runBlocking: (suspend () -> Unit) -> Unit) {
         return
     }
     runBlocking {
-        main(options)
+        coroutineScope {
+            main(options, this)
+        }
     }
 }
 
-private suspend fun main(options: Options) {
+private suspend fun main(options: Options, coroutineScope: CoroutineScope) {
     val evaluator = Evaluator()
     val defaultBuiltinMounts = listOf(
-        createCommonMounts { println(it.toFluoriteString().value) },
+        createCommonMounts(coroutineScope) { println(it.toFluoriteString().value) },
         createCliMounts(options.arguments),
     ).flatten()
     evaluator.defineMounts(defaultBuiltinMounts)

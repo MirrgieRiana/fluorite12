@@ -1,3 +1,4 @@
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mirrg.fluorite12.Evaluator
@@ -24,7 +25,7 @@ class JsTest {
     @Test
     fun property() = runTest {
         val evaluator = Evaluator()
-        evaluator.defineMounts(defaultBuiltinMounts)
+        evaluator.defineMounts(createDefaultBuiltinMounts())
 
         evaluator.run("obj := JS('({a: 100})')")
 
@@ -40,7 +41,7 @@ class JsTest {
     @Test
     fun new() = runTest {
         val evaluator = Evaluator()
-        evaluator.defineMounts(defaultBuiltinMounts)
+        evaluator.defineMounts(createDefaultBuiltinMounts())
 
         """
             Obj := JS(%>
@@ -61,7 +62,7 @@ class JsTest {
     @Test
     fun methodCall() = runTest {
         val evaluator = Evaluator()
-        evaluator.defineMounts(defaultBuiltinMounts)
+        evaluator.defineMounts(createDefaultBuiltinMounts())
 
         """
             obj := JS(%>
@@ -93,15 +94,16 @@ class JsTest {
 
 }
 
-val defaultBuiltinMounts by lazy {
-    listOf(
-        createCommonMounts {},
+
+fun CoroutineScope.createDefaultBuiltinMounts(): List<Map<String, FluoriteValue>> {
+    return listOf(
+        createCommonMounts(this) {},
         createJsMounts(),
     ).flatten()
 }
 
-suspend fun evalJs(src: String): FluoriteValue {
+suspend fun CoroutineScope.evalJs(src: String): FluoriteValue {
     val evaluator = Evaluator()
-    evaluator.defineMounts(defaultBuiltinMounts)
+    evaluator.defineMounts(createDefaultBuiltinMounts())
     return evaluator.get(src)
 }

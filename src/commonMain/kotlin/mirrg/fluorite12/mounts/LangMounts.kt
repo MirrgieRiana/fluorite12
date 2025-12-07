@@ -1,5 +1,7 @@
 package mirrg.fluorite12.mounts
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
@@ -11,7 +13,7 @@ import mirrg.fluorite12.compilers.objects.FluoriteValue
 import mirrg.fluorite12.compilers.objects.collect
 import mirrg.fluorite12.compilers.objects.invoke
 
-fun createLangMounts(out: suspend (FluoriteValue) -> Unit): List<Map<String, FluoriteValue>> {
+fun createLangMounts(coroutineScope: CoroutineScope, out: suspend (FluoriteValue) -> Unit): List<Map<String, FluoriteValue>> {
     return mapOf(
         "NULL" to FluoriteNull,
         "N" to FluoriteNull,
