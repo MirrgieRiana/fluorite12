@@ -89,3 +89,25 @@ $ flc '
 `<T> PROMISE<T>::isCompleted(): BOOLEAN`
 
 `PROMISE` が完了、もしくは失敗として完了しているかどうかを返します。
+
+## `SLEEP`: 指定時間の間処理を停止
+
+`SLEEP([milliseconds: NUMBER]): NULL`
+
+`milliseconds` だけ処理を停止します。
+
+この関数はスレッドをブロッキングせず、関数をサスペンドします。
+
+`milliseconds` が0もしくは省略された場合、関数を一度サスペンドし、即復帰します。
+
+---
+
+以下のサンプルコードでは、実行後1秒おいてから `Hello, world!` が出力されます。
+
+```shell
+$ flc '
+  SLEEP(1000)
+  "Hello, world!"
+'
+# Hello, world!
+```
