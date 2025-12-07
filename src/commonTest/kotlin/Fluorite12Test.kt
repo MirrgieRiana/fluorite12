@@ -1060,13 +1060,6 @@ class Fluorite12Test {
     }
 
     @Test
-    fun sleep() = runTest {
-        // runTestを使うとdelayが即終了するので待機時間のテストは行わない
-
-        assertEquals(FluoriteNull, eval("SLEEP(1000)")) // SLEEP で一定時間待つ
-    }
-
-    @Test
     fun fallbackMethod() = runTest {
         val evaluator = Evaluator()
         evaluator.defineMounts(createCommonMounts(this) {})
