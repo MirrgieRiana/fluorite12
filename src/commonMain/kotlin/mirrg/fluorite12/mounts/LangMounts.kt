@@ -1,8 +1,9 @@
 package mirrg.fluorite12.mounts
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import mirrg.fluorite12.compilers.objects.FluoriteArray
 import mirrg.fluorite12.compilers.objects.FluoriteBoolean
 import mirrg.fluorite12.compilers.objects.FluoriteFunction
@@ -30,13 +31,22 @@ fun createLangMounts(coroutineScope: CoroutineScope, out: suspend (FluoriteValue
             }
         },
         "SLEEP" to FluoriteFunction { arguments ->
-            if (arguments.size == 1) {
-                val time = arguments[0] as FluoriteNumber
-                delay(time.toInt().toLong())
-                FluoriteNull
-            } else {
-                usage("SLEEP(milliseconds: NUMBER): NULL")
+            when (arguments.size) {
+                0 -> yield()
+
+                1 -> {
+                    val time = arguments[0] as FluoriteNumber
+                    val millis = time.toInt().toLong()
+                    if (millis == 0L) {
+                        yield()
+                    } else {
+                        delay(millis)
+                    }
+                }
+
+                else -> usage("SLEEP([milliseconds: NUMBER]): NULL")
             }
+            FluoriteNull
         },
         "CALL" to FluoriteFunction { arguments ->
             if (arguments.size != 2) usage("CALL(function: FUNCTION; arguments: ARRAY<VALUE>): VALUE")
