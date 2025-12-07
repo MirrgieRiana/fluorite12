@@ -79,7 +79,7 @@ $ flc '
 $ flc '
   promise := PROMISE.new()
   promise::fail("ERROR!!")
-  promise::await() ?! (e => e)
+  promise::await() !? (e => e)
 '
 # ERROR!!
 ```
