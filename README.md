@@ -1,3 +1,14 @@
+
+<br>
+
+<div align="center">
+  <b><i>fluorite12</i> has been migrated to <a href="https://github.com/MirrgieRiana/xarpite"><i>xarpite</i></a></b>
+</div>
+
+<br>
+
+---
+
 <br>
 
 <div align="center">
